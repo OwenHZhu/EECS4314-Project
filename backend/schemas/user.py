@@ -1,7 +1,10 @@
-from pydantic import BaseModel, EmailStr, Field
+import re
+
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 from datetime import datetime, timezone
 
+from ..utils.constants import MIN_PASSWORD_LENGTH
 
 class UserBase(BaseModel):
     """
@@ -18,6 +21,34 @@ class UserRegister(UserBase):
     """
 
     password: str = Field(min_length=6, description="Plain-text password (will be hashed before storage)")
+    
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        errors = []
+
+        # Length check
+        if len(v) < MIN_PASSWORD_LENGTH:
+            errors.append("Password must be at least 12 characters long")
+
+        # Character checks
+        if not re.search(r"[A-Z]", v):
+            errors.append("Password must contain at least one uppercase letter (A-Z)")
+
+        if not re.search(r"[a-z]", v):
+            errors.append("Password must contain at least one lowercase letter (a-z)")
+
+        if not re.search(r"[0-9]", v):
+            errors.append("Password must contain at least one number (0-9)")
+
+        if not re.search(r"[^A-Za-z0-9]", v):
+            errors.append("Password must contain at least one special character (!@#$ etc.)")
+
+        # If any rules failed, raise all messages together
+        if errors:
+            raise ValueError(" | ".join(errors))
+
+        return v
 
 
 class UserLogin(BaseModel):
@@ -29,28 +60,12 @@ class UserLogin(BaseModel):
     password: str = Field(description="Plain-text password for authentication")
 
 
-class UserDB(UserBase):
-    """
-    Internal database model for MongoDB storage.
-    """
-
-    id: str = Field(description="MongoDB _id converted to string")
-    hashed_password: str = Field(description="Hashed password stored securely using bcrypt")
-    bio: Optional[str] = Field(default="", description="User biography")
-    profile_picture: Optional[str] = Field(default=None, description="Profile image URL") # add a placeholder for a default image
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Account creation timestamp")
-
-    # Future social features
-    # followers: List[str] = []
-    # following: List[str] = []
-
-
 class UserAccount(UserBase):
     """
     Public-facing user profile returned to frontend.
     """
 
-    id: str = Field(description="User ID (MongoDB _id)")
+    id: str = Field(description="User ID Supabase")
     bio: Optional[str] = Field(default="", description="User biography shown on profile")
     profile_picture: Optional[str] = Field(default=None, description="Profile image URL")
     created_at: datetime = Field(description="Account creation timestamp")
