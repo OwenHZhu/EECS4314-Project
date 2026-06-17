@@ -1,6 +1,6 @@
 import { BOOKS } from "../data/mockBook";
 import { WISHLIST_IDS } from "../data/mockUser";
-import { BookCard } from "./BookCard";
+import { BookCard } from "../components/BookCard";
 
 export function WishlistPage() {
   const wishlist = WISHLIST_IDS.map((id) =>

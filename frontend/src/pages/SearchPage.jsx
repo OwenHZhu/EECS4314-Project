@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useBookSearch } from "../hooks/useBookSearch";
-import { BookCard } from "./BookCard";
+import { BookCard } from "../components/BookCard";
 import { GENRES, GENRE_LABELS } from "../data/mockBook";
 
 export function SearchPage() {

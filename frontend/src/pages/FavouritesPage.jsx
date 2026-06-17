@@ -1,6 +1,6 @@
 import { BOOKS } from "../data/mockBook";
 import { FAVOURITES_IDS } from "../data/mockUser";
-import { BookCard } from "./BookCard";
+import { BookCard } from "../components/BookCard";
 
 export function FavouritesPage() {
   const favourites = FAVOURITES_IDS.map((id) =>
