@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Navbar } from "./components/Navbar";
-import { DiscoverPage } from "./components/DiscoverPage";
-import { LibraryPage } from "./components/LibraryPage";
-import { WishlistPage } from "./components/WishlistPage";
-import { FavouritesPage } from "./components/FavouritesPage";
-import { ForumsPage } from "./components/ForumsPage";
-import { ProfilePage } from "./components/ProfilePage";
+import { DiscoverPage } from "./pages/DiscoverPage";
+import { LibraryPage } from "./pages/LibraryPage";
+import { WishlistPage } from "./pages/WishlistPage";
+import { FavouritesPage } from "./pages/FavouritesPage";
+import { ForumsPage } from "./pages/ForumsPage";
+import { ProfilePage } from "./pages/ProfilePage";
 
 export default function App() {
   const [page, setPage] = useState("library");

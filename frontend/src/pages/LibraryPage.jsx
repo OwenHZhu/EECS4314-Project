@@ -1,6 +1,6 @@
 import { BOOKS, STATUS_LABELS, STATUS_COLORS } from "../data/mockBook";
 import { LIBRARY } from "../data/mockUser";
-import { BookCard } from "./BookCard";
+import { BookCard } from "../components/BookCard";
 
 const STATUSES = ["reading", "read", "want", "dropped"];
 
