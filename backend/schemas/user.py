@@ -11,7 +11,7 @@ class UserBase(BaseModel):
     Shared base schema for user data used across multiple models.
     """
 
-    username: str = Field(min_length=3, max_length=30, description="Unique display name for the user")
+    username: str = Field(min_length=5, max_length=12, description="Unique display name for the user")
     email: EmailStr = Field(description="User email address (validated format)")
 
 

@@ -9,12 +9,21 @@ from database.record import UserRecord
 
 def register_user(user: UserRegister) -> dict:
     # check if user exists
-    existing = supabase.table("users").select("*").eq("email", user.email).execute()
+    existing_email = supabase.table("users").select("*").eq("email", user.email).execute()
 
-    if existing.data:
+    if existing_email.data:
         return {
             "success": False,
             "message": "An account with this email already exists",
+            "data": None
+        }
+        
+    existing_username = supabase.table("users").select("id").eq("username", user.username).execute()
+    
+    if existing_username.data:
+        return {
+            "success": False,
+            "message": "Username is already taken",
             "data": None
         }
 
