@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 from datetime import datetime, timezone
 
-from ..utils.constants import MIN_PASSWORD_LENGTH
+from utils.constants import MIN_PASSWORD_LENGTH
 
 class UserBase(BaseModel):
     """
