@@ -8,7 +8,8 @@ export default {
         'primary-text': '#F9EDCC',
         'secondary-text': '#8A3033',
         'tertiary-text': '#BFB8AD',
-        'login-button': '#8A3033'
+        'login-button': '#8A3033',
+        'input-border': '#8A3033'
       }
     },
   },
