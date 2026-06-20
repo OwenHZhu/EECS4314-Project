@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { id: "wishlist", label: "Wishlist" },
   { id: "favourites", label: "Favourites" },
   { id: "forums", label: "Forums" },
+  {id: "login", label: "Login"}
 ];
 
 export function Navbar({ page, setPage }) {
