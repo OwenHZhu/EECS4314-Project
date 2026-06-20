@@ -1,3 +1,9 @@
+"""
+utils/record.py
+
+TypedDicts let us cast the raw Supabase response to a known shape for type-safety.
+"""
+
 from typing import TypedDict
 
 class UserRecord(TypedDict):

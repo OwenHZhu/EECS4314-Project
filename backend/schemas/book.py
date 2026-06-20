@@ -1,61 +1,53 @@
+"""
+schemas/book.py
+
+Pydantic schemas for the Book data model in BookAtlas.
+
+Schema hierarchy:
+    BookBase    → shared core fields (title, author, description, etc.)
+    BookCreate  → extends BookBase with DB/seeding specific fields (external_id, cover_image, etc.)
+
+BookCreate is used by the seeding script and on-demand book fetching to validate
+and structure book data before inserting into the book_catalogue table in Supabase.
+
+TODO:
+    - Add schemas for user book library entries (user adding a book to their personal library)
+    - Add schemas for user lists (wishlist, favourites)
+"""
+
+
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from datetime import datetime, timezone
-
-
-# TODO: Figure out ->  Populate manually or via external API scraping (e.g., Google Books, Open Library).
 
 class BookBase(BaseModel):
     """
-    Base book schema used for API input/output.
+    Shared core fields for all book schemas.
+    Contains the human-readable metadata about a book.
     """
 
-    title: str = Field(min_length=1, max_length=300)
-    subtitle: Optional[str] = Field(default=None)
-
-    authors: List[str] = Field(default_factory=list)
-    publisher: Optional[str] = Field(default=None)
-
-    description: Optional[str] = Field(default=None)
-
-    categories: List[str] = Field(default_factory=list)
-
-    language: Optional[str] = Field(default=None)
-
-    published_date: Optional[str] = Field(default=None)
-
-    page_count: Optional[int] = Field(default=None)
-
-    cover_url: Optional[str] = Field(default=None)
-
-    isbn_10: Optional[str] = Field(default=None)
-    isbn_13: Optional[str] = Field(default=None)
-
+    title: str = Field(min_length=1, max_length=300, description="Full title of the book")
+    author: str = Field(description="Comma-separated author names, capped at 3")
+    description: Optional[str] = Field(default=None, description="Book synopsis or blurb")
+    genre: Optional[List[str]] = Field(default=None, description="Up to 5 subjects/genres")
+    isbn: Optional[str] = Field(default=None, description="First available ISBN")
+    published_date: Optional[str] = Field(default=None, description="Year of first publication as string")
+    page_count: Optional[int] = Field(default=None, description="Median page count across all editions")
 
 class BookCreate(BookBase):
     """
-    Schema used when creating a book manually or ingesting from an external API.
+    Schema for creating a new book entry in the database.
+    Extends BookBase with fields required for DB storage and external API tracking.
+
+    Used by:
+        - Seeding script (utils/book_collection_seed.py) to insert Open Library books
+        - On-demand fetching when a user searches for a book not in our DB
+
+    All fields map directly to columns in the book_catalogue table in Supabase.
     """
-    pass
 
-
-class BookDB(BookBase):
-    """
-    Internal database representation of a book stored in MongoDB.
-    """
-
-    id: str = Field(description="MongoDB _id converted to string")
-
-    # external data tracking (important for scraping/API ingestion)
-    source: Optional[str] = Field(default=None, description="Data source like google_books or open_library")
-    external_id: Optional[str] = Field(default=None, description="ID from external API source")
-
-    # rating system (computed from Library collection)
-    avg_rating: float = Field(default=0.0, description="Average rating computed from user library entries")
-    ratings_count: int = Field(default=0, description="Number of user ratings for this book")
-
-    # system metadata
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Book creation timestamp")
-
-    # optional enrichment fields
-    tags: List[str] = Field(default_factory=list)
+    external_id: str = Field(description="Open Library work ID e.g. '/works/OL45804W'")
+    cover_image: Optional[str] = Field(default=None, description="Full URL to cover image from Open Library covers API")
+    series: Optional[str] = Field(default=None, description="Series name if available e.g. 'Harry Potter'")
+    publisher: Optional[str] = Field(default=None, description="First listed publisher")
+    time_period: Optional[str] = Field(default=None, description="Time period or era the book is set in")
+    
