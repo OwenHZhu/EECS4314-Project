@@ -42,7 +42,7 @@ from database.db import supabase
 from utils.security import hash_password, verify_password
 from utils.jwt import create_token, blacklist_token
 from schemas.user import UserRegister, UserLogin, UserAccount
-from backend.utils.record import UserRecord
+from utils.record import UserRecord
 
 
 def register_user(user: UserRegister) -> dict:
