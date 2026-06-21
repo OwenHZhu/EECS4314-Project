@@ -1,1 +1,0 @@
-// Holds the global auth state

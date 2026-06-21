@@ -1,56 +1,61 @@
+import { NavLink } from "react-router-dom";
+
 import { MOCK_USER } from "../data/mockUser";
 
 const NAV_ITEMS = [
-  { id: "discover", label: "Discover" },
-  { id: "library", label: "My Library" },
-  { id: "wishlist", label: "Wishlist" },
-  { id: "favourites", label: "Favourites" },
-  { id: "forums", label: "Forums" },
-  {id: "login", label: "Login"}
+  { id: "discover", label: "Discover", path: "/", auth: "any" },
+  { id: "library", label: "My Library", path: "/library", auth: "user" },
+  { id: "wishlist", label: "Wishlist", path: "/wishlist", auth: "user" },
+  { id: "favourites", label: "Favourites", path: "/favourites", auth: "user" },
+  { id: "forums", label: "Forums", path: "/forums", auth: "any" },
+  { id: "login", label: "Login", path: "/login", auth: "guest" }
 ];
 
-export function Navbar({ page, setPage }) {
+export function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-[#1e1e1e]">
+    <nav className="sticky top-0 z-50 bg-nav-bar-bg backdrop-blur-md border-b border-nav-bar-border">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-6">
-        <button
-          onClick={() => setPage("discover")}
-          className="flex items-center gap-2 shrink-0 group"
-        >
-          <span className="text-[15px] font-semibold tracking-tight text-[#f0f0f0] group-hover:text-white transition-colors">
-            Book<span className="text-[#7c6af7]">Atlas</span>
+
+        <NavLink to="/" className="flex items-center gap-2 shrink-0 group">
+          <span className="text-s font-semibold tracking-tight text-primary group-hover:text-white transition-colors">
+            Book<span className="text-secondary">Atlas</span>
           </span>
-        </button>
+        </NavLink>
 
         <div className="flex items-center gap-1 overflow-x-auto">
           {NAV_ITEMS.map((item) => (
-            <button
+            <NavLink
               key={item.id}
-              onClick={() => setPage(item.id)}
-              className={`px-3 py-1.5 rounded-lg text-[13px] whitespace-nowrap transition-colors ${
-                page === item.id
-                  ? "bg-[#1e1a38] text-[#b8b0ff]"
-                  : "text-[#666] hover:text-[#aaa] hover:bg-[#161616]"
-              }`}
+              to={item.path}
+              className={({ isActive }) =>
+                `px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors ${isActive
+                  ? "bg-nav-active-bg text-nav-active-text"
+                  : "text-nav-text hover:text-nav-hover-text hover:bg-nav-active-bg"
+                }`
+              }
             >
               {item.label}
-            </button>
+            </NavLink>
           ))}
         </div>
 
-        <button
-          onClick={() => setPage("profile")}
-          className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full border transition-colors shrink-0 ${
-            page === "profile"
-              ? "bg-[#1e1a38] border-[#7c6af7]/40 text-[#b8b0ff]"
-              : "border-[#222] text-[#666] hover:border-[#333] hover:text-[#aaa]"
-          }`}
+        <NavLink
+          to="/profile"
+          className={({ isActive }) =>
+            `flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full border transition-colors shrink-0 ${isActive
+              ? "bg-nav-active-bg border-nav-active-border text-active-text"
+              : "border-nav-border text-nav-text hover:border-nav-hover-border hover:text-nav-hover-text"
+            }`
+          }
         >
-          <div className="w-6 h-6 rounded-full bg-[#2d2845] flex items-center justify-center text-[10px] font-semibold text-[#b8b0ff]">
+          <div className="w-6 h-6 rounded-full bg-[#2d2845] flex items-center justify-center text-xs font-semibold text-[#b8b0ff]">
             {MOCK_USER.displayName[0]}
           </div>
-          <span className="text-[13px]">{MOCK_USER.displayName}</span>
-        </button>
+          <span className="text-xs text-tertiary">{MOCK_USER.displayName}</span>
+        </NavLink>
+
+
+
       </div>
     </nav>
   );
