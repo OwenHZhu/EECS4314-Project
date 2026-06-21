@@ -7,6 +7,7 @@ import { FavouritesPage } from "./pages/FavouritesPage";
 import { ForumsPage } from "./pages/ForumsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 
 export default function App() {
   const [page, setPage] = useState("library");
@@ -18,7 +19,8 @@ export default function App() {
     favourites: <FavouritesPage />,
     forums: <ForumsPage />,
     profile: <ProfilePage />,
-    login: <LoginPage />
+    login: <LoginPage />,
+    signup: <SignupPage />
   };
 
   return (
