@@ -43,3 +43,10 @@ def update_library(user_id: str, book_id: str, status: Optional[ReadingStatus] =
     if not res.data:
         return {"success" : False, "message" : "Library entry not found", "data" : None}
     return {"success" : True, "message" : "Library entry updated successfully", "data" : res.data[0]}
+
+
+def remove_library_entry(user_id: str, book_id: str) -> dict:
+    res = (supabase.table("library").delete().eq("user_id", user_id).eq("book_id", book_id).execute())
+    if not res.data:
+        return {"success" : False, "message" : "Library entry not found", "data" : None}
+    return {"success" : True, "message" : "Book removed from library successfully", "data" : res.data[0]}
