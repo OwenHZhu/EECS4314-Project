@@ -8,6 +8,7 @@ import { FavouritesPage } from "./pages/FavouritesPage";
 import { ForumsPage } from "./pages/ForumsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="/forums" element ={<ForumsPage />} />
             <Route path="/profile" element ={<ProfilePage />} />
             <Route path="/login" element ={<LoginPage />} />
+            <Route path="/register" element ={<RegisterPage />} />
           </Routes>
         </main>
       </BrowserRouter>

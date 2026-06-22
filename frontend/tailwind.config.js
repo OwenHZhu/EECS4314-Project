@@ -14,6 +14,8 @@ export default {
         'input-bg': '#151111',
         'input-placeholder': '#5A4B4B',
         'input': '#998888',
+        'error-bg': '#231616',
+        'error-text': '#725959',
 
         // Navbar colours
         'nav-bar-bg': '#0a0a0a/90',

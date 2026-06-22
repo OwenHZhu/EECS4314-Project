@@ -8,7 +8,8 @@ const NAV_ITEMS = [
   { id: "wishlist", label: "Wishlist", path: "/wishlist", auth: "user" },
   { id: "favourites", label: "Favourites", path: "/favourites", auth: "user" },
   { id: "forums", label: "Forums", path: "/forums", auth: "any" },
-  { id: "login", label: "Login", path: "/login", auth: "guest" }
+  { id: "login", label: "Login", path: "/login", auth: "guest" },
+  { id: "register", label: "Register", path: "/register", auth: "guest" }
 ];
 
 export function Navbar() {
