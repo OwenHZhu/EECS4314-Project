@@ -112,6 +112,7 @@ export default function LoginPage() {
                         <p className="text-primary mt-2 text-xs sm:text-sm">
                             Don't have an account? <Link to="/register" className="font-bold cursor-pointer">Register</Link>
                         </p>
+                        <Link to="/" className="text-primary mt-2 text-xs sm:text-sm">Forgot your password?</Link>
                     </div>
                 </form>
             </section>
