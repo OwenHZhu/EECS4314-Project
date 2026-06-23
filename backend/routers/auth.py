@@ -29,14 +29,14 @@ TODO:
 
 from fastapi import APIRouter, HTTPException, Security, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from schemas.user import UserRegister, UserLogin, UserAccount
+from schemas.user import UserRegister, UserLogin, UserAccount, AuthResponse
 from services.auth_service import register_user, login_user, logout_user, get_me
 from utils.jwt import get_current_user_id
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 bearer = HTTPBearer()
 
-@router.post("/register", response_model=UserAccount)
+@router.post("/register", response_model=AuthResponse)
 def register(user: UserRegister):
     """
     Register a new user account.
@@ -52,7 +52,7 @@ def register(user: UserRegister):
         raise HTTPException(status_code=409, detail=result["message"])
     return result
 
-@router.post("/login", response_model=UserAccount)
+@router.post("/login", response_model=AuthResponse)
 def login(user: UserLogin):
     """
     Login with email and password.
@@ -67,7 +67,7 @@ def login(user: UserLogin):
         raise HTTPException(status_code=401, detail=result["message"])
     return result
 
-@router.post("/logout")
+@router.post("/logout", response_model=AuthResponse)
 def logout(credentials: HTTPAuthorizationCredentials = Security(bearer)):
     """
     Logout the current user.
@@ -79,7 +79,7 @@ def logout(credentials: HTTPAuthorizationCredentials = Security(bearer)):
     
     return logout_user(credentials.credentials)
 
-@router.get("/me")
+@router.get("/me", response_model=AuthResponse)
 def me(user_id: str = Depends(get_current_user_id)):
     """
     Get the currently authenticated user's profile.

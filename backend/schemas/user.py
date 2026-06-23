@@ -132,3 +132,9 @@ class UserAccount(UserBase):
     bio: Optional[str] = Field(default="", description="User biography shown on profile")
     profile_picture: Optional[str] = Field(default=None, description="Profile image URL")
     created_at: datetime = Field(description="Account creation timestamp")
+    
+class AuthResponse(BaseModel):
+    success: bool = Field(description="Whether the operation succeeded")
+    message: str = Field(description="Human-readable result message")
+    token: Optional[str] = Field(default=None, description="JWT token (only on register and login)")
+    data: Optional[UserAccount] = Field(default=None, description="Authenticated user profile")
