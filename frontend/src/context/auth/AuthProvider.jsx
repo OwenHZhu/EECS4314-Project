@@ -6,6 +6,7 @@ import { useLocalStorage } from "../../hooks/useLocalStorage";
 export default function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [token, setToken] = useLocalStorage("token", null);
+    const [redirectMessage, setRedirectMessage] = useState(null);
 
     const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -38,7 +39,7 @@ export default function AuthProvider({ children }) {
         catch (err) {
             const message = err.response?.data?.message || "Registration failed. Please try again.";
 
-            return {success: false, message};
+            return { success: false, message };
         }
 
     }, [setToken, API_BASE_URL]);
@@ -90,6 +91,8 @@ export default function AuthProvider({ children }) {
                 user,
                 token,
                 isAuthenticated,
+                redirectMessage,
+                setRedirectMessage,
                 login,
                 logout,
                 register

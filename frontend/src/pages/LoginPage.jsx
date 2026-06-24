@@ -5,7 +5,8 @@ import { useAuth } from "../context/auth/useAuth";
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, redirectMessage, setRedirectMessage } = useAuth();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState([]);
@@ -25,6 +26,7 @@ export default function LoginPage() {
         }
 
         if (newErrors.length > 0) {
+            setRedirectMessage(null);
             setErrors(newErrors);
             setEmail("");
             setPassword("");
@@ -34,6 +36,7 @@ export default function LoginPage() {
         const res = await login(email, password);
 
         if (!res.success) {
+            setRedirectMessage(null);
             setErrors([res.message]);
             setEmail("");
             setPassword("");
@@ -41,10 +44,12 @@ export default function LoginPage() {
         }
 
         navigate("/profile");
+        setRedirectMessage(null);
         setEmail("");
         setPassword("");
         setErrors([]);
     }
+
 
     return (
         <div className="flex flex-col md:flex-row md:items-center md:justify-center min-h-screen pb-10">
@@ -79,9 +84,10 @@ export default function LoginPage() {
                     Welcome back!
                 </h1>
 
-                {errors.length > 0 && (
+                {(errors.length > 0 || redirectMessage) && (
                     <div className="bg-error-bg text-error-text p-3 rounded-lg mb-4 mt-4 text-sm">
                         <ul className="list-disc list-inside space-y-1">
+                            {redirectMessage && <li>{redirectMessage}</li>}
                             {errors.map((err, idx) => (
                                 <li key={idx}>{err}</li>
                             ))}

@@ -9,6 +9,7 @@ import { ForumsPage } from "./pages/ForumsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
@@ -17,14 +18,42 @@ export default function App() {
         <Navbar />
         <main>
           <Routes>
-            <Route path="/" element ={<DiscoverPage />} />
-            <Route path="/library" element ={<LibraryPage />} />
-            <Route path="/wishlist" element ={<WishlistPage />} />
-            <Route path="/favourites" element ={<FavouritesPage />} />
-            <Route path="/forums" element ={<ForumsPage />} />
-            <Route path="/profile" element ={<ProfilePage />} />
-            <Route path="/login" element ={<LoginPage />} />
-            <Route path="/register" element ={<RegisterPage />} />
+            <Route path="/" element={<DiscoverPage />} />
+            <Route path="/library"
+              element={
+                <ProtectedRoute>
+                  <LibraryPage />
+                </ProtectedRoute>}
+            />
+
+            <Route path="/wishlist"
+              element={
+                <ProtectedRoute>
+                  <WishlistPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/favourites"
+              element={
+                <ProtectedRoute>
+                  <FavouritesPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/forums" element={<ForumsPage />} />
+
+            <Route path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
           </Routes>
         </main>
       </BrowserRouter>
