@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../utils/validation";
+import { useAuth } from "../context/auth/useAuth";
 
 export default function LoginPage() {
+    const navigate = useNavigate();
+    const { login } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState([]);
 
-    function loginUser() {
+    async function loginUser() {
         const newErrors = [];
 
         if (!email.trim()) {
@@ -28,9 +31,16 @@ export default function LoginPage() {
             return;
         }
 
-        console.log("Logged in the user");
-        setEmail("");
-        setPassword("");
+        const res = await login(email, password);
+
+        if (!res.success) {
+            setErrors([res.message]);
+            setEmail("");
+            setPassword("");
+            return;
+        }
+
+        navigate("/profile");
         setErrors([]);
     }
 
