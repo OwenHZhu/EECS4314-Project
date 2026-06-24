@@ -41,6 +41,20 @@ export function Navbar() {
           ))}
         </div>
 
+        {!isAuthenticated &&
+          <NavLink
+            to="/login"
+            className={({ isActive }) =>
+              `flex items-center text-xs gap-2 pl-2 pr-3 py-1.5 rounded-full border transition-colors shrink-0 ${isActive
+                ? "bg-nav-active-bg border-nav-active-border text-active-text"
+                : "border-nav-border text-nav-text hover:border-nav-hover-border hover:text-nav-hover-text"
+              }`
+            }
+          >
+            Login
+          </NavLink>
+        }
+
         {isAuthenticated &&
           <NavLink
             to="/profile"
