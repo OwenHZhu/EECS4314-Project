@@ -1,14 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { validateEmail, validatePassword, validateUsername } from "../utils/validation";
+import { useAuth } from "../context/auth/useAuth";
 
 export default function RegisterPage() {
+    const navigate = useNavigate(); 
+
+    const { register } = useAuth();
+
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState([]);
 
-    function registerUser() {
+    async function registerUser() {
         const emptyErrors = [];
 
         if (!username.trim()) {
@@ -50,11 +55,22 @@ export default function RegisterPage() {
             return;
         }
 
-        console.log("Created user account");
+        const res = await register(username, email, password);
+        if (!res.success) {
+            setErrors([res.message]);
+            setUsername("");
+            setEmail("");
+            setPassword("");
+            return;
+
+        }
+
+        navigate("/profile");
 
         setUsername("");
         setEmail("");
         setPassword("");
+        setErrors([]);
     }
 
     return (

@@ -41,6 +41,8 @@ export default function LoginPage() {
         }
 
         navigate("/profile");
+        setEmail("");
+        setPassword("");
         setErrors([]);
     }
 

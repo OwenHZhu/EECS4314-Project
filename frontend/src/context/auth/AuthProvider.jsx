@@ -22,16 +22,25 @@ export default function AuthProvider({ children }) {
         catch (err) {
             const message = err.response?.data?.message || "Login failed. Please try again."
 
-            return {success: false, message};
+            return { success: false, message };
         }
     }, [setToken, API_BASE_URL]);
 
     const register = useCallback(async (username, email, password) => {
-        const res = await axios.post(API_BASE_URL + "auth/register", { username, email, password });
-        console.log(res);
+        try {
+            const res = await axios.post(API_BASE_URL + "auth/register", { username, email, password });
+            console.log(res.data);
+            setToken(res.data.token);
+            setUser(res.data.data);
 
-        setToken(res.data.token);
-        setUser(res.data.data);
+            return { success: true };
+        }
+        catch (err) {
+            const message = err.response?.data?.message || "Registration failed. Please try again.";
+
+            return {success: false, message};
+        }
+
     }, [setToken, API_BASE_URL]);
 
     const logout = useCallback(async () => {
