@@ -2,14 +2,29 @@
 routers/books.py
 
 Defines all Book Service-related API routes for BookAtlas.
-Handles HTTP requests, validation, and hands logic off to the book_service.
+Handles HTTP requests, data validation (via Pydantic), and hands logic 
+off to the book_service.
+
+All routes are prefixed with /api/v1/books (set in main.py).
+
+Public routes:
+    GET    /books/               - Get a list of books (supports search via ?q=)
+    GET    /books/{book_id}      - Get full details for a specific book
+    POST   /books/               - Add a new book to the catalog
+    PATCH  /books/{book_id}      - Update an existing book's details
+    DELETE /books/{book_id}      - Remove a book
+    POST   /books/{book_id}/rate - Submit a 1-5 star rating for a book
+
+Dependencies:
+    services/book_service.py - Core database logic
+    pydantic                 - Data validation schemas (BookCreate, BookUpdate, BookRate)
 """
 
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, Field, UUID4
 from typing import Optional
 
-# Import the new service functions
+# Import the service functions
 from services.book_service import (
     add_book,
     update_book,
@@ -21,7 +36,9 @@ from services.book_service import (
 
 router = APIRouter()
 
-# Schemas for book creation, updates, and rating submissions
+# ==========================================
+# Schemas for Validation
+# ==========================================
 
 class BookCreate(BaseModel):
     title: str = Field(min_length=1, max_length=300)
@@ -40,11 +57,21 @@ class BookRate(BaseModel):
     user_id: UUID4
     rating: int = Field(ge=1, le=5, description="Rating between 1 and 5 stars")
 
-# Routes for managing the global book catalog (CRUD operations)
+
+# ==========================================
+# Routes (CRUD Operations)
+# ==========================================
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def add_book_route(book: BookCreate):
-    """Adds a new book to the global catalog."""
+    """
+    Adds a new book to the global catalog.
+
+    - Validates incoming payload using the BookCreate schema.
+    - Hands data off to the service layer for insertion.
+    - Returns 201 Created and the new book object on success.
+    - Returns 500 if database insertion fails.
+    """
     result = add_book(book.model_dump())
     if not result["success"]:
         raise HTTPException(status_code=500, detail=result["message"])
@@ -52,10 +79,15 @@ def add_book_route(book: BookCreate):
 
 @router.patch("/{book_id}")
 def update_book_route(book_id: UUID4, book_update: BookUpdate):
-    """Updates an existing book's details."""
+    """
+    Updates an existing book's details.
+
+    - Allows partial updates via BookUpdate schema (all fields optional).
+    - Service layer cleans out null values automatically.
+    - Returns 404 if the book doesn't exist, or 400 if no valid fields are passed.
+    """
     result = update_book(str(book_id), book_update.model_dump())
     if not result["success"]:
-        # Choose the right error code based on the service message
         status_code = 400 if "No valid fields" in result["message"] else 404
         if "Database error" in result["message"]:
             status_code = 500
@@ -64,7 +96,13 @@ def update_book_route(book_id: UUID4, book_update: BookUpdate):
 
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_book_route(book_id: UUID4):
-    """Removes a book from the catalog entirely."""
+    """
+    Removes a book from the catalog entirely.
+
+    - Calls the service layer to delete the row from Supabase.
+    - Returns a 204 No Content status on success (standard for DELETE ops).
+    - Returns 404 if the book was not found.
+    """
     result = delete_book(str(book_id))
     if not result["success"]:
         status_code = 404 if "not found" in result["message"] else 500
@@ -73,7 +111,13 @@ def delete_book_route(book_id: UUID4):
 
 @router.post("/{book_id}/rate")
 def rate_book_route(book_id: UUID4, rating_data: BookRate):
-    """Submits a user rating for a book."""
+    """
+    Submits a user rating for a book.
+
+    - Enforces rating validation (1-5) via BookRate schema.
+    - Uses upsert logic in the service layer to prevent duplicate user ratings.
+    - Returns 500 if the database insert/update fails.
+    """
     result = rate_book(str(book_id), str(rating_data.user_id), rating_data.rating)
     if not result["success"]:
         raise HTTPException(status_code=500, detail=result["message"])
@@ -81,7 +125,13 @@ def rate_book_route(book_id: UUID4, rating_data: BookRate):
 
 @router.get("/")
 def get_books_route(q: Optional[str] = Query(None, description="Search by title or author"), limit: int = 50):
-    """Fetches a list of books, with an optional search query."""
+    """
+    Fetches a list of books, with an optional search query.
+
+    - Accepts an optional `?q=...` URL parameter to filter results.
+    - Hands off the query term to the service layer for PostgreSQL `ilike` searching.
+    - Defaults to a limit of 50 items.
+    """
     result = get_all_books(q, limit)
     if not result["success"]:
         raise HTTPException(status_code=500, detail=result["message"])
@@ -89,7 +139,12 @@ def get_books_route(q: Optional[str] = Query(None, description="Search by title 
     
 @router.get("/{book_id}")
 def get_book_by_id_route(book_id: UUID4):
-    """Fetches full details for a single book by its ID."""
+    """
+    Fetches full details for a single book by its ID.
+
+    - Passes the UUID string to the service layer.
+    - Returns 404 if no book matches the given ID.
+    """
     result = get_book_by_id(str(book_id))
     if not result["success"]:
         status_code = 404 if "not found" in result["message"] else 500
