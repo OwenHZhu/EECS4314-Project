@@ -4,7 +4,7 @@ import { validateEmail, validatePassword, validateUsername } from "../utils/vali
 import { useAuth } from "../context/auth/useAuth";
 
 export default function RegisterPage() {
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
 
     const { register } = useAuth();
 
@@ -104,16 +104,6 @@ export default function RegisterPage() {
                     Create Account
                 </h1>
 
-                {errors.length > 0 && (
-                    <div className="bg-error-bg text-error-text p-3 rounded-lg mb-4 mt-4 text-sm">
-                        <ul className="list-disc list-inside space-y-1">
-                            {errors.map((err, idx) => (
-                                <li key={idx}>{err}</li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-
                 <form
                     noValidate
                     className="flex flex-col mt-3"
@@ -146,7 +136,18 @@ export default function RegisterPage() {
                         className="p-2 sm:p-3 rounded-lg bg-input-bg text-tertiary placeholder-input-placeholder focus:ring-2 focus:ring-input-border focus:outline-none text-sm sm:text-base"
                     />
 
-                    <div className="flex flex-col mt-8 items-center">
+                    {errors.length > 0 && (
+                        <div className="bg-error-bg text-error-text p-3 rounded-lg mb-4 mt-4 text-sm">
+                            <ul className="list-disc list-inside space-y-1">
+                                {errors.map((err, idx) => (
+                                    <li key={idx}>{err}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+
+                    <div className="flex flex-col mt-2 items-center">
                         <button
                             type="submit"
                             className="w-full rounded-full bg-login-button text-primary hover:bg-login-hover transition-colors p-2 sm:p-3 text-sm sm:text-base"
