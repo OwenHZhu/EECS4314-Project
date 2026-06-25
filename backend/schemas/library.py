@@ -20,6 +20,10 @@ from pydantic import BaseModel, Field
 
 
 class ReadingStatus(str, Enum):
+    """
+    Allowed reading statuses for a user's interaction with a book.
+    """
+    
     READ = "read"
     READING = "reading"
     DROPPED = "dropped"
@@ -28,6 +32,13 @@ class ReadingStatus(str, Enum):
 
 
 class LibraryEntryCreate(BaseModel):
+    """
+    Schema for adding a book to a user's library.
+
+    Used when the frontend sends a request to add a book.
+    The frontend provides user_id, book_id, reading status, and optional rating.
+    """
+
     user_id: str = Field(description="ID of the user owning this library entry")
     book_id: str = Field(description="ID of the book in the global catalogue")
 
@@ -41,6 +52,16 @@ class LibraryEntryCreate(BaseModel):
 
 
 class LibraryEntryUpdate(BaseModel):
+    """
+    Schema for updating an existing library entry.
+
+    Used when the frontend sends a request to update a book's reading status
+    or rating in a user's library.
+
+    user_id and book_id are used together to find the correct library entry.
+    status and rating are optional because the user may update only one field.
+    """
+
     user_id: str = Field(description="ID of the user owning this library entry")
     book_id: str = Field(description="ID of the book in the user's library")
 
@@ -57,6 +78,14 @@ class LibraryEntryUpdate(BaseModel):
 
 
 class LibraryEntry(BaseModel):
+    """
+    Full library entry schema.
+
+    Represents a complete library record returned from the database.
+    Includes the database entry ID, user ID, book ID, reading status,
+    optional rating, and timestamps.
+    """
+
     id: Optional[str] = Field(default=None, description="Library entry ID")
     user_id: str
     book_id: str
