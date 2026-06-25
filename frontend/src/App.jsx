@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import { Navbar } from "./components/Navbar";
 import { DiscoverPage } from "./pages/DiscoverPage";
 import { LibraryPage } from "./pages/LibraryPage";
@@ -6,23 +7,56 @@ import { WishlistPage } from "./pages/WishlistPage";
 import { FavouritesPage } from "./pages/FavouritesPage";
 import { ForumsPage } from "./pages/ForumsPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
-  const [page, setPage] = useState("library");
-
-  const pages = {
-    discover: <DiscoverPage />,
-    library: <LibraryPage />,
-    wishlist: <WishlistPage />,
-    favourites: <FavouritesPage />,
-    forums: <ForumsPage />,
-    profile: <ProfilePage />,
-  };
-
   return (
-    <div className="min-h-screen bg-[#0f0f0f]">
-      <Navbar page={page} setPage={setPage} />
-      <main>{pages[page] ?? <DiscoverPage />}</main>
+    <div className="min-h-screen bg-background">
+      <BrowserRouter>
+        <Navbar />
+        <main>
+          <Routes>
+            <Route path="/" element={<DiscoverPage />} />
+            <Route path="/library"
+              element={
+                <ProtectedRoute>
+                  <LibraryPage />
+                </ProtectedRoute>}
+            />
+
+            <Route path="/wishlist"
+              element={
+                <ProtectedRoute>
+                  <WishlistPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/favourites"
+              element={
+                <ProtectedRoute>
+                  <FavouritesPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/forums" element={<ForumsPage />} />
+
+            <Route path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Routes>
+        </main>
+      </BrowserRouter>
     </div>
   );
 }
