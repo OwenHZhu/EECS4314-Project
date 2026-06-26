@@ -2,7 +2,7 @@ from routers import books
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware # needed for connecting to React App Later
 
-from routers import auth
+from routers import auth, lib
 from utils.constants import ORIGINS
 
 app = FastAPI(title="BookAtlas API", description="Backend for BookAtlas reading platform", version="1.0.0")
