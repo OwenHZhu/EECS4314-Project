@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 from typing import Optional
 from database.db import supabase
-from schemas.library import LibraryEntry, ReadingStatus
+from schemas.library import LibraryEntryCreate, ReadingStatus
 
 
-def add_or_update_library_entry(entry: LibraryEntry) -> dict:
+def add_or_update_library_entry(entry: LibraryEntryCreate, user_id: str) -> dict:
     """ 
     Add a book to a user's library, or update it if it already exists. 
     First checks whether the book exists in the book_catalogue table. 
@@ -13,9 +13,10 @@ def add_or_update_library_entry(entry: LibraryEntry) -> dict:
     If the library entry already exists, update its status, rating, and updated_at time. 
     If the entry does not exist, create a new library record. 
     
-    Args: entry: 
-        Validated LibraryEntry object containing user_id, book_id, status, and optional rating. 
-    
+    Args: 
+        entry: Validated LibraryEntryCreate object containing book_id, status, and optional rating.
+        user_id: ID of the authenticated user from the JWT token.
+        
     Returns: 
         Success: { "success": True, "message": str, "data": library_entry } 
         Failure: { "success": False, "message": str, "data": None } 
@@ -24,17 +25,17 @@ def add_or_update_library_entry(entry: LibraryEntry) -> dict:
     if not book_res.data:
         return {"success" : False, "message" : "Book does not exist", "data" : None}
     
-    existing = (supabase.table("library").select("*").eq("user_id", entry.user_id).eq("book_id", entry.book_id).limit(1).execute())
+    existing = (supabase.table("library").select("*").eq("user_id", user_id).eq("book_id", entry.book_id).limit(1).execute())
     now = datetime.now(timezone.utc).isoformat()
 
     if existing.data:
         update_data = {"status" : entry.status.value, "rating" : entry.rating, "updated_at" : now}
-        res = (supabase.table("library").update(update_data).eq("user_id", entry.user_id).eq("book_id", entry.book_id).execute())
+        res = (supabase.table("library").update(update_data).eq("user_id", user_id).eq("book_id", entry.book_id).execute())
         if not res.data:
             return {"success" : False, "message" : "Failed to update library", "data" : None}
         return {"success" : True, "message" : "Library updated successfully", "data" : res.data[0]}
     
-    insert_data = {"user_id" : entry.user_id, "book_id" : entry.book_id, "status" : entry.status.value, "rating" : entry.rating, "added_at" : now, "updated_at" : now}
+    insert_data = {"user_id" : user_id, "book_id" : entry.book_id, "status" : entry.status.value, "rating" : entry.rating, "added_at" : now, "updated_at" : now}
     res = (supabase.table("library").insert(insert_data).execute())
     if not res.data:
         return {"success" : False, "message" : "Failed to add book to library", "data" : None}
@@ -54,7 +55,7 @@ def get_user_library(user_id: str) -> dict:
         Success: { "success": True, "message": str, "data": list } 
         The data field contains all library entries that belong to the user. 
     """
-    res = {supabase.table("library").select("*").eq("user_id", user_id).execute()}
+    res = (supabase.table("library").select("*").eq("user_id", user_id).execute())
     return {"success" : True, "message" : "Library retrieved successfully", "data" : res.data}
 
 def update_library(user_id: str, book_id: str, status: Optional[ReadingStatus] = None, rating: Optional[int] = None) -> dict:
