@@ -36,10 +36,9 @@ class LibraryEntryCreate(BaseModel):
     Schema for adding a book to a user's library.
 
     Used when the frontend sends a request to add a book.
-    The frontend provides user_id, book_id, reading status, and optional rating.
+    The frontend provides book_id, reading status, and optional rating.
     """
 
-    user_id: str = Field(description="ID of the user owning this library entry")
     book_id: str = Field(description="ID of the book in the global catalogue")
 
     status: ReadingStatus = Field(description="Current reading status of the book")
@@ -58,11 +57,10 @@ class LibraryEntryUpdate(BaseModel):
     Used when the frontend sends a request to update a book's reading status
     or rating in a user's library.
 
-    user_id and book_id are used together to find the correct library entry.
+    The authenticated user's ID and book_id are used together to find the correct library entry.
     status and rating are optional because the user may update only one field.
     """
 
-    user_id: str = Field(description="ID of the user owning this library entry")
     book_id: str = Field(description="ID of the book in the user's library")
 
     status: Optional[ReadingStatus] = Field(
