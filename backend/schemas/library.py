@@ -1,35 +1,13 @@
-from enum import Enum
-from pydantic import BaseModel, Field
-from typing import Optional
-from datetime import datetime, timezone
+""""
+schemas/library.py
 
+TODO: User Library schemas 
 
-class ReadingStatus(str, Enum):
-    """
-    Allowed statuses for a user's interaction with a book.
-    """
-    READ = "read"
-    READING = "reading"
-    DROPPED = "dropped"
-    WISHLIST = "wishlist"
-    FAVOURITE = "favourite"
-
-
-class LibraryEntry(BaseModel):
-    """
-    Represents the relationship between a user and a book.
-    This is the core tracking system of BookAtlas.
-    """
-
-    user_id: str = Field(description="ID of the user owning this library entry")
-    book_id: str = Field(description="ID of the book in the global catalog")
-
-    # reading state
-    status: ReadingStatus = Field(description="Current reading status of the book for the user")
-
-    # user rating for this book (optional until user finishes or updates later)
-    rating: Optional[int] = Field(default=None, ge=1, le=5, description="User rating from 1 to 5 stars")
-
-    # timestamps
-    added_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="When the book was added to the library")
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Last time this entry was updated")
+This service is responsible for:
+    - Managing per-user book statuses (read, currently reading, dropped, finished, want to read)
+    - Managing each user's personal lists — Wishlist, Favourites, and custom collections
+    - Adding and removing books from each list independently
+    - Tracking individual reading progress and user-submitted ratings
+    - Sending ratings to the Book Service for global aggregation
+    - Storing list history so users can view previously read or dropped books
+"""
