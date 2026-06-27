@@ -4,10 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        'background': '#0f0f0f',
+        // global colours
+        'background': '#070303',
         'primary': '#F9EDCC',
         'secondary': '#8A3033',
         'tertiary': '#BFB8AD',
+        'caption': '#444',
+
+        // login & registration page colours
         'login-button': '#8A3033',
         'login-hover': '#572426',
         'input-border': '#8A3033',
@@ -26,7 +30,23 @@ export default {
         'nav-text': '#666',
         'nav-active-border': '#743121', 
         'nav-hover-border': '#333',
-        'nav-border': '#222'
+        'nav-border': '#222',
+
+        // profile colours
+        'bio': '#666',
+        'edit-profile': '#8A3033',
+        'edit-profile-hover': '#661A1C',
+        'view-posts': '#5A4B4B',
+        'view-posts-hover': '#413333',
+        'stat-card-fill': '#151111',
+        'stat-card-border': '#3A2A2A',
+
+        //logout card
+        'card-fill': '#1E1615',
+        'card-stroke': '#4A2422',
+        'cancel-stroke': '#5A4B4B',
+        'logout-hover': '#661A1C'
+
       }
     },
   },

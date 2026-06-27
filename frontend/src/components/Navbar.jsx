@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { id: "wishlist", label: "Wishlist", path: "/wishlist", auth: "user" },
   { id: "favourites", label: "Favourites", path: "/favourites", auth: "user" },
   { id: "forums", label: "Forums", path: "/forums", auth: "any" },
+  { id: "logout-card", label: "Logout Card", path: "/logout", auth: "user"}
 ];
 
 export function Navbar() {
@@ -66,9 +67,9 @@ export function Navbar() {
             }
           >
             <div className="w-6 h-6 rounded-full bg-[#2d2845] flex items-center justify-center text-xs font-semibold text-[#b8b0ff]">
-              {MOCK_USER.displayName[0]}
+              {MOCK_USER.username[0]}
             </div>
-            <span className="text-xs text-tertiary">{MOCK_USER.displayName}</span>
+            <span className="text-xs text-tertiary">{MOCK_USER.username}</span>
           </NavLink>
         }
       </div>

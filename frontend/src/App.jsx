@@ -10,6 +10,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LogoutModal from "./components/LogoutModal";
 
 export default function App() {
   return (
@@ -54,6 +55,7 @@ export default function App() {
 
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/logout" element={<LogoutModal />} />
           </Routes>
         </main>
       </BrowserRouter>
