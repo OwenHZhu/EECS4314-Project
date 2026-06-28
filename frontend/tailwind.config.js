@@ -45,8 +45,11 @@ export default {
         'card-fill': '#1E1615',
         'card-stroke': '#4A2422',
         'cancel-stroke': '#5A4B4B',
-        'logout-hover': '#661A1C'
+        'logout-hover': '#661A1C',
 
+        //edit profile colours: 
+        'container-fill': '#151111',
+        'input-stroke': '#3A2A2A',
       }
     },
   },

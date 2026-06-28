@@ -9,7 +9,6 @@ const NAV_ITEMS = [
   { id: "wishlist", label: "Wishlist", path: "/wishlist", auth: "user" },
   { id: "favourites", label: "Favourites", path: "/favourites", auth: "user" },
   { id: "forums", label: "Forums", path: "/forums", auth: "any" },
-  { id: "logout-card", label: "Logout Card", path: "/logout", auth: "user"}
 ];
 
 export function Navbar() {

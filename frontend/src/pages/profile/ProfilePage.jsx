@@ -1,7 +1,8 @@
-import { BOOKS, STATUS_LABELS, STATUS_COLORS } from "../data/mockBook";
-import { MOCK_USER, LIBRARY, FAVOURITES_IDS } from "../data/mockUser";
+import { BOOKS, STATUS_LABELS, STATUS_COLORS } from "../../data/mockBook";
+import { MOCK_USER, LIBRARY, FAVOURITES_IDS } from "../../data/mockUser";
 import { useState } from "react";
-import LogoutModal from "../components/LogoutModal";
+import { useNavigate } from "react-router-dom";
+import LogoutModal from "../../components/auth/LogoutModal";
 
 function StatCard({ value, label }) {
   return (
@@ -40,6 +41,7 @@ function StatusItem({ colors, count, s }) {
 
 export function ProfilePage() {
   const [showLogout, setShowLogout] = useState(false);
+  const navigate = useNavigate();
   const user = MOCK_USER;
 
   function openModal() {
@@ -62,7 +64,7 @@ export function ProfilePage() {
     <div className="max-w-6xl mx-auto px-6 py-12">
       {showLogout && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <LogoutModal setShowLogout={setShowLogout}/>
+          <LogoutModal setShowLogout={setShowLogout} />
         </div>
       )}
       <div className="flex items-start gap-5 mb-10 pb-2">
@@ -88,7 +90,12 @@ export function ProfilePage() {
       </div>
 
       <div className="mb-8">
-        <button className="text-sm text-primary bg-edit-profile py-3 px-8 rounded-full mr-6 mb-2 transition-colors hover:bg-edit-profile-hover">Edit Profile</button>
+        <button
+          onClick={() => {navigate("edit")}}
+          className="text-sm text-primary bg-edit-profile py-3 px-8 rounded-full mr-6 mb-2 transition-colors hover:bg-edit-profile-hover"
+        >
+          Edit Profile
+        </button>
         <button className="text-sm text-primary bg-view-posts py-3 px-8 rounded-full transition-colors hover:bg-view-posts-hover">View Posts</button>
       </div>
 

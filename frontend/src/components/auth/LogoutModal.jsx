@@ -1,4 +1,4 @@
-import { useAuth } from "../context/auth/useAuth";
+import { useAuth } from "../../context/auth/useAuth";
 import { useNavigate } from "react-router-dom";
 
 export default function LogoutModal({ setShowLogout }) {

@@ -6,11 +6,11 @@ import { LibraryPage } from "./pages/LibraryPage";
 import { WishlistPage } from "./pages/WishlistPage";
 import { FavouritesPage } from "./pages/FavouritesPage";
 import { ForumsPage } from "./pages/ForumsPage";
-import { ProfilePage } from "./pages/ProfilePage";
+import { ProfilePage } from "./pages/profile/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import ProtectedRoute from "./components/ProtectedRoute";
-import LogoutModal from "./components/LogoutModal";
+import EditProfilePage from "./pages/profile/EditProfilePage";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 export default function App() {
   return (
@@ -45,6 +45,14 @@ export default function App() {
 
             <Route path="/forums" element={<ForumsPage />} />
 
+            <Route path="/profile/edit"
+              element={
+                <ProtectedRoute>
+                  <EditProfilePage />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/profile"
               element={
                 <ProtectedRoute>
@@ -55,7 +63,6 @@ export default function App() {
 
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/logout" element={<LogoutModal />} />
           </Routes>
         </main>
       </BrowserRouter>
