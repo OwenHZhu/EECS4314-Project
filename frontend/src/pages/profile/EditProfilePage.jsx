@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MOCK_USER } from "../../data/mockUser";
 import DeleteAccountModal from "../../components/auth/DeleteAccountModal";
+import EditPictureModal from "../../components/auth/EditPictureModal.jsx";
 
 export default function EditProfilePage() {
     const user = MOCK_USER;
@@ -9,6 +10,7 @@ export default function EditProfilePage() {
     const [username, setUsername] = useState("");
     const [bio, setBio] = useState("");
     const [showDelete, setShowDelete] = useState(false);
+    const [editPicture, setEditPicture] = useState(false);
 
     function handleCancel() {
         navigate("/profile");
@@ -23,6 +25,15 @@ export default function EditProfilePage() {
         }
     }
 
+    function handlePicture() {
+        if (!editPicture) {
+            setEditPicture(true);
+        }
+        else {
+            setEditPicture(false);
+        }
+    }
+
     return (
         <div className="max-w-6xl mx-auto px-16 py-16">
             {showDelete && (
@@ -31,10 +42,20 @@ export default function EditProfilePage() {
                 </div>
             )}
 
+            {editPicture && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/40">
+                    <EditPictureModal setEditPicture={setEditPicture} />
+                </div>
+            )
+            }
+
             <h1 className="text-lg text-primary font-bold mb-2">Edit Profile</h1>
 
             <div className="flex flex-row px-6 py-6 bg-container-fill border-input-stroke border-2 rounded-md">
-                <div className="w-16 h-16 rounded-full bg-[#2d2845] flex items-center justify-center text-2xl font-semibold text-[#b8b0ff] shrink-0">
+                <div
+                    onClick={handlePicture}
+                    className="w-16 h-16 cursor-pointer rounded-full bg-[#2d2845] flex items-center justify-center text-2xl font-semibold text-[#b8b0ff] shrink-0"
+                >
                     {user.username[0]}
                 </div>
                 <input
