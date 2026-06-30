@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MOCK_USER } from "../../data/mockUser";
+import { useAuth } from "../../context/auth/useAuth.js";
 import DeleteAccountModal from "../../components/auth/DeleteAccountModal";
 import EditPictureModal from "../../components/auth/EditPictureModal.jsx";
 
 export default function EditProfilePage() {
-    const user = MOCK_USER;
+    const user = useAuth();
     const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [bio, setBio] = useState("");

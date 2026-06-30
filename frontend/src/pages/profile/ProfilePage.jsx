@@ -1,8 +1,9 @@
 import { BOOKS, STATUS_LABELS, STATUS_COLORS } from "../../data/mockBook";
-import { MOCK_USER, LIBRARY, FAVOURITES_IDS } from "../../data/mockUser";
+import { LIBRARY, FAVOURITES_IDS } from "../../data/mockUser";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LogoutModal from "../../components/auth/LogoutModal";
+import { useAuth } from "../../context/auth/useAuth";
 
 function StatCard({ value, label }) {
   return (
@@ -42,7 +43,7 @@ function StatusItem({ colors, count, s }) {
 export function ProfilePage() {
   const [showLogout, setShowLogout] = useState(false);
   const navigate = useNavigate();
-  const user = MOCK_USER;
+  const { user } = useAuth();
 
   function openModal() {
     setShowLogout(true);
@@ -91,7 +92,7 @@ export function ProfilePage() {
 
       <div className="mb-8">
         <button
-          onClick={() => {navigate("edit")}}
+          onClick={() => { navigate("edit") }}
           className="text-sm text-primary bg-edit-profile py-3 px-8 rounded-full mr-6 mb-2 transition-colors hover:bg-edit-profile-hover"
         >
           Edit Profile
