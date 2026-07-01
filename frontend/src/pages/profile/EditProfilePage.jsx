@@ -5,7 +5,7 @@ import DeleteAccountModal from "../../components/auth/DeleteAccountModal";
 import EditPictureModal from "../../components/auth/EditPictureModal.jsx";
 
 export default function EditProfilePage() {
-    const user = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [bio, setBio] = useState("");
@@ -76,11 +76,11 @@ export default function EditProfilePage() {
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     type="text"
-                    placeholder={user.bio}
+                    placeholder={user.bio ? user.bio : ""}
                     maxLength={150}
                     className="bg-transparent resize-none text-sm border-secondary border-2 focus:ring-0 focus:outline-none rounded-md w-2/3 h-2/3 p-4"
                 />
-                <p className="text-xs w-1/5">{`${bio.length ? bio.length : user.bio.length} / 150`}</p>
+                <p className="text-xs w-1/5">{`${bio.length ? bio.length : (user.bio ? user.bio.length : 0)} / 150`}</p>
             </div>
 
             <div>

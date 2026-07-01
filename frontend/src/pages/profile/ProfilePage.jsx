@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LogoutModal from "../../components/auth/LogoutModal";
 import { useAuth } from "../../context/auth/useAuth";
+import { format } from "date-fns";
 
 function StatCard({ value, label }) {
   return (
@@ -84,9 +85,9 @@ export function ProfilePage() {
             />
           </div>
           <p className="text-xs text-caption mt-1">
-            {user.email} · joined {user.created_at}
+            {user.email} · joined {format(new Date(user.created_at), "MMMM dd, yyyy")}
           </p>
-          <p className="text-xs text-bio mt-2">{user.bio ? user.bio : "No bio yet!"}</p>
+          <p className="text-xs text-bio mt-2">{user.bio}</p>
         </div>
       </div>
 
