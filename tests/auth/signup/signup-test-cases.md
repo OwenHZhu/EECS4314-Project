@@ -46,7 +46,7 @@ Result:
 
 ```text
 2 test files passed
-10 frontend tests passed
+12 frontend tests passed
 ```
 
 ## Test Cases
@@ -68,7 +68,8 @@ Result:
 | SIGNUP-013 | Register function called correctly | Frontend component                       | Submit valid signup form.                              | `register` is called with username, email, and password.                                                |
 | SIGNUP-014 | Redirect after signup              | Frontend routing                         | Complete valid signup from frontend component test.    | User is redirected to `/profile`.                                                                       |
 | SIGNUP-015 | Signup form renders                | Frontend component                       | Render signup page.                                    | Username, email, password fields, and Sign up button are visible.                                       |
-
+| SIGNUP-016 | Invalid username format | Frontend validation | Enter a username that does not meet username rules and submit. | Error appears: `Username should be 5 to 12 characters long.` |
+| SIGNUP-017 | Invalid password format | Frontend validation | Enter a password that does not meet password rules and submit. | Password validation errors appear for length, uppercase letter, number, and special character. |
 ## Test Execution Results
 
 | ID         | Actual Result                                           | Status | Notes                                                                      |
@@ -88,7 +89,8 @@ Result:
 | SIGNUP-013 | Automated frontend test passed.                         | Pass   | Covered by RegisterPage success test.                                      |
 | SIGNUP-014 | Automated frontend test passed.                         | Pass   | Covered by RegisterPage redirect test.                                     |
 | SIGNUP-015 | Automated frontend test passed.                         | Pass   | Covered by RegisterPage render test.                                       |
-
+| SIGNUP-016 | Automated frontend test passed. | Pass | Covered by RegisterPage invalid username format test. |
+| SIGNUP-017 | Automated frontend test passed. | Pass | Covered by RegisterPage invalid password format test. |
 ## Notes
 
 Frontend component tests are stored in `frontend/src/test` because Vitest resolves React component imports more reliably from inside the frontend project. Backend automated tests and markdown test documentation are stored under the root `tests/auth` folder.

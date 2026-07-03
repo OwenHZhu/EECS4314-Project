@@ -1,7 +1,8 @@
 // Mock user state — replace with real auth/API later
 export const MOCK_USER = {
   username: "alexreads",
-  displayName: "Alex M.",
+  email: "alexm@gmail.com",
+  profile_picture: 'random string',
   bio: "Fantasy & sci-fi addict. Always mid-series.",
   booksRead: 42,
   joined: "Jan 2024",

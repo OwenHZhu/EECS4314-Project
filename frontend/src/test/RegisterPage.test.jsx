@@ -22,6 +22,35 @@ describe("RegisterPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+  
+it("shows errors for invalid username format", async () => {
+  const user = userEvent.setup();
+  render(<RegisterPage />);
+
+  await user.type(screen.getByPlaceholderText(/username/i), "abc");
+  await user.type(screen.getByPlaceholderText(/email/i), "testuser1@example.com");
+  await user.type(screen.getByPlaceholderText(/password/i), "Password123!");
+  await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+  expect(screen.getByText("Username should be 5 to 12 characters long.")).toBeInTheDocument();
+  expect(mockRegister).not.toHaveBeenCalled();
+});
+
+it("shows errors for invalid password format", async () => {
+  const user = userEvent.setup();
+  render(<RegisterPage />);
+
+  await user.type(screen.getByPlaceholderText(/username/i), "testuser1");
+  await user.type(screen.getByPlaceholderText(/email/i), "testuser1@example.com");
+  await user.type(screen.getByPlaceholderText(/password/i), "password");
+  await user.click(screen.getByRole("button", { name: /sign up/i }));
+
+  expect(screen.getByText("Password must be at least 12 characters long.")).toBeInTheDocument();
+  expect(screen.getByText("Password needs an uppercase letter.")).toBeInTheDocument();
+  expect(screen.getByText("Password needs a number.")).toBeInTheDocument();
+  expect(screen.getByText("Password needs a special character.")).toBeInTheDocument();
+  expect(mockRegister).not.toHaveBeenCalled();
+});
 
   it("renders username, email, and password fields", () => {
     render(<RegisterPage />);
