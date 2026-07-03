@@ -4,7 +4,7 @@ import { AuthContext } from "./AuthContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 export default function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useLocalStorage("user", null);
     const [token, setToken] = useLocalStorage("token", null);
     const [redirectMessage, setRedirectMessage] = useState(null);
 
@@ -25,7 +25,7 @@ export default function AuthProvider({ children }) {
 
             return { success: false, message };
         }
-    }, [setToken, API_BASE_URL]);
+    }, [setToken, setUser, API_BASE_URL]);
 
     const register = useCallback(async (username, email, password) => {
         try {
@@ -42,7 +42,7 @@ export default function AuthProvider({ children }) {
             return { success: false, message };
         }
 
-    }, [setToken, API_BASE_URL]);
+    }, [setToken, setUser, API_BASE_URL]);
 
     const logout = useCallback(async () => {
         try {
@@ -54,7 +54,7 @@ export default function AuthProvider({ children }) {
 
         setToken(null);
         setUser(null);
-    }, [token, setToken, API_BASE_URL]);
+    }, [token, setToken, setUser, API_BASE_URL]);
 
     useEffect(() => {
         if (token) {
@@ -73,7 +73,6 @@ export default function AuthProvider({ children }) {
 
             try {
                 const res = await axios.get(API_BASE_URL + "auth/me");
-                console.log(res);
                 setUser(res.data.data);
             } catch (err) {
                 console.log(err);
@@ -83,7 +82,7 @@ export default function AuthProvider({ children }) {
         }
 
         restoreSession();
-    }, [token, setToken, API_BASE_URL]);
+    }, [token, setToken, setUser, API_BASE_URL]);
 
     return (
         <AuthContext.Provider

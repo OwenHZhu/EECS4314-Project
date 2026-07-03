@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/auth/useAuth";
+import { useAuth } from "../../context/auth/useAuth";
 
 export default function RedirectWithMessage({ message }) {
     const { setRedirectMessage } = useAuth();
