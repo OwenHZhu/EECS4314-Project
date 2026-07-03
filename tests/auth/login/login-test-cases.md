@@ -24,7 +24,7 @@ POST `/api/v1/auth/login`
 Command used:
 
 ```powershell
-python -m pytest ..\tests\auth\backend -v
+python -m pytest .\backend\tests\ -v
 ```
 
 Result:
@@ -88,4 +88,4 @@ Result:
 
 ## Notes
 
-Frontend component tests are stored in `frontend/src/test` because Vitest resolves React component imports more reliably from inside the frontend project. Backend automated tests and markdown test documentation are stored under the root `tests/auth` folder.
+Frontend component tests are stored in `frontend/src/test` because Vitest resolves React component imports more reliably from inside the frontend project. Backend automated tests are stored in `backend/tests/auth`. Markdown test documentation is stored under the root in the `src/tests/auth` folder.
