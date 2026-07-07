@@ -13,6 +13,7 @@
  * - validateEmail: Utility function for email format validation.
  * - useAuth: Provides login(), redirectMessage, and setRedirectMessage().
  * - GenericButton: Reusable button component.
+ * - GenericInput: Reusable input component.
  *
  * State:
  * - email: User's email input
@@ -30,6 +31,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/validation";
 import { useAuth } from "../../context/auth/useAuth";
 import GenericButton from "../../components/generic/GenericButton";
+import GenericInput from "../../components/generic/GenericInput";
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -144,21 +146,23 @@ export default function LoginPage() {
                     }}
                 >
                     {/* Email input */}
-                    <input
+                    <GenericInput
                         type="email"
                         placeholder="Email"
+                        variant="auth"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className=" p-2 sm:p-3 rounded-lg mb-3 bg-input-bg text-input placeholder-input-placeholder focus:ring-2 focus:ring-input-border focus:outline-none text-sm sm:text-base"
+                        className="p-2 sm:p-3 mb-3"
                     />
 
                     {/* Password input */}
-                    <input
+                    <GenericInput
                         type="password"
                         placeholder="Password"
+                        variant="auth"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="p-2 sm:p-3 mb-4 rounded-lg bg-input-bg text-input placeholder-input-placeholder focus:ring-2 focus:ring-input-border focus:outline-none text-sm sm:text-base"
+                        className="p-2 sm:p-3 mb-3"
                     />
 
                     {/* Error messages and redirect messages */}

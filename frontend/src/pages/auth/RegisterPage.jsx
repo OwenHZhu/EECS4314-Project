@@ -13,6 +13,7 @@
  * - validateEmail, validatePassword, validateUsername: Utility functions for input validation.
  * - useAuth: Provides register() for creating new accounts.
  * - GenericButton: Reusable button component.
+ * - GenericInput: Reusable input component.
  *
  * State:
  * - username: User's chosen username
@@ -32,6 +33,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { validateEmail, validatePassword, validateUsername } from "../../utils/validation";
 import { useAuth } from "../../context/auth/useAuth";
 import GenericButton from "../../components/generic/GenericButton";
+import GenericInput from "../../components/generic/GenericInput";
 
 export default function RegisterPage() {
     const navigate = useNavigate();
@@ -159,30 +161,33 @@ export default function RegisterPage() {
                     }}
                 >
                     {/* Username input */}
-                    <input
+                    <GenericInput
                         type="text"
                         placeholder="Username"
+                        variant="auth"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="p-2 sm:p-3 rounded-lg mb-3 bg-input-bg text-tertiary placeholder-input-placeholder focus:ring-2 focus:ring-input-border focus:outline-none text-sm sm:text-base"
+                        className="p-2 sm:p-3 mb-3"
                     />
 
                     {/* Email input */}
-                    <input
+                    <GenericInput
                         type="email"
                         placeholder="Email"
+                        variant="auth"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="p-2 sm:p-3 rounded-lg mb-3 bg-input-bg text-tertiary placeholder-input-placeholder focus:ring-2 focus:ring-input-border focus:outline-none text-sm sm:text-base"
+                        className="p-2 sm:p-3 mb-3"
                     />
 
                     {/* Password input */}
-                    <input
+                    <GenericInput
                         type="password"
                         placeholder="Password"
+                        variant="auth"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="p-2 sm:p-3 mb-4 rounded-lg bg-input-bg text-tertiary placeholder-input-placeholder focus:ring-2 focus:ring-input-border focus:outline-none text-sm sm:text-base"
+                        className="p-2 sm:p-3 mb-3"
                     />
 
                     {/* Error messages */}
