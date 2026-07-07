@@ -1,16 +1,57 @@
+/**
+ * ./pages/SearchPage.jsx
+ *
+ * A dedicated search interface for exploring the book catalog. This page
+ * provides:
+ *
+ * 1. **Search functionality**
+ *    - Users can search by title, author, or genre.
+ *    - Search input updates `query` state.
+ *    - Results are fetched via `useBookSearch`, which performs debounced,
+ *      client-side filtering.
+ *
+ * 2. **Genre filtering**
+ *    - Uses `GENRES` and `GENRE_LABELS` to render selectable genre chips.
+ *    - Clicking a chip updates the `genre` state.
+ *    - Search results update automatically based on both query + genre.
+ *
+ * 3. **Result display**
+ *    - Shows a loading indicator while search is processing.
+ *    - Displays the number of results or a “no results” message.
+ *    - Renders results using the `BookCard` component in a responsive grid.
+ *
+ * Dependencies:
+ * - `useBookSearch`: Custom hook for debounced search + filtering.
+ * - `BookCard`: Component for rendering individual book tiles.
+ * - `GENRES`, `GENRE_LABELS`: Mock data for genre filtering UI.
+ *
+ * State:
+ * - `query`: The current search text.
+ * - `genre`: The selected genre filter.
+ *
+ * Behaviour:
+ * - No navigation or backend calls.
+ */
+
 import { useState } from "react";
 import { useBookSearch } from "../hooks/useBookSearch";
 import { BookCard } from "../components/BookCard";
 import { GENRES, GENRE_LABELS } from "../data/mockBook";
 
 export function SearchPage() {
+  // Search text input
   const [query, setQuery] = useState("");
+
+  // Selected genre filter ("all" by default)
   const [genre, setGenre] = useState("all");
+
+  // Debounced search results and loading state
   const { results, loading } = useBookSearch(query, genre);
 
   return (
     <div className="min-h-screen bg-[#0f0f0f]">
       <div className="max-w-4xl mx-auto px-6 py-10">
+
         {/* Header */}
         <header className="border-b border-[#222] pb-6 mb-6">
           <p className="text-[10px] tracking-[0.15em] uppercase text-[#444] mb-1">
@@ -23,6 +64,7 @@ export function SearchPage() {
 
         {/* Search bar */}
         <div className="relative mb-4">
+          {/* Search icon */}
           <svg
             className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#444] pointer-events-none"
             width="16"
@@ -37,6 +79,8 @@ export function SearchPage() {
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
+
+          {/* Search input */}
           <input
             type="text"
             value={query}
@@ -63,7 +107,7 @@ export function SearchPage() {
           ))}
         </div>
 
-        {/* Status */}
+        {/* Status message */}
         <p className="text-xs text-[#444] mb-5">
           {loading
             ? "Searching…"
@@ -72,7 +116,7 @@ export function SearchPage() {
               : `Showing all ${results.length} books`}
         </p>
 
-        {/* Grid */}
+        {/* Results grid or empty state */}
         {results.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-[#333] text-sm">No books found for "{query}"</p>

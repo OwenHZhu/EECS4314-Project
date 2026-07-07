@@ -1,30 +1,77 @@
+/**
+ * ./pages/DiscoverPage.jsx
+ *
+ * The main book discovery screen. Allows users to:
+ *
+ * 1. **Search the catalog**
+ *    - Text search across title, author, and genre.
+ *    - Debounced search handled by `useBookSearch`.
+ *
+ * 2. **Filter by genre**
+ *    - Uses GENRES and GENRE_LABELS to render filter buttons.
+ *    - Selecting a genre updates the search results instantly.
+ *
+ * 3. **Browse results**
+ *    - Displays a responsive grid of BookCard components.
+ *    - Shows a loading indicator while search is processing.
+ *    - Shows a “no results” message when nothing matches.
+ *
+ * Dependencies:
+ * - `useBookSearch`: Custom hook providing debounced search and filtering.
+ * - `BookCard`: Component for rendering individual book tiles.
+ * - `GENRES`, `GENRE_LABELS`: Mock data for genre filtering UI.
+ *
+ * State:
+ * - `query`: The current search text.
+ * - `genre`: The selected genre filter.
+ *
+ * Behaviour:
+ * - Typing in the search bar updates `query`.
+ * - Clicking a genre button updates `genre`.
+ * - Search results update automatically based on both values.
+ * - Loading state is shown while the debounced search runs.
+ *
+ * Notes:
+ * - No backend calls — all search/filtering is client-side.
+ */
+
 import { useState } from "react";
 import { useBookSearch } from "../hooks/useBookSearch";
 import { BookCard } from "../components/BookCard";
 import { GENRES, GENRE_LABELS } from "../data/mockBook";
 
 export function DiscoverPage() {
+  // Search text input
   const [query, setQuery] = useState("");
+
+  // Selected genre filter ("all" by default)
   const [genre, setGenre] = useState("all");
+
+  // Debounced search results + loading state
   const { results, loading } = useBookSearch(query, genre);
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
+
+      {/* Header / Hero section */}
       <div className="mb-12">
         <p className="text-[11px] tracking-[0.2em] uppercase text-[#444] mb-3">
           Book Atlas
         </p>
+
         <h1 className="text-[56px] font-semibold leading-[1.05] tracking-tight text-[#f0f0f0] mb-4">
           Map your
           <br />
           <span className="text-[#7c6af7]">reading world.</span>
         </h1>
+
         <p className="text-[15px] text-[#555] max-w-md leading-relaxed">
           Track every book you've read, are reading, or dream of reading.
           Discuss, rate, and build your library — all in one place.
         </p>
       </div>
 
+      {/* Stats section */}
       <div className="flex gap-6 mb-10 pb-10 border-b border-[#1a1a1a]">
         {[
           { label: "Books in catalog", value: "12" },
@@ -41,7 +88,9 @@ export function DiscoverPage() {
         ))}
       </div>
 
+      {/* Search bar */}
       <div className="relative mb-4">
+        {/* Search icon */}
         <svg
           className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#444] pointer-events-none"
           width="15"
@@ -56,6 +105,8 @@ export function DiscoverPage() {
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />
         </svg>
+
+        {/* Search input */}
         <input
           type="text"
           value={query}
@@ -65,6 +116,7 @@ export function DiscoverPage() {
         />
       </div>
 
+      {/* Genre filter buttons */}
       <div className="flex gap-2 flex-wrap mb-6">
         {GENRES.map((g) => (
           <button
@@ -81,6 +133,7 @@ export function DiscoverPage() {
         ))}
       </div>
 
+      {/* Search result summary */}
       <p className="text-[11px] text-[#333] mb-5">
         {loading
           ? "Searching…"
@@ -89,11 +142,13 @@ export function DiscoverPage() {
             : `Showing all ${results.length} books`}
       </p>
 
+      {/* No results message */}
       {results.length === 0 ? (
         <div className="text-center py-20 text-[#333] text-sm">
           No books found for "{query}"
         </div>
       ) : (
+        /* Results grid */
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {results.map((book) => (
             <BookCard key={book.id} book={book} />
