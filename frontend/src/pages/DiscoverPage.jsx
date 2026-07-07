@@ -52,7 +52,7 @@ export function DiscoverPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
-
+      <title>Discover Books | BookAtlas</title>
       {/* Header / Hero section */}
       <div className="mb-12">
         <p className="text-[11px] tracking-[0.2em] uppercase text-[#444] mb-3">

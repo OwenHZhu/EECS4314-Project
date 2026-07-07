@@ -50,6 +50,7 @@ export function SearchPage() {
 
   return (
     <div className="min-h-screen bg-[#0f0f0f]">
+      <title>Search Books | BookAtlas</title>
       <div className="max-w-4xl mx-auto px-6 py-10">
 
         {/* Header */}

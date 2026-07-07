@@ -40,6 +40,7 @@ export function FavouritesPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
+      <title>My Favourites | BookAtlas</title>
 
       {/* Header section */}
       <div className="mb-10">

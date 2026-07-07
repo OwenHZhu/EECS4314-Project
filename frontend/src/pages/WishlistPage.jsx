@@ -35,7 +35,7 @@ export function WishlistPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
-
+      <title>My Wishlist | BookAtlas</title>
       {/* Header section */}
       <div className="mb-10">
         <p className="text-[11px] tracking-[0.2em] uppercase text-[#444] mb-2">

@@ -116,6 +116,7 @@ export default function RegisterPage() {
 
     return (
         <div className="flex flex-col md:flex-row md:items-center md:justify-center min-h-screen pb-10 bg-background">
+            <title>Register | BookAtlas</title>
             {/* Left marketing section */}
             <section className="pt-8 pl-8 pr-8 pb-3 md:p-10 text-left">
                 <h1 className="font-bold text-primary mb-10 mt-5 text-xl sm:text-2xl md:text-3xl block md:hidden">

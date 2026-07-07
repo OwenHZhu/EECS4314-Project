@@ -125,6 +125,7 @@ export function ProfilePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
+      <title>{`${user.username} | BookAtlas`}</title>
 
       {/* Logout confirmation modal */}
       {showLogout && (

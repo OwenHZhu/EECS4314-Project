@@ -99,6 +99,7 @@ export default function LoginPage() {
 
     return (
         <div className="flex flex-col md:flex-row md:items-center md:justify-center min-h-screen pb-10">
+            <title>Login | BookAtlas</title>
 
             {/* Left marketing section */}
             <section className="pt-8 pl-8 pr-8 pb-3 md:p-10 text-left">

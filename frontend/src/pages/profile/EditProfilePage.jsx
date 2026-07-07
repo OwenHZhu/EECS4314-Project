@@ -105,6 +105,7 @@ export default function EditProfilePage() {
 
     return (
         <div className="max-w-6xl mx-auto px-8 py-8 md:px-16 md:py-16">
+            <title>{`${user.username} | BookAtlas`}</title>
 
             {/* Delete confirmation modal */}
             {showDelete && (
