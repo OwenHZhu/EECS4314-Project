@@ -1,5 +1,5 @@
 /**
- * Mock Book Data & Label Maps
+ * ./data/mockBook.js
  *
  * This file provides mock data used throughout the frontend before full
  * backend integration. It includes:

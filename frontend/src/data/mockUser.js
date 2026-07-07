@@ -1,5 +1,5 @@
 /**
- * Mock User & Library Data
+ * ./data/mockUser.js
  *
  * This file provides mock data used throughout the frontend before backend
  * services are fully implemented. It includes:
