@@ -12,6 +12,7 @@
  * - useNavigate (react-router-dom): Redirects the user after successful registration.
  * - validateEmail, validatePassword, validateUsername: Utility functions for input validation.
  * - useAuth: Provides register() for creating new accounts.
+ * - GenericButton: Reusable button component.
  *
  * State:
  * - username: User's chosen username
@@ -30,6 +31,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail, validatePassword, validateUsername } from "../../utils/validation";
 import { useAuth } from "../../context/auth/useAuth";
+import GenericButton from "../../components/generic/GenericButton";
 
 export default function RegisterPage() {
     const navigate = useNavigate();
@@ -180,12 +182,12 @@ export default function RegisterPage() {
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="p-2 sm:p-3 rounded-lg bg-input-bg text-tertiary placeholder-input-placeholder focus:ring-2 focus:ring-input-border focus:outline-none text-sm sm:text-base"
+                        className="p-2 sm:p-3 mb-4 rounded-lg bg-input-bg text-tertiary placeholder-input-placeholder focus:ring-2 focus:ring-input-border focus:outline-none text-sm sm:text-base"
                     />
 
                     {/* Error messages */}
                     {errors.length > 0 && (
-                        <div className="bg-error-bg text-error-text p-3 rounded-lg mb-4 mt-4 text-sm">
+                        <div className="bg-error-bg text-error-text p-3 rounded-lg mb-4 text-sm">
                             <ul className="list-disc list-inside space-y-1">
                                 {errors.map((err, idx) => (
                                     <li key={idx}>{err}</li>
@@ -196,12 +198,13 @@ export default function RegisterPage() {
 
                     {/* Submit and links to login */}
                     <div className="flex flex-col mt-2 items-center">
-                        <button
+                        <GenericButton
                             type="submit"
-                            className="w-full rounded-full bg-login-button text-primary hover:bg-login-hover transition-colors p-2 sm:p-3 text-sm sm:text-base"
+                            variant="primary"
+                            className="w-full p-2 sm:p-3 text-sm sm:text-base"
                         >
                             Sign up
-                        </button>
+                        </GenericButton>
 
                         <p className="text-primary mt-2 text-xs sm:text-sm">
                             Already have an account? <Link to="/login" className="font-bold cursor-pointer">Login</Link>

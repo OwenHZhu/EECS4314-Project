@@ -22,6 +22,7 @@
  * - `useNavigate`: Handles navigation after delete/cancel actions.
  * - `EditPictureModal`: Modal for updating the profile picture.
  * - `GenericModal`: Reusable confirmation modal.
+ * - `GenericButton`: Reusable button component.
  *
  * State:
  * - `username`: Controlled input for the new username.
@@ -44,7 +45,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth/useAuth.js";
 import EditPictureModal from "../../components/auth/EditPictureModal.jsx";
-import GenericModal from "../../components/GenericModal.jsx";
+import GenericModal from "../../components/generic/GenericModal.jsx";
+import GenericButton from "../../components/generic/GenericButton.jsx";
 
 export default function EditProfilePage() {
     const { user } = useAuth();
@@ -171,25 +173,28 @@ export default function EditProfilePage() {
 
             {/* Action buttons */}
             <div>
-                <button
-                    className="text-xs md:text-sm text-primary bg-edit-profile py-3 px-6 md:px-8 rounded-full mr-4 md:mr-6 mb-2 transition-colors hover:bg-edit-profile-hover"
+                <GenericButton
+                    variant="primary"
+                    className="py-3 px-6 md:px-8 mr-4 md:mr-6 mb-2"
                 >
                     Save
-                </button>
+                </GenericButton>
 
-                <button
+                <GenericButton
                     onClick={openDeleteModal}
-                    className="text-xs md:text-sm text-primary bg-view-posts py-3 px-6 md:px-8 rounded-full transition-colors hover:bg-view-posts-hover"
+                    variant="secondary"
+                    className="py-3 px-6 md:px-8 mr-4 md:mr-6 mb-2"
                 >
                     Delete
-                </button>
+                </GenericButton>
 
-                <button
+                <GenericButton
                     onClick={handleCancel}
-                    className="py-3 px-6 md:px-8 text-xs md:text-sm rounded-full ml-4 md:ml-6 my-2 border-cancel-stroke border-2 hover:border-tertiary transition-colors"
+                    variant="ghost"
+                    className="py-3 px-6 md:px-8 mr-4 md:mr-6 mb-2"
                 >
                     Cancel
-                </button>
+                </GenericButton>
             </div>
         </div>
     );

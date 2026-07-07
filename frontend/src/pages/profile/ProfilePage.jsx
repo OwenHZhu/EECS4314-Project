@@ -15,6 +15,7 @@
  * - useNavigate: Redirects user after logout or when editing profile.
  * - date-fns/format: Formats the user's join date.
  * - GenericModal: Reusable confirmation modal for logout.
+ * - GenericButton: Reusable button.
  *
  * Behaviour:
  * - Clicking the logout icon opens a confirmation modal.
@@ -29,8 +30,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth/useAuth";
 import { format } from "date-fns";
-
-import GenericModal from "../../components/GenericModal";
+import GenericModal from "../../components/generic/GenericModal";
+import GenericButton from "../../components/generic/GenericButton";
 
 /**
  * StatCard
@@ -130,9 +131,9 @@ export function ProfilePage() {
       {/* Logout confirmation modal */}
       {showLogout && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <GenericModal 
-            title="Logout?" 
-            cancelLabel="Cancel" 
+          <GenericModal
+            title="Logout?"
+            cancelLabel="Cancel"
             confirmLabel="Logout"
             onConfirm={handleLogout}
             onCancel={closeModal}
@@ -171,16 +172,20 @@ export function ProfilePage() {
 
       {/* Profile actions */}
       <div className="mb-6 md:mb-8">
-        <button
+        <GenericButton
           onClick={() => navigate("edit")}
-          className="text-xs md:text-sm text-primary bg-edit-profile py-3 px-8 rounded-full mr-6 mb-2 transition-colors hover:bg-edit-profile-hover"
+          variant="primary"
+          className="py-3 px-8 mr-6 mb-2"
         >
           Edit Profile
-        </button>
+        </GenericButton>
 
-        <button className="text-xs md:text-sm text-primary bg-view-posts py-3 px-8 rounded-full transition-colors hover:bg-view-posts-hover">
+        <GenericButton
+          variant="secondary"
+          className="py-3 px-8 mr-6 mb-2"
+        >
           View Posts
-        </button>
+        </GenericButton>
       </div>
 
       {/* Stats grid */}

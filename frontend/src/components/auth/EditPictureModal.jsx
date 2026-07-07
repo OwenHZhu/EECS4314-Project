@@ -9,10 +9,14 @@
  *
  * The modal's visibility is controlled externally through the
  * `setEditPicture` state setter passed in as a prop.
+ * 
+ * Dependencies: 
+ * - GenericButton: Reusable button component used for the modal's actions.
  *
  * Props:
  * @param {Function} setEditPicture - Setter used to toggle the modal's visibility.
  */
+import GenericButton from "../generic/GenericButton";
 
 export default function EditPictureModal({ setEditPicture }) {
     /**
@@ -27,25 +31,31 @@ export default function EditPictureModal({ setEditPicture }) {
             <h1 className="text-lg text-primary mb-3">Change Profile Photo</h1>
 
             {/* TODO: Connect this to a file upload handler */}
-            <button
-                className="text-sm text-tertiary py-3 px-8 mx-3 my-2 border-b-2 hover:text-primary border-background"
+            <GenericButton
+                variant="ghost"
+                size="md"
+                className="py-2 md:py-3 px-6 md:px-8 rounded-full"
             >
                 Upload Photo
-            </button>
+            </GenericButton>
 
             {/* TODO: Connect this to a remove photo backend handler */}
-            <button
-                className="text-sm text-tertiary py-3 px-8 mx-3 my-2 border-b-2 hover:text-primary border-background"
+            <GenericButton
+                variant="ghost"
+                size="md"
+                className="py-2 my-2 md:py-3 px-6 md:px-8 rounded-full"
             >
-                Remove Current Photo
-            </button>
+                Remove Photo
+            </GenericButton>
 
-            <button
+            <GenericButton
                 onClick={closeModal}
-                className="text-sm text-tertiary py-3 px-8 mx-3 my-2 hover:text-primary"
+                variant="ghost"
+                size="md"
+                className="py-2 md:py-3 px-6 md:px-8 rounded-full"
             >
                 Cancel
-            </button>
+            </GenericButton>
         </div>
     );
 }

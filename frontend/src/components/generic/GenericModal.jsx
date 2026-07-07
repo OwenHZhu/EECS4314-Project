@@ -1,5 +1,5 @@
 /**
- * ./components/auth/GenericModal.jsx
+ * ./components/generic/GenericModal.jsx
  *
  * A reusable modal component that displays a title and two action buttons:
  * a confirm button and a cancel button. This component is intended for
@@ -7,8 +7,8 @@
  * a change, etc.).
  *
  * Dependencies:
+ * - GenericButton: Reusable button component used for the confirm and cancel actions.
  * - TailwindCSS utility classes for layout, spacing, and color styling.
- *   No external libraries are used beyond React itself.
  *
  * Props:
  * @param {string} title - The heading text displayed at the top of the modal.
@@ -23,25 +23,37 @@
  * - The modal does not include backdrop or focus trapping; these should be
  *   implemented at a higher level if needed.
  */
+import GenericButton from "./GenericButton";
 
-export default function GenericModal({ title, confirmLabel, cancelLabel, onConfirm, onCancel }) {
-
+export default function GenericModal({
+    title,
+    confirmLabel,
+    cancelLabel,
+    onConfirm,
+    onCancel,
+}) {
     return (
-        <div className="flex flex-col font-bold items-center bg-card-fill border-card-stroke rounded-md border-2 p-4 max-w-fit">
-            <h1 className="text-sm md:text-lg text-primary mb-3">{title}</h1>
-            <div className="flex flex-row">
-                <button
+        <div className="flex flex-col items-center bg-card-fill border-card-stroke border p-4 md:p-6 max-w-fit font-medium rounded-lg">
+            <h1 className="text-sm md:text-lg text-primary mb-4 tracking-wide">
+                {title}
+            </h1>
+
+            <div className="flex flex-row gap-3 md:gap-4">
+                <GenericButton
                     onClick={onConfirm}
-                    className="bg-secondary text-xs md:text-sm py-3 px-8 rounded-full mx-3 my-2 hover:bg-logout-hover transition-colors"
+                    variant="primary"
+                    className="py-2 md:py-3 px-6 md:px-8"
                 >
                     {confirmLabel}
-                </button>
-                <button
+                </GenericButton>
+
+                <GenericButton
                     onClick={onCancel}
-                    className="py-3 px-8 text-xs md:text-sm rounded-full mx-3 my-2 border-cancel-stroke border-2 hover:border-tertiary transition-colors"
+                    variant="ghost"
+                    className="py-2 md:py-3 px-6 md:px-8"
                 >
                     {cancelLabel}
-                </button>
+                </GenericButton>
             </div>
         </div>
     );

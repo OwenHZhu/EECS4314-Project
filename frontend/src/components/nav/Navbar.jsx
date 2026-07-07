@@ -51,7 +51,7 @@ export function Navbar() {
   const { isAuthenticated, user } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-50 bg-nav-bar-bg backdrop-blur-md border-b border-nav-bar-border">
+    <nav className="sticky top-0 z-50 bg-nav-bar-bg backdrop-brightness-0 border-b border-nav-bar-border">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-6">
 
         {/* Brand */}
