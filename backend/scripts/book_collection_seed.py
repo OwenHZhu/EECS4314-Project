@@ -268,6 +268,5 @@ def seed():
 
     print(f"\nDone. Total books seeded to Supabase: {total_inserted:,}")
 
-
 if __name__ == "__main__":
     seed()

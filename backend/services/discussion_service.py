@@ -6,12 +6,8 @@ from typing import Any, cast
 from database.db import supabase
 from schemas.discussion_forum import ThreadPost, ThreadReply
 
-
-
-
 DISCUSSION_THREADS_TABLE = "discussion_threads"
 DISCUSSION_REPLIES_TABLE = "discussion_replies"
-
 
 def parse_datetime(value: Any) -> datetime:
 	if isinstance(value, datetime):

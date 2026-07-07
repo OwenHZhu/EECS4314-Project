@@ -19,7 +19,7 @@ How it works:
 
 Usage:
     Run from the backend root directory:
-        python -m utils.book_description_enrichment
+        python -m scripts.book_description_enrichment
 
     To resume from a specific offset (after a quota hit):
         Update start_offset in the __main__ block at the bottom of the file
@@ -50,10 +50,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes"
-API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY")
+API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY2")
 
-START_OFFSET = 3004
-
+START_OFFSET = 21072
 
 def fetch_description_google(title: str, author: str) -> str | None | bool:
     """

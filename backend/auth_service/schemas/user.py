@@ -1,19 +1,24 @@
 """
 schemas/user.py
 
-Pydantic schemas for the User data model in BookAtlas.
+Pydantic schemas for the User data model in the BookAtlas Auth Service.
 
 Schema hierarchy:
-    UserBase      → shared fields (username, email) used across multiple schemas
-    UserRegister  → extends UserBase with password + validation rules for registration
-    UserLogin     → standalone schema for login requests (email + password only)
-    UserAccount   → public-facing user profile returned to the frontend after
-                    login, registration, or fetching /auth/me
+    UserBase          → shared fields (username, email) used across multiple schemas
+    UserRegister       → extends UserBase with password + validation rules for registration
+    UserLogin          → standalone schema for login requests (email + password only)
+    UserAccount        → public-facing user profile returned to the frontend after
+                         login, registration, or fetching /auth/me
+    UserUpdate         → partial profile update schema for PUT /auth/me
+    UserUpdatePassword → password change schema for PUT /auth/me/password
 
 How these schemas are used:
-    POST /auth/register  → accepts UserRegister, returns UserAccount + token
-    POST /auth/login     → accepts UserLogin, returns UserAccount + token
-    GET  /auth/me        → returns UserAccount
+    POST   /auth/register      → accepts UserRegister,       returns UserAccount + token
+    POST   /auth/login         → accepts UserLogin,          returns UserAccount + token
+    GET    /auth/me            → returns UserAccount
+    PUT    /auth/me            → accepts UserUpdate,         returns updated UserAccount
+    PUT    /auth/me/password   → accepts UserUpdatePassword, returns success message
+    DELETE /auth/me            → returns success message
 
 Password rules (enforced by UserRegister.validate_password):
     - Minimum length defined by MIN_PASSWORD_LENGTH in utils/constants.py
@@ -33,9 +38,16 @@ Note:
     password, validates it, and passes it to hash_password() in utils/security.py
     before any database interaction. UserAccount never exposes the hashed password.
 
+    UserUpdatePassword.passwords_must_differ is a model-level validator (not a
+    field validator) because it needs to compare current_password against
+    new_password together — it does NOT re-run the full password strength
+    rules from UserRegister. If new_password also needs to satisfy those
+    rules, validate it in services/auth_service.update_password() before
+    hashing, or add a shared validator function in utils/security.py.
+
 TODO:
-    - UserUpdate schema for PUT /auth/me (username, bio, profile picture)
-    - UserPasswordUpdate schema for PUT /auth/me/password
+    - Email verification flow (pending schema: EmailVerificationRequest)
+    - Password reset flow (pending schemas: PasswordResetRequest, PasswordResetConfirm)
 """
 
 import re
@@ -44,7 +56,8 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict, mo
 from typing import Optional
 from datetime import datetime
 
-from utils.constants import MIN_PASSWORD_LENGTH
+from shared.constants import MIN_PASSWORD_LENGTH
+
 
 class UserBase(BaseModel):
     """
@@ -63,11 +76,11 @@ class UserRegister(UserBase):
     Accepts username, email, and password.
     Password is validated against BookAtlas password rules before the request
     reaches the service layer. The plain-text password is never stored —
-    it is hashed in auth_service.py before insertion into Supabase.
+    it is hashed in services/auth_service.py before insertion into Supabase.
     """
 
     password: str = Field(min_length=6, description="Plain-text password (will be hashed before storage)")
-    
+
     @field_validator("password")
     @classmethod
     def validate_password(cls, v: str) -> str:
@@ -76,7 +89,7 @@ class UserRegister(UserBase):
         Collects all errors and raises them together so the frontend
         can display all issues at once instead of one at a time.
         """
-        
+
         errors = []
 
         # Length check
@@ -120,9 +133,10 @@ class UserAccount(UserBase):
     Public-facing user profile returned to the frontend.
 
     Returned by:
-        - POST /auth/register  (on successful registration)
-        - POST /auth/login     (on successful login)
-        - GET  /auth/me        (to restore session on page load)
+        - POST   /auth/register    (on successful registration)
+        - POST   /auth/login       (on successful login)
+        - GET    /auth/me          (to restore session on page load)
+        - PUT    /auth/me          (after a successful profile update)
 
     Never exposes sensitive fields like hashed_password.
     The id field maps to the UUID primary key in the Supabase users table.
@@ -132,26 +146,55 @@ class UserAccount(UserBase):
     bio: Optional[str] = Field(default="", description="User biography shown on profile", max_length=150)
     profile_picture: Optional[str] = Field(default=None, description="Profile image URL")
     created_at: datetime = Field(description="Account creation timestamp")
-    
+
+
 class AuthResponse(BaseModel):
+    """
+    Shared response envelope returned by every route in the Auth Service.
+
+    token is only ever populated on register and login — all other routes
+    (me, update, delete, logout) return token=None since no new token is
+    issued for those actions.
+    """
+
     success: bool = Field(description="Whether the operation succeeded")
     message: str = Field(description="Human-readable result message")
     token: Optional[str] = Field(default=None, description="JWT token (only on register and login)")
     data: Optional[UserAccount] = Field(default=None, description="Authenticated user profile")
-    
+
+
 class UserUpdate(BaseModel):
+    """
+    Schema for partial profile updates via PUT /auth/me.
+
+    All fields are optional — only the fields the client includes in the
+    request body are updated. extra="forbid" rejects any unexpected fields
+    instead of silently ignoring them, catching frontend/backend drift early.
+    """
+
     model_config = ConfigDict(extra="forbid")
 
     username: Optional[str] = Field(default=None, min_length=5, max_length=12)
     bio: Optional[str] = Field(default=None, max_length=150)
     profile_picture: Optional[str] = Field(default=None)
 
+
 class UserUpdatePassword(BaseModel):
+    """
+    Schema for password changes via PUT /auth/me/password.
+
+    Requires the current plain-text password for verification before the
+    change is allowed (verified in services/auth_service.update_password
+    against the stored hash — this schema does not do that check itself).
+    """
+
     current_password: str
     new_password: str
 
     @model_validator(mode="after")
     def passwords_must_differ(self) -> "UserUpdatePassword":
+        """Rejects the request early if new_password == current_password,
+        before any database round-trip is made."""
         if self.current_password == self.new_password:
             raise ValueError("New password must differ from the current password")
         return self

@@ -1,4 +1,6 @@
 """
+tests/auth/test_auth_api.py
+
 Automated backend tests for BookAtlas authentication routes.
 
 These tests cover:
@@ -12,23 +14,18 @@ in Supabase.
 import sys
 from pathlib import Path
 from datetime import datetime, timezone
-
 import pytest
-from fastapi.testclient import TestClient
 
+from fastapi.testclient import TestClient
+from book_atlas import app 
+import routers.auth as auth_router
 
 # Add backend folder to Python path so imports like "routers.auth" work.
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 BACKEND_DIR = PROJECT_ROOT / "backend"
 sys.path.insert(0, str(BACKEND_DIR))
 
-
-from book_atlas import app  # noqa: E402
-import routers.auth as auth_router  # noqa: E402
-
-
 client = TestClient(app)
-
 
 def fake_user_data():
     return {

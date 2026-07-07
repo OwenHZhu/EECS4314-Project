@@ -28,11 +28,6 @@ Dependencies:
     utils/jwt.py       - create_token, blacklist_token (JWT + Supabase blacklist)
     schemas/user.py    - UserRegister, UserLogin, UserAccount (Pydantic validation)
     database/record.py - UserRecord (TypedDict for Supabase row type safety)
-
-TODO:
-    - update_user    → PUT /auth/me  (username, bio, profile picture)
-    - update_password → PUT /auth/me/password (verify current password first)
-    - delete_user    → DELETE /auth/me (remove account and associated data)
 """
 
 from typing import cast
@@ -41,9 +36,8 @@ from datetime import datetime
 from database.db import supabase
 from utils.security import hash_password, verify_password
 from utils.jwt import create_token, blacklist_token
-from schemas.user import UserRegister, UserLogin, UserAccount
+from schemas.user import UserRegister, UserLogin, UserAccount, UserUpdate
 from utils.record import UserRecord
-
 
 def register_user(user: UserRegister) -> dict:
     """
@@ -99,7 +93,6 @@ def register_user(user: UserRegister) -> dict:
         )
     }
 
-
 def login_user(user: UserLogin) -> dict:
     """
     Authenticate a user with email and password.
@@ -144,6 +137,7 @@ def login_user(user: UserLogin) -> dict:
             created_at=datetime.fromisoformat(db_user["created_at"])
         )
     }
+
 
 def logout_user(token: str) -> dict:
     """
@@ -200,3 +194,119 @@ def get_me(user_id: str) -> dict:
             created_at=datetime.fromisoformat(user["created_at"])
         )
     }
+    
+def update_user(user_id: str, updates: UserUpdate) -> dict:
+    """
+    Update the authenticated user's profile fields.
+ 
+    Only fields explicitly provided in the request body are updated —
+    omitted fields are left unchanged. If a new username is submitted,
+    uniqueness is checked before applying the update.
+ 
+    Args:
+        user_id: UUID of the authenticated user extracted from the JWT payload
+        updates: Validated UserUpdate schema (username, bio, profile_picture —
+                 all optional)
+ 
+    Returns:
+        Success: { success: True, message: str, data: UserAccount }
+        Failure: { success: False, message: str, data: None }
+ 
+    Note:
+        UserUpdate should be defined with model_config = ConfigDict(extra="forbid")
+        and all fields Optional so callers can send partial payloads.
+    """
+ 
+    # Build a dict of only the fields the caller actually provided.
+    payload = updates.model_dump(exclude_unset=True)
+ 
+    if not payload:
+        return {"success": False, "message": "No fields provided to update", "data": None}
+ 
+    if "username" in payload:
+        existing = (supabase.table("users").select("id").eq("username", payload["username"]).neq("id", user_id))
+        
+        if existing.data:
+            return {"success": False, "message": "Username is already taken", "data": None}
+    
+    if "bio" in payload and len(payload["bio"].split()) > 150:
+        return {"success": False, "message": "Bio description must not exceed 150 words", "data": None}
+    
+    res = (supabase.table("users").update(payload).eq("id", user_id).execute())
+ 
+    if not res.data or len(res.data) == 0:
+        return {"success": False, "message": "Failed to update profile", "data": None}
+ 
+    updated_user = cast(list[UserRecord], res.data)[0]
+ 
+    return {
+        "success": True,
+        "message": "Profile updated successfully",
+        "data": UserUpdate(username=updated_user["username"], bio=updated_user.get("bio"), profile_picture=updated_user.get("profile_picture"))
+    }
+    
+def update_password(user_id: str, passwords: UserUpdatePassword) -> dict:
+    """
+    Change the authenticated user's password.
+
+    Verifies the submitted current_password against the stored bcrypt hash
+    before applying any change. The passwords_must_differ validator on
+    UserUpdatePassword ensures new_password != current_password before
+    this function is ever called.
+
+    Args:
+        user_id:   UUID of the authenticated user extracted from the JWT payload
+        passwords: Validated UserUpdatePassword schema (current_password, new_password)
+
+    Returns:
+        Success: { success: True, message: str, data: None }
+        Failure: { success: False, message: str, data: None }
+    """
+    
+    res = supabase.table("users").select("hashed_password").eq("id", user_id).limit(1).execute()
+
+    if not res.data:
+        return {"success": False, "message": "User not found", "data": None}
+
+    if not verify_password(passwords.current_password, res.data[0]["hashed_password"]):
+        return {"success": False, "message": "Current password is incorrect", "data": None}
+
+    update_res = (
+        supabase.table("users")
+        .update({"hashed_password": hash_password(passwords.new_password)})
+        .eq("id", user_id)
+        .execute()
+    )
+
+    if not update_res.data or len(update_res.data) == 0:
+        return {"success": False, "message": "Failed to update password", "data": None}
+
+    return {"success": True, "message": "Password updated successfully", "data": None}
+
+
+def delete_user(user_id: str, token: str) -> dict:
+    """
+    Permanently delete the authenticated user's account and all associated data.
+
+    Blacklists the current JWT token before deletion so the session is
+    immediately invalidated even if the delete fails. Relies on ON DELETE
+    CASCADE constraints in Supabase to remove associated data automatically.
+
+    Args:
+        user_id: UUID of the authenticated user extracted from the JWT payload
+        token:   Raw JWT token string from the Authorization header
+
+    Returns:
+        Success: { success: True, message: str, data: None }
+        Failure: { success: False, message: str, data: None }
+    """
+
+    # Invalidate the session before touching the account
+    blacklist_token(token)
+
+    res = supabase.table("users").delete().eq("id", user_id).execute()
+
+    if not res.data or len(res.data) == 0:
+        return {"success": False, "message": "User not found", "data": None}
+
+    return {"success": True, "message": "Account deleted successfully", "data": None}
