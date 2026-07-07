@@ -8,7 +8,7 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import { Navbar } from "./components/Navbar";
+import { Navbar } from "./components/nav/Navbar";
 import { DiscoverPage } from "./pages/DiscoverPage";
 import { LibraryPage } from "./pages/LibraryPage";
 import { WishlistPage } from "./pages/WishlistPage";
