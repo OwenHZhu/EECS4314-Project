@@ -1,3 +1,28 @@
+/**
+ * ./components/auth/GenericModal.jsx
+ *
+ * A reusable modal component that displays a title and two action buttons:
+ * a confirm button and a cancel button. This component is intended for
+ * general-purpose confirmation flows (e.g., deleting an item, confirming
+ * a change, etc.).
+ *
+ * Dependencies:
+ * - TailwindCSS utility classes for layout, spacing, and color styling.
+ *   No external libraries are used beyond React itself.
+ *
+ * Props:
+ * @param {string} title - The heading text displayed at the top of the modal.
+ * @param {string} confirmLabel - The label shown on the confirm button.
+ * @param {string} cancelLabel - The label shown on the cancel button.
+ * @param {Function} onConfirm - Callback fired when the confirm button is clicked.
+ * @param {Function} onCancel - Callback fired when the cancel button is clicked.
+ *
+ * Usage Notes:
+ * - This modal does not manage its own visibility; parent components must
+ *   conditionally render it.
+ * - The modal does not include backdrop or focus trapping; these should be
+ *   implemented at a higher level if needed.
+ */
 
 export default function GenericModal({ title, confirmLabel, cancelLabel, onConfirm, onCancel }) {
 
