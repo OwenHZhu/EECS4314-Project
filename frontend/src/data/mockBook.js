@@ -1,3 +1,23 @@
+/**
+ * Mock Book Data & Label Maps
+ *
+ * This file provides mock data used throughout the frontend before full
+ * backend integration. It includes:
+ *
+ * - BOOKS: An array of book objects used for rendering book cards, lists,
+ *   and testing UI components.
+ * - GENRES: A list of genre keys used for filters and dropdowns.
+ * - GENRE_LABELS: Human-readable labels for each genre key.
+ * - STATUS_LABELS: Labels for reading status categories.
+ * - STATUS_COLORS: Color presets for status badges (background, text, border).
+ *
+ * Allows the UI to function without backend services and
+ * provide predictable data for development and testing.
+ */
+
+/*
+BOOKS: Mock book objects used for UI rendering
+*/
 export const BOOKS = [
   {
     id: 1,
@@ -109,6 +129,9 @@ export const BOOKS = [
   },
 ];
 
+/*
+GENRES: Genre keys used for filtering and UI controls
+*/
 export const GENRES = [
   "all",
   "fiction",
@@ -118,6 +141,9 @@ export const GENRES = [
   "mystery",
 ];
 
+/*
+GENRE_LABELS: Human-readable labels for genre keys
+*/
 export const GENRE_LABELS = {
   all: "All",
   "sci-fi": "Sci-Fi",
@@ -127,6 +153,9 @@ export const GENRE_LABELS = {
   mystery: "Mystery",
 };
 
+/*
+STATUS_LABELS: Labels for reading status categories
+*/
 export const STATUS_LABELS = {
   reading: "Currently Reading",
   read: "Finished",
@@ -134,6 +163,9 @@ export const STATUS_LABELS = {
   want: "Want to Read",
 };
 
+/*
+STATUS_COLORS: Color presets for status badges
+*/
 export const STATUS_COLORS = {
   reading: { bg: "#1a2e1a", text: "#4ade80", border: "#166534" },
   read: { bg: "#1a1a2e", text: "#818cf8", border: "#3730a3" },
