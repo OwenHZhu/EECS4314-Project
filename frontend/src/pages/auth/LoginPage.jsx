@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { validateEmail } from "../utils/validation";
-import { useAuth } from "../context/auth/useAuth";
+import { validateEmail } from "../../utils/validation";
+import { useAuth } from "../../context/auth/useAuth";
 
 export default function LoginPage() {
     const navigate = useNavigate();

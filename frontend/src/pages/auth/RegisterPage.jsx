@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { validateEmail, validatePassword, validateUsername } from "../utils/validation";
-import { useAuth } from "../context/auth/useAuth";
+import { validateEmail, validatePassword, validateUsername } from "../../utils/validation";
+import { useAuth } from "../../context/auth/useAuth";
 
 export default function RegisterPage() {
     const navigate = useNavigate();
