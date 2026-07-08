@@ -19,6 +19,8 @@ Usage:
     valid  = verify_password("MyPassword123!", hashed)  # on login
 """
 import bcrypt
+import re
+from shared.constants import MIN_PASSWORD_LENGTH
 
 ROUNDS = 12
 
