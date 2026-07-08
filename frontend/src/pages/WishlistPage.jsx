@@ -1,32 +1,64 @@
+/**
+ * ./pages/WishlistPage.jsx
+ *
+ * Displays all books the user has added to their wishlist. This page provides:
+ *
+ * 1. **Wishlist book listing**
+ *    - Uses `WISHLIST_IDS` to look up full book objects from `BOOKS`.
+ *    - Filters out any missing or invalid IDs using `.filter(Boolean)`.
+ *    - Renders each wishlist item using the `BookCard` component.
+ *    - Adds a “Want to Read” badge with custom styling to each card.
+ *
+ * 2. **Empty state**
+ *    - If the wishlist is empty, shows a friendly message encouraging
+ *      the user to add books from the Discover page.
+ *
+ * Dependencies:
+ * - `BOOKS`: Full mock book catalog.
+ * - `WISHLIST_IDS`: Array of book IDs the user has saved.
+ * - `BookCard`: Component used to render individual book tiles.
+ *
+ * Behaviour:
+ * - No user interaction or navigation.
+ */
+
 import { BOOKS } from "../data/mockBook";
 import { WISHLIST_IDS } from "../data/mockUser";
 import { BookCard } from "../components/BookCard";
 
 export function WishlistPage() {
+  // Build an array of wishlist book objects by matching IDs to BOOKS
+  // `.filter(Boolean)` removes any undefined results (e.g., invalid IDs)
   const wishlist = WISHLIST_IDS.map((id) =>
     BOOKS.find((b) => b.id === id),
   ).filter(Boolean);
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
+      <title>My Wishlist | BookAtlas</title>
+      {/* Header section */}
       <div className="mb-10">
         <p className="text-[11px] tracking-[0.2em] uppercase text-[#444] mb-2">
           Wishlist
         </p>
+
         <h1 className="text-[40px] font-semibold tracking-tight text-[#f0f0f0]">
           Want to read
         </h1>
+
         <p className="text-[14px] text-[#444] mt-2">
           {wishlist.length} books saved for later
         </p>
       </div>
 
+      {/* Empty state */}
       {wishlist.length === 0 ? (
         <div className="text-center py-24 text-[#333] text-sm">
           <p className="text-3xl mb-3">📋</p>
           Your wishlist is empty — add books from Discover.
         </div>
       ) : (
+        /* Wishlist grid */
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {wishlist.map((book) => (
             <BookCard
