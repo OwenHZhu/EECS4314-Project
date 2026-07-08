@@ -12,8 +12,7 @@ Shared resources: - database/ (at the repo root, one level up) is shared across 
 services. This service imports it via a relative path — it does NOT
 duplicate the database module.
 
-Run locally:
-uvicorn auth_service:app --reload --port 8001
+Read __init__.py on instructions on how to run the service.
 
 Environment variables required (see .env.example):
 SUPABASE_URL
@@ -26,9 +25,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers.register import router as register_router
-from routers.login import router as login_router
-from routers.account import router as account_router
+from auth_service.routers.register import router as register_router
+from auth_service.routers.login import router as login_router
+from auth_service.routers.account import router as account_router
 from shared.constants import ORIGINS
 
 app = FastAPI(
@@ -58,4 +57,4 @@ def health_check():
 
 
 if __name__ == "__main__":
-    uvicorn.run("auth_service:app", host="0.0.0.0", port=8001, reload=True)
+      uvicorn.run("auth_service.auth_service:app", host="0.0.0.0", port=8000, reload=True)

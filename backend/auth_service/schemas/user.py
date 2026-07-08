@@ -56,6 +56,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict, mo
 from typing import Optional
 from datetime import datetime
 
+from auth_service.utils.security import validate_password_strength
 from shared.constants import MIN_PASSWORD_LENGTH
 
 
@@ -90,29 +91,7 @@ class UserRegister(UserBase):
         can display all issues at once instead of one at a time.
         """
 
-        errors = []
-
-        # Length check
-        if len(v) < MIN_PASSWORD_LENGTH:
-            errors.append("Password must be at least 12 characters long")
-
-        # Character checks
-        if not re.search(r"[A-Z]", v):
-            errors.append("Password must contain at least one uppercase letter (A-Z)")
-
-        if not re.search(r"[a-z]", v):
-            errors.append("Password must contain at least one lowercase letter (a-z)")
-
-        if not re.search(r"[0-9]", v):
-            errors.append("Password must contain at least one number (0-9)")
-
-        if not re.search(r"[^A-Za-z0-9]", v):
-            errors.append("Password must contain at least one special character (!@#$ etc.)")
-
-        # If any rules failed, raise all messages together
-        if errors:
-            raise ValueError(" | ".join(errors))
-
+        validate_password_strength(v)
         return v
 
 
@@ -191,6 +170,12 @@ class UserUpdatePassword(BaseModel):
     current_password: str
     new_password: str
 
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password_strength(cls, v: str) -> str:
+        validate_password_strength(v)
+        return v
+    
     @model_validator(mode="after")
     def passwords_must_differ(self) -> "UserUpdatePassword":
         """Rejects the request early if new_password == current_password,

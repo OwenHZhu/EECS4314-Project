@@ -34,6 +34,7 @@ from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 from shared.db import supabase
 
 load_dotenv()

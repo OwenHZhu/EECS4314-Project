@@ -24,8 +24,8 @@ Status codes:
 
 from fastapi import APIRouter, HTTPException
 
-from schemas.user import UserRegister, AuthResponse
-from services.auth_service import register_user
+from auth_service.schemas.user import UserRegister, AuthResponse
+from auth_service.services.auth import register_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

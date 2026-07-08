@@ -23,15 +23,15 @@ Auth mechanism:
 from fastapi import APIRouter, HTTPException, Security, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from schemas.user import AuthResponse, UserUpdate, UserUpdatePassword
-from services.auth_service import (
+from auth_service.schemas.user import AuthResponse, UserUpdate, UserUpdatePassword
+from auth_service.services.auth import (
     logout_user,
     get_me,
     update_profile,
     update_password,
     delete_account,
 )
-from utils.jwt import get_current_user_id
+from auth_service.utils.jwt import get_current_user_id
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 bearer = HTTPBearer()
@@ -76,6 +76,8 @@ def update_me(payload: UserUpdate, user_id: str = Depends(get_current_user_id)):
     - Returns the updated public profile on success
     - Returns 409 if the new username is already taken
     - Returns 404 if the user no longer exists in the database
+    
+    Profile Picture will not work because we have nowhere to store them at the current moment
     """
 
     result = update_profile(user_id, payload)
@@ -123,11 +125,6 @@ def delete_me(user_id: str = Depends(get_current_user_id)):
     - This action is irreversible — frontend should confirm with the user
       before calling this route
     - Returns 404 if the user no longer exists in the database
-
-    TODO:
-        - Consider soft-delete (deactivated flag) instead of hard delete,
-          so associated content (reviews, posts) isn't orphaned or lost
-        - Add a confirmation step (e.g. re-enter password) before deletion
     """
 
     result = delete_account(user_id)

@@ -33,3 +33,39 @@ def verify_password(password: str, hashed: str) -> bool:
         password.encode("utf-8"),
         hashed.encode("utf-8")
     )
+    
+def validate_password_strength(password: str) -> None:
+    """
+    Validates a plain-text password against BookAtlas security rules.
+
+    Used by both UserRegister (new accounts) and UserUpdatePassword
+    (password changes) so both paths enforce identical strength rules —
+    changing your password should never be a way to downgrade to a
+    weaker one than registration would have allowed.
+
+    Collects all validation errors and raises them together so the
+    frontend can display all issues at once instead of one at a time.
+
+    Raises:
+        ValueError: with all failed rules joined by " | " if any rule fails
+    """
+
+    errors = []
+
+    if len(password) < MIN_PASSWORD_LENGTH:
+        errors.append(f"Password must be at least {MIN_PASSWORD_LENGTH} characters long")
+
+    if not re.search(r"[A-Z]", password):
+        errors.append("Password must contain at least one uppercase letter (A-Z)")
+
+    if not re.search(r"[a-z]", password):
+        errors.append("Password must contain at least one lowercase letter (a-z)")
+
+    if not re.search(r"[0-9]", password):
+        errors.append("Password must contain at least one number (0-9)")
+
+    if not re.search(r"[^A-Za-z0-9]", password):
+        errors.append("Password must contain at least one special character (!@#$ etc.)")
+
+    if errors:
+        raise ValueError(" | ".join(errors))
