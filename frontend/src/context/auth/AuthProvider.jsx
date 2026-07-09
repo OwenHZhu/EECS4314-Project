@@ -67,7 +67,7 @@ export default function AuthProvider({ children }) {
     // Message shown when user is redirected from a protected route
     const [redirectMessage, setRedirectMessage] = useState(null);
 
-    const API_BASE_URL = import.meta.env.VITE_API_URL;
+    const API_BASE_URL = import.meta.env.VITE_AUTH_SERVICE_URL;
 
     // Boolean indicating whether the user is authenticated
     const isAuthenticated = !!token;
