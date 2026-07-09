@@ -1,13 +1,42 @@
+/**
+ * ./tailwind.config.js
+ * 
+ * Tailwind CSS configuration file.
+ *
+ * - Specifies which files Tailwind should scan for class names.
+ * - Extends the default theme with a large set of custom colors
+ *   used throughout the application (global UI, auth pages, navbar,
+ *   profile pages, and logout modal).
+ * - Uses Tailwind's JIT engine to generate only the classes actually used.
+ */
+
 /** @type {import('tailwindcss').Config} */
 export default {
+  // Files Tailwind should scan for utility class usage
   content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx,css}"],
+
   theme: {
     extend: {
       colors: {
-        'background': '#0f0f0f',
+        // Global application colours
+        'background': '#070303',
         'primary': '#F9EDCC',
         'secondary': '#8A3033',
         'tertiary': '#BFB8AD',
+        'caption': '#444',
+
+        // Generic Button colours
+        'generic-button-text': '#F9EDCC',
+        'generic-button-text-hover': '#C6C1B3',
+        'generic-button-primary-fill': '#8A3033',
+        'generic-button-secondary-fill': '#766969',
+        'generic-button-primary-fill-hover': '#6A282A',
+        'generic-button-secondary-fill-hover': '#625A5A',
+        'generic-button-ghost-border': '#5A4B4B',
+        'generic-button-ghost-border-hover': '#7E7272',
+        'generic-button-ghost-fill-hover': '#302D2D',
+
+        // Login & registration page colours
         'login-button': '#8A3033',
         'login-hover': '#572426',
         'input-border': '#8A3033',
@@ -26,9 +55,30 @@ export default {
         'nav-text': '#666',
         'nav-active-border': '#743121', 
         'nav-hover-border': '#333',
-        'nav-border': '#222'
+        'nav-border': '#222',
+
+        // Profile page colours
+        'bio': '#666',
+        'edit-profile': '#8A3033',
+        'edit-profile-hover': '#661A1C',
+        'view-posts': '#5A4B4B',
+        'view-posts-hover': '#413333',
+        'stat-card-fill': '#151111',
+        'stat-card-border': '#3A2A2A',
+
+        // Logout confirmation card colours
+        'card-fill': '#1E1615',
+        'card-stroke': '#4A2422',
+        'cancel-stroke': '#5A4B4B',
+        'logout-hover': '#661A1C',
+
+        // Edit profile form colours
+        'container-fill': '#151111',
+        'input-stroke': '#3A2A2A',
       }
     },
   },
+
+  // No additional Tailwind plugins used
   plugins: [],
 };

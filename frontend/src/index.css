@@ -1,17 +1,51 @@
+/* 
+./index.css 
+
+ * Importing the Inter font family from Google Fonts.
+ * Used as the primary typeface across the application.
+ */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+/* 
+ * Tailwind CSS base styles: includes resets and foundational defaults.
+ */
 @tailwind base;
+
+/* 
+ * Tailwind CSS component classes: custom reusable UI components.
+ */
 @tailwind components;
+
+/* 
+ * Tailwind CSS utility classes: atomic classes for styling.
+ */
 @tailwind utilities;
 
+/* 
+ * Base layer overrides: applies global styling rules and resets.
+ * Tailwind's @layer allows extending or customizing the base layer.
+ */
 @layer base {
+  /* 
+   * Apply border-box sizing to all elements and pseudo-elements.
+   * Ensures padding and borders are included in width/height calculations.
+   */
   *,
   *::before,
   *::after {
     box-sizing: border-box;
   }
+
+  /* 
+   * Global body styles:
+   * - Removes default margin
+   * - Sets dark background and light text color
+   * - Applies Inter font with fallbacks
+   * - Enables smoother font rendering on WebKit browsers
+   */
   body {
     margin: 0;
-    background: #0f0f0f;
+    background: #070303;
     color: #f0f0f0;
     font-family: "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
