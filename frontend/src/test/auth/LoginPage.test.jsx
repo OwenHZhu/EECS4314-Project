@@ -16,7 +16,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import LoginPage from "../pages/auth/LoginPage";
+import LoginPage from "../../pages/auth/LoginPage.jsx"
 import "@testing-library/jest-dom/vitest";
 
 // Mock functions allow each test to verify authentication and navigation calls
@@ -42,7 +42,7 @@ vi.mock("react-router-dom", () => ({
  * This isolates LoginPage from the backend and allows each test to define
  * whether the login attempt succeeds or fails.
  */
-vi.mock("../context/auth/useAuth", () => ({
+vi.mock("../../context/auth/useAuth", () => ({
   useAuth: () => ({
     login: mockLogin,
     redirectMessage: null,
