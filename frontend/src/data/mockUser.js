@@ -68,10 +68,10 @@ Each thread includes:
 - lastActive: Human-readable activity timestamp
 */
 export const FORUMS = [
-  { id: 1, bookId: 1, title: "The ending of Dune — did Paul make the right choice?", category: "spoilers", author: "sandwormfan", replies: 34, views: 210, lastActive: "2h ago" },
-  { id: 2, bookId: 1, title: "What does the spice actually do to your mind?", category: "questions", author: "galaxybrain", replies: 12, views: 88, lastActive: "5h ago" },
-  { id: 3, bookId: 3, title: "Theory: Rocky is a [redacted] the whole time", category: "theories", author: "weir_nerd", replies: 19, views: 143, lastActive: "1d ago" },
-  { id: 4, bookId: 6, title: "Is 1984 becoming more relevant today?", category: "questions", author: "thinkpiece99", replies: 57, views: 402, lastActive: "3h ago" },
-  { id: 5, bookId: 11, title: "Bilbo vs Frodo — who had the harder journey?", category: "theories", author: "tolkien_deep", replies: 28, views: 175, lastActive: "6h ago" },
-  { id: 6, bookId: 7, title: "Sanderson's magic systems are unmatched — discuss", category: "questions", author: "allomancer_ash", replies: 41, views: 290, lastActive: "12h ago" },
+  { id: 1, bookId: 1, title: "The ending of Dune — did Paul make the right choice?", category: "spoilers", author: "sandwormfan", replies: 34, likes: 210, datePosted: "Mar 14, 2005" },
+  { id: 2, bookId: 1, title: "What does the spice actually do to your mind?", category: "questions", author: "galaxybrain", replies: 12, likes: 88, datePosted: "May 06, 2023" },
+  { id: 3, bookId: 3, title: "Theory: Rocky is a [redacted] the whole time", category: "theories", author: "weir_nerd", replies: 19, likes: 143, datePosted: "Nov 06, 2026" },
+  { id: 4, bookId: 6, title: "Is 1984 becoming more relevant today?", category: "questions", author: "thinkpiece99", replies: 57, likes: 402, datePosted: "Apr 17, 2025" },
+  { id: 5, bookId: 11, title: "Bilbo vs Frodo — who had the harder journey?", category: "theories", author: "tolkien_deep", replies: 28, likes: 175, datePosted: "Jan 20, 2022" },
+  { id: 6, bookId: 7, title: "Sanderson's magic systems are unmatched — discuss", category: "questions", author: "allomancer_ash", replies: 41, likes: 290, datePosted: "Feb 16, 2021" },
 ];

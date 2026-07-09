@@ -13,7 +13,8 @@ import { DiscoverPage } from "./pages/DiscoverPage";
 import { LibraryPage } from "./pages/LibraryPage";
 import { WishlistPage } from "./pages/WishlistPage";
 import { FavouritesPage } from "./pages/FavouritesPage";
-import { ForumsPage } from "./pages/ForumsPage";
+import ForumsPage from "./pages/forum/ForumsPage";
+import PostPage from "./pages/forum/PostPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
@@ -70,6 +71,9 @@ export default function App() {
 
             {/* Public route: Forums */}
             <Route path="/forums" element={<ForumsPage />} />
+
+            {/* Public route: Individual posts */}
+            <Route path="/forums/post" element={<PostPage />} />
 
             {/* Protected route: Edit Profile */}
             <Route path="/profile/edit"
