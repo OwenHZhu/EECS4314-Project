@@ -13,7 +13,6 @@ Public routes:
     POST   /books/               - Add a new book to the catalog
     PATCH  /books/{book_id}      - Update an existing book's details
     DELETE /books/{book_id}      - Remove a book
-    POST   /books/{book_id}/rate - Submit a 1-5 star rating for a book
 
 Dependencies:
     services/book_service.py - Core database logic
@@ -25,11 +24,10 @@ from pydantic import BaseModel, Field, UUID4
 from typing import Optional
 
 # Import the service functions
-from services.book_service import (
+from book_service.services.book_service import (
     add_book,
     update_book,
     delete_book,
-    rate_book,
     get_all_books,
     get_book_by_id
 )
@@ -53,9 +51,6 @@ class BookUpdate(BaseModel):
     description: Optional[str] = None
     isbn: Optional[str] = None
 
-class BookRate(BaseModel):
-    user_id: UUID4
-    rating: int = Field(ge=1, le=5, description="Rating between 1 and 5 stars")
 
 
 # ==========================================
@@ -108,20 +103,6 @@ def delete_book_route(book_id: UUID4):
         status_code = 404 if "not found" in result["message"] else 500
         raise HTTPException(status_code=status_code, detail=result["message"])
     return {"message": result["message"]}
-
-@router.post("/{book_id}/rate")
-def rate_book_route(book_id: UUID4, rating_data: BookRate):
-    """
-    Submits a user rating for a book.
-
-    - Enforces rating validation (1-5) via BookRate schema.
-    - Uses upsert logic in the service layer to prevent duplicate user ratings.
-    - Returns 500 if the database insert/update fails.
-    """
-    result = rate_book(str(book_id), str(rating_data.user_id), rating_data.rating)
-    if not result["success"]:
-        raise HTTPException(status_code=500, detail=result["message"])
-    return {"message": result["message"], "data": result.get("data")}
 
 @router.get("/")
 def get_books_route(q: Optional[str] = Query(None, description="Search by title or author"), limit: int = 50):

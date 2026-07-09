@@ -23,7 +23,6 @@ Functions:
     add_book       - Add a new book to the catalog
     update_book    - Update specific fields of an existing book
     delete_book    - Remove a book from the catalog entirely
-    rate_book      - Submit a user rating for a book
 
 Dependencies:
     database/db.py - supabase (Supabase client)
@@ -31,7 +30,7 @@ Dependencies:
 
 import uuid
 from typing import Optional
-from database.db import supabase
+from shared.db import supabase
 
 def get_all_books(q: Optional[str] = None, limit: int = 50) -> dict:
     """
@@ -152,38 +151,5 @@ def delete_book(book_id: str) -> dict:
              return {"success": False, "message": "Book not found or already deleted", "data": None}
              
         return {"success": True, "message": "Book deleted successfully", "data": res.data[0]}
-    except Exception as e:
-         return {"success": False, "message": f"Database error: {str(e)}", "data": None}
-
-def rate_book(book_id: str, user_id: str, rating_value: int) -> dict:
-    """
-    Submits a user rating for a specific book.
-
-    Uses an `upsert` operation with conflict resolution on `book_id, user_id` 
-    to ensure a user can only rate a book once. Subsequent ratings from the same 
-    user will update their existing score.
-
-    Args:
-        book_id: The UUID string of the target book.
-        user_id: The UUID string of the user submitting the rating.
-        rating_value: Integer between 1 and 5.
-
-    Returns:
-        Success: { success: True, message: str, data: dict }
-        Failure: { success: False, message: str, data: None }
-    """
-    try:
-        rating_insert = {
-            "book_id": book_id,
-            "user_id": user_id,
-            "rating_value": rating_value
-        }
-        
-        res = supabase.table("book_ratings").upsert(
-            rating_insert, 
-            on_conflict="book_id, user_id" # Prevents duplicate ratings
-        ).execute()
-        
-        return {"success": True, "message": "Book rated successfully", "data": res.data[0]}
     except Exception as e:
          return {"success": False, "message": f"Database error: {str(e)}", "data": None}
