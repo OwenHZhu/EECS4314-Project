@@ -45,17 +45,23 @@ def get_user_library(user_id: str) -> dict:
     """ 
     Retrieve all library entries for a specific user. 
     
-    Queries the library table using the provided user_id and returns all books 
-    associated with that user's library. 
+    Queries the library table using the provided user_id and returns all
+    library entries with their matching book_catalogue records.
     
     Args: 
         user_id: ID of the user whose library should be retrieved. 
     
     Returns: 
         Success: { "success": True, "message": str, "data": list } 
-        The data field contains all library entries that belong to the user. 
+        The data field contains all library entries that belong to the user,
+        including a nested book object with catalogue details.
     """
-    res = (supabase.table("library").select("*").eq("user_id", user_id).execute())
+    res = (
+        supabase.table("library")
+        .select("*, book:book_catalogue(*)")
+        .eq("user_id", user_id)
+        .execute()
+    )
     return {"success" : True, "message" : "Library retrieved successfully", "data" : res.data}
 
 def update_library(user_id: str, book_id: str, status: Optional[ReadingStatus] = None, rating: Optional[int] = None) -> dict:
