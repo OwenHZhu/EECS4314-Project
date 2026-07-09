@@ -49,7 +49,7 @@ import GenericModal from "../../components/generic/GenericModal.jsx";
 import GenericButton from "../../components/generic/GenericButton.jsx";
 
 export default function EditProfilePage() {
-    const { user } = useAuth();
+    const { user, deleteAccount, update } = useAuth();
     const navigate = useNavigate();
 
     // Controlled input for new username
@@ -70,15 +70,19 @@ export default function EditProfilePage() {
     }
 
     /**
-     * handleDelete()
-     *
-     * Placeholder delete logic.
-     * In a real application, this would call an API to delete the account.
-     * Currently redirects to the registration page.
+     * Delete's the user's account and redirects them to the register page
      */
     function handleDelete() {
-        // delete(); // placeholder for future API call
+        deleteAccount();
         navigate("/register");
+    }
+
+    /**
+     * Save new profile details 
+     * TO-DO: Add visible error handling for if a user enters an invalid username
+     */
+    function handleSave() {
+        update(username, bio, "");
     }
 
     /** Cancel editing and return to the profile page */
@@ -174,6 +178,7 @@ export default function EditProfilePage() {
             {/* Action buttons */}
             <div>
                 <GenericButton
+                    onClick={handleSave}
                     variant="primary"
                     className="py-3 px-6 md:px-8 mr-4 md:mr-6 mb-2"
                 >

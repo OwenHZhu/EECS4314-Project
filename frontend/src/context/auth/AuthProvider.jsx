@@ -130,6 +130,34 @@ export default function AuthProvider({ children }) {
     }, [setToken, setUser, API_BASE_URL]);
 
     /**
+     * update(username, bio, profile picture)
+     *
+     * Updates the user's account details.
+     *
+     * @param {string} username - User's username
+     * @param {string} bio - User's bio
+     * @param {string} profile_picture - User's new profile picture
+     *
+     * @returns {Promise<{success: boolean, message?: string}>}
+     *   - success: true if update succeeded
+     *   - message: optional error message if registration failed
+     */
+    const update = useCallback(async (username, bio, profile_picture) => {
+        try {
+            const res = await axios.put(API_BASE_URL + "auth/me", { username, bio, profile_picture });
+
+            // Store new user details in localStorage
+            setUser(res.data.data);
+
+            return { success: true };
+        }
+        catch (err) {
+            const message = err.response?.data?.message || "Failed to update profile. Please try again.";
+            return { success: false, message };
+        }
+    }, [setUser, API_BASE_URL]);
+
+    /**
      * logout()
      *
      * Logs the user out.
@@ -150,6 +178,28 @@ export default function AuthProvider({ children }) {
         setToken(null);
         setUser(null);
     }, [token, setToken, setUser, API_BASE_URL]);
+
+    /**
+     * delete_account()
+     *
+     * Deletes the user's account
+     *
+     * @returns {Promise<void>}
+     *
+     * Notes:
+     * - Attempts to notify the backend.
+     * - Clears token and user from localStorage.
+     */
+    const deleteAccount = useCallback(async () => {
+        try {
+            await axios.delete(API_BASE_URL + "auth/me");
+        } catch (err) {
+            console.log(err);
+        }
+
+        setToken(null);
+        setUser(null);
+    }, [setToken, setUser, API_BASE_URL]);
 
     /**
      * Sync axios Authorization header with current token.
@@ -207,7 +257,9 @@ export default function AuthProvider({ children }) {
                 setRedirectMessage,
                 login,
                 logout,
-                register
+                register,
+                update,
+                deleteAccount
             }}
         >
             {children}
