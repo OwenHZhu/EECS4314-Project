@@ -24,7 +24,7 @@ class ThreadPost(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1)
 
-    category: str = Field(description="spoilers | questions | theories")
+    tag_ids: list[str] = Field(default_factory=list, description="List of tag IDs linked to this thread")
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Thread creation time")
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Last update time")
@@ -49,11 +49,20 @@ class ThreadCreate(BaseModel): #Model used for creating new threads (input valid
     user_id: str = Field(description="ID of the user creating the thread")
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1)
-    category: str = Field(description="spoilers | questions | theories")
-    book_id: str | None = Field(default=None, description="Optional book this thread belongs to")
+    book_id: Optional[str] = Field(default=None, description="Optional book this thread belongs to")
+    tag_ids: list[str] = Field(default_factory=list, description="List of tag IDs to link to this thread")
 
 
 class ReplyCreate(BaseModel): #Model used for creating new replies (input validation)
     user_id: str = Field(description="ID of the user creating the reply")
     content: str = Field(min_length=1)
     parent_reply_id: Optional[str] = Field(default=None, description="Optional parent reply ID for nested replies")
+
+class UserActivityResponse(BaseModel):
+    """
+    Represents a user's activity in the discussion forum, including threads and replies.
+    """
+
+    user_id: str = Field(description="ID of the user")
+    threads: list[ThreadPost] = Field(default_factory=list, description="List of threads created by the user")
+    replies: list[ThreadReply] = Field(default_factory=list, description="List of replies made by the user")

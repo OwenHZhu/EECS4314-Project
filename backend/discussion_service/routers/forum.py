@@ -5,6 +5,7 @@ from schemas.discussion_forum import (
 	ThreadCreate,
 	ThreadPost,
 	ThreadReply,
+	UserActivityResponse,
 )
 from services.discussion_service import (
 	create_reply,
@@ -12,22 +13,20 @@ from services.discussion_service import (
 	get_thread,
 	list_replies,
 	list_threads,
+	get_user_activity,
 )
 
 
 router = APIRouter(prefix="/forum", tags=["Forum"])
 
-
-
 @router.post("/threads", response_model=ThreadPost)
 def create_forum_thread(payload: ThreadCreate):
 	try:
 		return create_thread(
-		book_id=payload.book_id,
 		user_id=payload.user_id,
 		title=payload.title,
 		content=payload.content,
-		category=payload.category,
+		tag_ids=payload.tag_ids,
 		)
 	except ValueError as exc:
 		raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -62,3 +61,19 @@ def create_forum_reply(thread_id: str, payload: ReplyCreate):
 @router.get("/threads/{thread_id}/replies", response_model=list[ThreadReply])
 def read_forum_replies(thread_id: str):
 	return list_replies(thread_id=thread_id)
+
+@router.get("/forum/users/{user_id}/activity", response_model=UserActivityResponse)
+def read_user_activity(user_id: str):
+	"""
+	Retrieves a user's activity in the discussion forum, including threads and replies.
+
+	Args:
+		user_id (str): The ID of the user.
+	Returns:
+		UserActivityResponse: The user's activity in the forum.
+	"""
+	try:
+		return get_user_activity(user_id)
+	except ValueError as exc:
+		raise HTTPException(status_code=404, detail=str(exc)) from exc
+	
