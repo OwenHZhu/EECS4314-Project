@@ -77,6 +77,10 @@ export default function EditProfilePage() {
         navigate("/register");
     }
 
+    function handleBack() {
+        navigate("/profile");
+    }
+
     /**
      * Save new profile details 
      * TO-DO: Add visible error handling for if a user enters an invalid username
@@ -133,16 +137,64 @@ export default function EditProfilePage() {
                 </div>
             )}
 
-            <h1 className="text-base md:text-lg text-primary font-bold mb-2">Edit Profile</h1>
+            {/* Header */}
+            <div className="flex flex-row items-center space-x-1 mb-2">
+                <span
+                    onClick={handleBack}
+                    className="material-symbols-outlined cursor-pointer
+                    text-2xl md:text-3xl
+                        [font-variation-settings:'opsz'_20]
+                        sm:[font-variation-settings:'opsz'_24]
+                        md:[font-variation-settings:'opsz'_32]
+                        lg:[font-variation-settings:'opsz'_40]
+                    "
+                    style={{
+                        color: "#5A4B4B"
+                    }
+                    }
+                >
+                    arrow_back
+                </span>
+
+                <h1 className="text-base md:text-lg text-primary font-bold">Edit Profile</h1>
+
+                {/* TO-DO: Add on-click function  */}
+                <span
+                    onClick=""
+                    className="material-symbols-outlined cursor-pointer
+                    text-xl md:text-2xl
+                        [font-variation-settings:'opsz'_20]
+                        sm:[font-variation-settings:'opsz'_24]
+                        md:[font-variation-settings:'opsz'_32]
+                        lg:[font-variation-settings:'opsz'_40]
+                    "
+                    style={{
+                        color: "#482828"
+                    }
+                    }
+                >
+                    settings
+                </span>
+            </div>
 
             {/* Username and profile picture section */}
-            <div className="flex flex-row px-4 py-4 md:px-6 md:py-6 bg-container-fill border-input-stroke border-2 rounded-md">
-                <div
+            <div className="flex flex-row items-center">
+                <span
                     onClick={handlePicture}
-                    className="w-12 h-12 md:w-16 md:h-16 cursor-pointer rounded-full bg-[#2d2845] flex items-center justify-center text-lg md:text-2xl font-semibold text-[#b8b0ff] shrink-0"
+                    className="material-symbols-outlined cursor-pointer
+                    text-6xl md:text-7xl
+                        [font-variation-settings:'opsz'_20]
+                        sm:[font-variation-settings:'opsz'_24]
+                        md:[font-variation-settings:'opsz'_32]
+                        lg:[font-variation-settings:'opsz'_40]
+                    "
+                    style={{
+                        color: "#482828"
+                    }
+                    }
                 >
-                    {user.username[0]}
-                </div>
+                    account_circle
+                </span>
 
                 <input
                     value={username}
@@ -150,13 +202,13 @@ export default function EditProfilePage() {
                     type="text"
                     maxLength={12}
                     placeholder={user.username}
-                    className="bg-background text-xs md:text-sm focus:outline-none rounded-full p-4 ml-2 mt-1 md:mt-2 w-full sm:w-1/2 h-fit"
+                    className="bg-primary text-xs md:text-sm focus:outline-none rounded-full p-3 ml-1 w-full sm:w-1/2 h-fit"
                 />
             </div>
 
             {/* Bio section */}
             <div className="mt-6 mb-6 md:mt-8 md:mb-8">
-                <h2 className="text-base md:text-lg text-primary font-bold mb-2">Bio</h2>
+                <h2 className="text-medium text-primary font-bold mb-2">Bio</h2>
 
                 <textarea
                     name="bio"
