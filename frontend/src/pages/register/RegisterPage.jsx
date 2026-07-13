@@ -28,119 +28,31 @@
  * - On backend failure: displays server message.
  * - On success: navigates to /profile and clears form state.
  */
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { validateEmail, validatePassword, validateUsername } from "../../utils/validation";
-import { useAuth } from "../../hooks/auth/useAuth";
+import { Link } from "react-router-dom";
+import { useRegisterForm } from "../../hooks/auth/useRegisterForm";
 import GenericButton from "../../components/generic/GenericButton";
 import GenericInput from "../../components/generic/GenericInput";
+import RegisterHeroSection from "./RegisterHeroSection";
+import ErrorList from "../../components/generic/ErrorList";
 
 export default function RegisterPage() {
-    const navigate = useNavigate();
-    const { register } = useAuth();
-
-    // Form fields
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
-    // Validation and registration errors
-    const [errors, setErrors] = useState([]);
-
-    /**
-     * registerUser()
-     *
-     * Handles form submission:
-     * - Validates required fields
-     * - Validates format/strength rules
-     * - Calls register(username, email, password)
-     * - Handles success/failure responses
-     *
-     * @returns {Promise<void>}
-     */
-    async function registerUser() {
-        const emptyErrors = [];
-
-        // Required-field validation
-        if (!username.trim()) emptyErrors.push("Please enter your username.");
-        if (!email.trim()) emptyErrors.push("Please enter your email.");
-        if (!password.trim()) emptyErrors.push("Please enter your password.");
-
-        // If required fields missing: show errors and reset fields
-        if (emptyErrors.length > 0) {
-            setErrors(emptyErrors);
-            setUsername("");
-            setEmail("");
-            setPassword("");
-            return;
-        }
-
-        // Format and password strength validation
-        let validationErrors = [];
-        const usernameErrors = validateUsername(username);
-        const passwordErrors = validatePassword(password);
-
-        if (!validateEmail(email)) {
-            validationErrors.push("Invalid email.");
-        }
-
-        // Combine all validation errors
-        validationErrors = [...validationErrors, ...usernameErrors, ...passwordErrors];
-
-        // If validation fails: show errors and reset fields
-        if (validationErrors.length > 0) {
-            setErrors(validationErrors);
-            setUsername("");
-            setEmail("");
-            setPassword("");
-            return;
-        }
-
-        // Attempt registration
-        const res = await register(username, email, password);
-
-        // Backend failure: show server message
-        if (!res.success) {
-            setErrors([res.message]);
-            setUsername("");
-            setEmail("");
-            setPassword("");
-            return;
-        }
-
-        // Successful registration: navigate to profile
-        navigate("/profile");
-
-        // Clear UI state
-        setUsername("");
-        setEmail("");
-        setPassword("");
-        setErrors([]);
-    }
+    const {
+        username,
+        email,
+        password,
+        isLoading,
+        errors,
+        setEmail,
+        setUsername,
+        setPassword,
+        handleSubmit
+    } = useRegisterForm();
 
     return (
         <div className="flex flex-col md:flex-row md:items-center md:justify-center min-h-screen pb-10 bg-background">
             <title>Register | BookAtlas</title>
             {/* Left marketing section */}
-            <section className="pt-8 pl-8 pr-8 pb-3 md:p-10 text-left">
-                <h1 className="font-bold text-primary mb-10 mt-5 text-xl sm:text-2xl md:text-3xl block md:hidden">
-                    Book<span className="text-secondary">Atlas</span>
-                </h1>
-
-                <h1 className="text-primary text-3xl sm:text-4xl md:text-5xl font-bold">
-                    Join the
-                </h1>
-
-                <h1 className="text-secondary text-3xl sm:text-4xl md:text-5xl font-bold">
-                    reading world.
-                </h1>
-
-                <h2 className="hidden md:block text-tertiary text-base md:text-lg max-w-xs mt-4">
-                    Start your reading journey in a space built for your books, your thoughts,
-                    and your community. Create your library, share ideas, and discover stories
-                    that grow with you.
-                </h2>
-            </section>
+            <RegisterHeroSection />
 
             {/* Registration form section */}
             <section className="flex flex-col justify-start w-full max-w-md p-8 md:p-10 md:border-l-2 md:border-input-bg">
@@ -157,7 +69,7 @@ export default function RegisterPage() {
                     className="flex flex-col mt-3"
                     onSubmit={(e) => {
                         e.preventDefault();
-                        registerUser();
+                        handleSubmit();
                     }}
                 >
                     {/* Username input */}
@@ -192,13 +104,7 @@ export default function RegisterPage() {
 
                     {/* Error messages */}
                     {errors.length > 0 && (
-                        <div className="bg-error-bg text-error-text p-3 rounded-lg mb-4 text-sm">
-                            <ul className="list-disc list-inside space-y-1">
-                                {errors.map((err, idx) => (
-                                    <li key={idx}>{err}</li>
-                                ))}
-                            </ul>
-                        </div>
+                        <ErrorList errors={errors} />
                     )}
 
                     {/* Submit and links to login */}
@@ -206,9 +112,10 @@ export default function RegisterPage() {
                         <GenericButton
                             type="submit"
                             variant="primary"
+                            disabled={isLoading}
                             className="w-full p-2 sm:p-3 text-sm sm:text-base"
                         >
-                            Sign up
+                            {isLoading ? "Loading..." : "Sign up"}
                         </GenericButton>
 
                         <p className="text-primary mt-2 text-xs sm:text-sm">

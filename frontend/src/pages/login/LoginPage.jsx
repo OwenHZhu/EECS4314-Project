@@ -30,7 +30,7 @@ import { Link } from "react-router-dom";
 import GenericButton from "../../components/generic/GenericButton";
 import GenericInput from "../../components/generic/GenericInput";
 import ErrorList from "../../components/generic/ErrorList";
-import LoginHeroSection from "./components/LoginHeroSection";
+import LoginHeroSection from "./LoginHeroSection";
 import { useLoginForm } from "../../hooks/auth/useLoginForm";
 
 export default function LoginPage() {

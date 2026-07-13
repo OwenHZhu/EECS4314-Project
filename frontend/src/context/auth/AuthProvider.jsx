@@ -92,7 +92,7 @@ export default function AuthProvider({ children }) {
             return { success: true };
         }
         catch (err) {
-            const message = err.response?.data?.message || "Login failed. Please try again.";
+            const message = err.response?.data?.detail || "Login failed. Please try again.";
             return { success: false, message };
         }
     }, [setToken, setUser, API_BASE_URL]);
@@ -121,7 +121,7 @@ export default function AuthProvider({ children }) {
             return { success: true };
         }
         catch (err) {
-            const message = err.response?.data?.message || "Registration failed. Please try again.";
+            const message = err.response?.data?.detail || "Registration failed. Please try again.";
             return { success: false, message };
         }
     }, [setToken, setUser, API_BASE_URL]);
