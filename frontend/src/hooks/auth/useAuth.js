@@ -1,26 +1,20 @@
 /**
  * ./hooks/auth/useAuth.jsx
  *
- * A convenience hook that provides access to the authentication context.
- * This hook wraps React's `useContext` to simplify retrieving auth-related
- * values and functions throughout the application.
+ * Provides convenient access to the AuthContext.
  *
  * Dependencies:
- * - useContext (React): Reads the current value of the AuthContext.
- * - AuthContext: The authentication context object created in AuthContext.jsx.
+ * - useContext: Reads the current AuthContext value.
+ * - AuthContext: Supplies authentication state and actions.
  *
  * Purpose:
- * - Allows components to easily access authentication state such as:
- *   - isAuthenticated
- *   - user information
- *   - tokens
- *   - redirect messages
- *   - setters for updating auth-related state
+ * - Allows components to access auth data and functions such as:
+ *   isAuthenticated, user info, tokens, redirect messages, and setters.
  *
  * Notes:
- * - This hook assumes that an AuthProvider is wrapping the component tree.
- * - If used outside of an AuthProvider, the returned value will be `null`.
+ * - Must be used within an AuthProvider; otherwise returns null.
  */
+
 import { useContext } from "react";
 import { AuthContext } from "../../context/auth/AuthContext";
 

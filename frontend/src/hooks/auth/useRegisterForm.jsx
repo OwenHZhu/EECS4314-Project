@@ -1,3 +1,20 @@
+/**
+ * ./hooks/auth/useRegisterForm.js
+ *
+ * Manages registration form state, validation, submission, and navigation.
+ *
+ * Dependencies:
+ * - useNavigate: Redirects to /profile on success.
+ * - useAuth.register(): Performs backend registration.
+ * - validateEmail / validatePassword / validateUsername: Field-level validation.
+ *
+ * Returns:
+ * - Controlled fields: username, email, password
+ * - UI state: isLoading, errors
+ * - Setters: setUsername, setEmail, setPassword
+ * - handleSubmit(): Runs validation + registration flow
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
@@ -7,22 +24,22 @@ export function useRegisterForm() {
     const navigate = useNavigate();
     const { register } = useAuth();
 
-    // Form fields
+    // Controlled form fields
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
 
-    // Validation + backend errors
+    // UI state
+    const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState([]);
 
     /**
      * validateRequired()
+     * Performs required-field checks using current form state.
      *
-     * Stage 1: Required-field validation only.
-     * Returns an array of missing-field errors.
+     * @returns {string[]} Missing-field error messages.
      */
-    function validateRequired({ username, email, password }) {
+    function validateRequired() {
         const missing = [];
 
         if (!username.trim()) missing.push("Please enter your username.");
@@ -34,11 +51,12 @@ export function useRegisterForm() {
 
     /**
      * validateFormat()
+     * Performs format/strength validation using current form state.
+     * Runs only after required fields are present.
      *
-     * Stage 2: Format/strength validation.
-     * Only runs when all required fields are present.
+     * @returns {string[]} Format/strength validation errors.
      */
-    function validateFormat({ username, email, password }) {
+    function validateFormat() {
         const formatErrors = [];
 
         // Username rules
@@ -57,28 +75,30 @@ export function useRegisterForm() {
 
     /**
      * handleSubmit()
+     * Runs:
+     * 1. Required-field validation
+     * 2. Format validation
+     * 3. Registration request
+     * 4. Navigation + cleanup on success
      *
-     * Runs two-stage validation, attempts registration,
-     * and handles success/failure responses.
+     * @returns {Promise<void>}
      */
     async function handleSubmit() {
         // Stage 1: Required fields
-        const requiredErrors = validateRequired({ username, email, password });
-
+        const requiredErrors = validateRequired();
         if (requiredErrors.length > 0) {
             setErrors(requiredErrors);
             return;
         }
 
-        // Stage 2: Format/strength validation
-        const formatErrors = validateFormat({ username, email, password });
-
+        // Stage 2: Format rules
+        const formatErrors = validateFormat();
         if (formatErrors.length > 0) {
             setErrors(formatErrors);
             return;
         }
 
-        // Attempt registration
+        // Registration attempt
         setIsLoading(true);
         const res = await register(username, email, password);
         setIsLoading(false);
@@ -89,10 +109,8 @@ export function useRegisterForm() {
             return;
         }
 
-        // Successful registration → navigate
+        // Success: navigate + clear state
         navigate("/profile");
-
-        // Clear UI state on success only
         setUsername("");
         setEmail("");
         setPassword("");
