@@ -32,10 +32,11 @@ import { validateEmail } from "../../utils/validation";
 import { useAuth } from "../../context/auth/useAuth";
 import GenericButton from "../../components/generic/GenericButton";
 import GenericInput from "../../components/generic/GenericInput";
+import ErrorList from "../../components/generic/ErrorList";
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const { login, redirectMessage, setRedirectMessage } = useAuth();
+    const { login, redirectMessage } = useAuth();
 
     // Form fields
     const [email, setEmail] = useState("");
@@ -43,6 +44,23 @@ export default function LoginPage() {
 
     // Validation and login errors
     const [errors, setErrors] = useState([]);
+
+    function validateLogin() {
+        const validationErrors = [];
+        if (!email.trim()) {
+            validationErrors.push("Please enter your email.");
+        }
+        if (!password.trim()) {
+            validationErrors.push("Please enter your password.");
+        }
+
+        // Email format validation
+        if (email && !validateEmail(email)) {
+            validationErrors.push("Please enter a valid email address.");
+        }
+
+        return validationErrors;
+    }
 
     /**
      * loginUser()
@@ -55,49 +73,21 @@ export default function LoginPage() {
      * @returns {Promise<void>}
      */
     async function loginUser() {
-        const newErrors = [];
+        const newErrors = validateLogin({ email, password });
 
-        // Basic required-field validation
-        if (!email.trim()) {
-            newErrors.push("Please enter your email.");
-        }
-        if (!password.trim()) {
-            newErrors.push("Please enter your password.");
-        }
-
-        // Email format validation
-        if (email && !validateEmail(email)) {
-            newErrors.push("Please enter a valid email address.");
-        }
-
-        // If validation fails: show errors and reset fields
         if (newErrors.length > 0) {
-            setRedirectMessage(null);
             setErrors(newErrors);
-            setEmail("");
-            setPassword("");
             return;
         }
 
-        // Attempt login
         const res = await login(email, password);
 
-        // If login fails: show backend error message
         if (!res.success) {
-            setRedirectMessage(null);
             setErrors([res.message]);
-            setEmail("");
-            setPassword("");
             return;
         }
 
-        // Successful login: navigate to profile
         navigate("/profile");
-
-        // Clear UI state
-        setRedirectMessage(null);
-        setEmail("");
-        setPassword("");
         setErrors([]);
     }
 
@@ -166,15 +156,8 @@ export default function LoginPage() {
                     />
 
                     {/* Error messages and redirect messages */}
-                    {(errors.length > 0 || redirectMessage) && (
-                        <div className="bg-error-bg text-error-text p-3 rounded-lg mb-4 text-sm">
-                            <ul className="list-disc list-inside space-y-1">
-                                {redirectMessage && <li>{redirectMessage}</li>}
-                                {errors.map((err, idx) => (
-                                    <li key={idx}>{err}</li>
-                                ))}
-                            </ul>
-                        </div>
+                    {(errors.length > 0) && (
+                        <ErrorList errors={errors} />
                     )}
 
                     {/* Submit and links to forgot password and register */}

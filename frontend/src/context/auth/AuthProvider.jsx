@@ -53,7 +53,7 @@
  * - This provider must wrap the entire application for authentication to work.
  */
 import axios from "axios";
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { AuthContext } from "./AuthContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 
@@ -63,9 +63,6 @@ export default function AuthProvider({ children }) {
 
     // Persisted auth token (null when logged out)
     const [token, setToken] = useLocalStorage("token", null);
-
-    // Message shown when user is redirected from a protected route
-    const [redirectMessage, setRedirectMessage] = useState(null);
 
     const API_BASE_URL = import.meta.env.VITE_AUTH_SERVICE_URL;
 
@@ -277,8 +274,6 @@ export default function AuthProvider({ children }) {
                 user,
                 token,
                 isAuthenticated,
-                redirectMessage,
-                setRedirectMessage,
                 login,
                 logout,
                 register,
