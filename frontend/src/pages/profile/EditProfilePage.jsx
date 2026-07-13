@@ -55,7 +55,6 @@ export default function EditProfilePage() {
     const { user, deleteAccount, update } = useAuth();
     const [backToProfile, setBackToProfile] = useState(false);
     const [openSettings, setOpenSettings] = useState(false);
-    const [changePassword, setChangePassword] = useState(false);
 
     // Controlled input for new username
     const [username, setUsername] = useState("");
@@ -109,13 +108,8 @@ export default function EditProfilePage() {
 
     function handleChangePassword() {
         setOpenSettings(false);
-        setChangePassword(true);
+        navigate("/change-password");
     }
-
-    function closeChangePassword() {
-        setChangePassword(false);
-    }
-
 
     /**
      * handlePicture()
@@ -161,17 +155,6 @@ export default function EditProfilePage() {
                     cancelLabel="Cancel"
                     onConfirm={() => navigate("/profile")}
                     onCancel={closeBackToProfileModal}
-                />
-            )}
-
-            {/* Change password modal */}
-            {changePassword && (
-                <GenericModal
-                    title="Change Password?"
-                    confirmLabel="Confirm"
-                    cancelLabel="Cancel"
-                    onConfirm={() => navigate("/change-password")}
-                    onCancel={closeChangePassword}
                 />
             )}
 

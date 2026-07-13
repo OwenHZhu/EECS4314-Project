@@ -140,7 +140,7 @@ export default function AuthProvider({ children }) {
      *
      * @returns {Promise<{success: boolean, message?: string}>}
      *   - success: true if update succeeded
-     *   - message: optional error message if registration failed
+     *   - message: optional error message if update failed
      */
     const update = useCallback(async (username, bio, profile_picture) => {
         try {
@@ -156,6 +156,29 @@ export default function AuthProvider({ children }) {
             return { success: false, message };
         }
     }, [setUser, API_BASE_URL]);
+
+    /**
+     * changePassword(current_password, new_password)
+     *
+     * Changes the user's password.
+     *
+     * @param {string} current_password - User's current password
+     * @param {string} new_password - User's new password
+     *
+     * @returns {Promise<{success: boolean, message?: string}>}
+     *   - success: true if update succeeded
+     *   - message: optional error message if update failed
+     */
+    const changePassword = useCallback(async (current_password, new_password) => {
+        try {
+            await axios.put(API_BASE_URL + "auth/me/password", { current_password, new_password });
+            return { success: true };
+        }
+        catch (err) {
+            const message = err.response?.data?.detail || "Failed to change password. Please try again.";
+            return { success: false, message };
+        }
+    }, [API_BASE_URL]);
 
     /**
      * logout()
@@ -259,6 +282,7 @@ export default function AuthProvider({ children }) {
                 logout,
                 register,
                 update,
+                changePassword,
                 deleteAccount
             }}
         >
