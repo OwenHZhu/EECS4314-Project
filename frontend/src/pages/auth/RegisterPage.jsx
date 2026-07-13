@@ -31,7 +31,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail, validatePassword, validateUsername } from "../../utils/validation";
-import { useAuth } from "../../context/auth/useAuth";
+import { useAuth } from "../../hooks/auth/useAuth";
 import GenericButton from "../../components/generic/GenericButton";
 import GenericInput from "../../components/generic/GenericInput";
 

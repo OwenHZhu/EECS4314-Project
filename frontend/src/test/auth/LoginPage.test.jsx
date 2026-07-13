@@ -42,7 +42,7 @@ vi.mock("react-router-dom", () => ({
  * This isolates LoginPage from the backend and allows each test to define
  * whether the login attempt succeeds or fails.
  */
-vi.mock("../../context/auth/useAuth", () => ({
+vi.mock("../../hooks/auth/useAuth.js", () => ({
   useAuth: () => ({
     login: mockLogin,
     redirectMessage: null,

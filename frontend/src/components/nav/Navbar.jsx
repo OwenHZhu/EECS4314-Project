@@ -36,7 +36,7 @@
  *   unique styling for authentication-related buttons via `className`.
  */
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../context/auth/useAuth";
+import { useAuth } from "../../hooks/auth/useAuth";
 import { NavButton } from "./NavButton";
 
 const NAV_ITEMS = [

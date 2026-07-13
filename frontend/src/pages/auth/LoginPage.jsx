@@ -26,94 +26,30 @@
  * - On successful login: navigates to /profile.
  * - On failure: displays error messages and resets inputs.
  */
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { validateEmail } from "../../utils/validation";
-import { useAuth } from "../../context/auth/useAuth";
+import { Link } from "react-router-dom";
 import GenericButton from "../../components/generic/GenericButton";
 import GenericInput from "../../components/generic/GenericInput";
 import ErrorList from "../../components/generic/ErrorList";
+import LoginHeroSection from "./components/LoginHeroSection";
+import { useLoginForm } from "../../hooks/auth/useLoginForm";
 
 export default function LoginPage() {
-    const navigate = useNavigate();
-    const { login, redirectMessage } = useAuth();
-
-    // Form fields
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
-    // Validation and login errors
-    const [errors, setErrors] = useState([]);
-
-    function validateLogin() {
-        const validationErrors = [];
-        if (!email.trim()) {
-            validationErrors.push("Please enter your email.");
-        }
-        if (!password.trim()) {
-            validationErrors.push("Please enter your password.");
-        }
-
-        // Email format validation
-        if (email && !validateEmail(email)) {
-            validationErrors.push("Please enter a valid email address.");
-        }
-
-        return validationErrors;
-    }
-
-    /**
-     * loginUser()
-     *
-     * Handles form submission:
-     * - Validates email and password
-     * - Calls login(email, password)
-     * - Handles success/failure responses
-     *
-     * @returns {Promise<void>}
-     */
-    async function loginUser() {
-        const newErrors = validateLogin({ email, password });
-
-        if (newErrors.length > 0) {
-            setErrors(newErrors);
-            return;
-        }
-
-        const res = await login(email, password);
-
-        if (!res.success) {
-            setErrors([res.message]);
-            return;
-        }
-
-        navigate("/profile");
-        setErrors([]);
-    }
+    const {
+        email,
+        password,
+        errors,
+        isLoading,
+        setEmail,
+        setPassword,
+        handleSubmit,
+    } = useLoginForm();
 
     return (
         <div className="flex flex-col md:flex-row md:items-center md:justify-center min-h-screen pb-10">
             <title>Login | BookAtlas</title>
 
             {/* Left marketing section */}
-            <section className="pt-8 pl-8 pr-8 pb-3 md:p-10 text-left">
-                <h1 className="font-bold text-primary mb-10 mt-5 text-xl sm:text-2xl md:text-3xl block md:hidden">
-                    Book<span className="text-secondary">Atlas</span>
-                </h1>
-
-                <h1 className="text-primary text-3xl sm:text-4xl md:text-5xl font-bold">
-                    Map your
-                </h1>
-
-                <h1 className="text-secondary text-3xl sm:text-4xl md:text-5xl font-bold">
-                    reading world.
-                </h1>
-
-                <h2 className="hidden md:block text-tertiary text-base md:text-lg max-w-xs mt-4">
-                    Step back into the space where your books, your thoughts, and your
-                    community come together. Continue building the library that grows with you.
-                </h2>
-            </section>
+            <LoginHeroSection />
 
             {/* Login form section */}
             <section
@@ -128,14 +64,13 @@ export default function LoginPage() {
                 </h1>
 
                 <form
-                    noValidate
                     className="flex flex-col mt-3"
+                    noValidate
                     onSubmit={(e) => {
                         e.preventDefault();
-                        loginUser();
+                        handleSubmit();
                     }}
                 >
-                    {/* Email input */}
                     <GenericInput
                         type="email"
                         placeholder="Email"
@@ -145,7 +80,6 @@ export default function LoginPage() {
                         className="p-2 sm:p-3 mb-3"
                     />
 
-                    {/* Password input */}
                     <GenericInput
                         type="password"
                         placeholder="Password"
@@ -166,8 +100,9 @@ export default function LoginPage() {
                             type="submit"
                             variant="primary"
                             className="w-full p-2 sm:p-3 text-sm sm:text-base"
+                            disabled={isLoading}
                         >
-                            Login
+                            {isLoading ? "Logging in..." : "Login"}
                         </GenericButton>
 
                         <p className="text-primary mt-2 text-xs sm:text-sm">

@@ -28,7 +28,7 @@ import { BOOKS, STATUS_LABELS, STATUS_COLORS } from "../../data/mockBook";
 import { LIBRARY, FAVOURITES_IDS } from "../../data/mockUser";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/auth/useAuth";
+import { useAuth } from "../../hooks/auth/useAuth";
 import { format } from "date-fns";
 import GenericModal from "../../components/generic/GenericModal";
 import GenericButton from "../../components/generic/GenericButton";

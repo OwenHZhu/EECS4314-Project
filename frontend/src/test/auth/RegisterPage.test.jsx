@@ -43,7 +43,7 @@ vi.mock("react-router-dom", () => ({
  * Individual tests control whether registration succeeds or fails, allowing
  * RegisterPage to be tested independently from the backend.
  */
-vi.mock("../../context/auth/useAuth", () => ({
+vi.mock("../../hooks/auth/useAuth.js", () => ({
   useAuth: () => ({
     register: mockRegister,
   }),

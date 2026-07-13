@@ -1,4 +1,4 @@
-import { useAuth } from "../../context/auth/useAuth.js";
+import { useAuth } from "../../hooks/auth/useAuth.js";
 import AuthRequiredModal from "./AuthRequiredModal.jsx";
 
 export default function ProtectedRoute({ children }) {

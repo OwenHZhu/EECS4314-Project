@@ -1,5 +1,5 @@
 /**
- * ./context/auth/useAuth.jsx
+ * ./hooks/auth/useAuth.jsx
  *
  * A convenience hook that provides access to the authentication context.
  * This hook wraps React's `useContext` to simplify retrieving auth-related
@@ -22,7 +22,7 @@
  * - If used outside of an AuthProvider, the returned value will be `null`.
  */
 import { useContext } from "react";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../../context/auth/AuthContext";
 
 export function useAuth() {
     return useContext(AuthContext);
