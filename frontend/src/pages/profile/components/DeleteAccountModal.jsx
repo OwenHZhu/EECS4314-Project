@@ -47,6 +47,7 @@ export default function DeleteAccountModal({ setShowDelete }) {
     return (
         <GenericModal
             title="Delete Account?"
+            message={true}
             confirmLabel="Confirm"
             cancelLabel="Cancel"
             onConfirm={handleConfirm}
