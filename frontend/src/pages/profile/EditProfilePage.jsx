@@ -42,19 +42,14 @@
  */
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth/useAuth.js";
-import EditPictureModal from "../../components/auth/EditPictureModal.jsx";
-import GenericModal from "../../components/generic/GenericModal.jsx";
+import ProfilePictureModal from "./ProfilePictureModal.jsx";
 import GenericButton from "../../components/generic/GenericButton.jsx";
 import Icon from "../../components/generic/Icon.jsx";
-import Dropdown from "../../components/generic/Dropdown.jsx";
+import EditProfileHeader from "./EditProfileHeader.jsx";
 
 export default function EditProfilePage() {
-    const navigate = useNavigate();
-    const { user, deleteAccount, update } = useAuth();
-    const [backToProfile, setBackToProfile] = useState(false);
-    const [openSettings, setOpenSettings] = useState(false);
+    const { user, update } = useAuth();
 
     // Controlled input for new username
     const [username, setUsername] = useState("");
@@ -62,30 +57,8 @@ export default function EditProfilePage() {
     // Controlled input for new bio
     const [bio, setBio] = useState("");
 
-    // Controls visibility of the delete confirmation modal
-    const [showDelete, setShowDelete] = useState(false);
-
     // Controls visibility of the profile picture editing modal
     const [editPicture, setEditPicture] = useState(false);
-
-    /**
-     * Delete's the user's account and redirects them to the register page
-     */
-    function handleDelete() {
-        deleteAccount();
-        navigate("/register");
-    }
-
-    /**
-     * Navigates back to the user's profile without saving changes
-     */
-    function handleBack() {
-        setBackToProfile(true);
-    }
-
-    function closeBackToProfileModal() {
-        setBackToProfile(false);
-    }
 
     /**
      * Save new profile details 
@@ -93,22 +66,6 @@ export default function EditProfilePage() {
      */
     function handleSave() {
         update(username, bio, "");
-    }
-
-    /** Open the delete confirmation modal */
-    function openDeleteModal() {
-        setOpenSettings(false);
-        setShowDelete(true);
-    }
-
-    // Close the delete confirmation modal
-    function closeDeleteModal() {
-        setShowDelete(false);
-    }
-
-    function handleChangePassword() {
-        setOpenSettings(false);
-        navigate("/change-password");
     }
 
     /**
@@ -129,86 +86,14 @@ export default function EditProfilePage() {
         <div className="max-w-6xl mx-auto px-8 py-8 md:px-16 md:py-16">
             <title>{`${user.username} | BookAtlas`}</title>
 
-            {/* Delete confirmation modal */}
-            {showDelete && (
-                <GenericModal
-                    title="Delete Account?"
-                    confirmLabel="Confirm"
-                    cancelLabel="Cancel"
-                    onConfirm={handleDelete}
-                    onCancel={closeDeleteModal}
-                />
-            )}
+            <EditProfileHeader />
+
 
             {/* Edit picture modal */}
             {editPicture && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-                    <EditPictureModal setEditPicture={setEditPicture} />
-                </div>
+                <ProfilePictureModal setEditPicture={setEditPicture} />
             )}
 
-            {/* Back to profile modal */}
-            {backToProfile && (
-                <GenericModal
-                    title="Discard changes?"
-                    confirmLabel="Confirm"
-                    cancelLabel="Cancel"
-                    onConfirm={() => navigate("/profile")}
-                    onCancel={closeBackToProfileModal}
-                />
-            )}
-
-            {/* Header */}
-            <div className="flex flex-row items-center space-x-1 mb-2">
-                <Icon
-                    onClick={handleBack}
-                    className="text-[#5A4B4B]"
-                >
-                    arrow_back
-                </Icon>
-
-                <h1 className="text-base md:text-lg text-primary font-bold">Edit Profile</h1>
-
-                {/* TO-DO: Add on-click function  */}
-                <Dropdown
-                    openSettings={openSettings}
-                    setOpenSettings={setOpenSettings}
-                    trigger={
-                        <Icon
-                            className="text-[#482828] mt-1.5"
-                        >
-                            settings
-                        </Icon>}
-                >
-                    {/* Row 1: Delete Account */}
-                    <div
-                        onClick={openDeleteModal}
-                        className="flex flex-row items-center space-x-2 cursor-pointer mb-1"
-                    >
-                        <Icon
-                            className="text-[#238874] text-xl md:text-2xl"
-                        >
-                            delete
-                        </Icon>
-                        <p className="text-xs text-[#839497] text-nowrap hidden md:block">Delete Account</p>
-                    </div>
-                    {/* Row 2: Change Password */}
-                    <div>
-                        <div 
-                        onClick={handleChangePassword}
-                        className="flex flex-row items-center space-x-2 cursor-pointer"
-                        >
-                            <Icon
-                                className="text-[#238874] text-xl md:text-2xl"
-                            >
-                                key
-                            </Icon>
-                            <p className="text-xs text-[#839497] text-nowrap hidden md:block">Change Password</p>
-                        </div>
-                    </div>
-                </Dropdown>
-
-            </div>
 
             {/* Username and profile picture section */}
             <div className="flex flex-row items-center ml-5">
