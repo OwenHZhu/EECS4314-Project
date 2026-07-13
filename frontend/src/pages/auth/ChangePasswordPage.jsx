@@ -1,3 +1,19 @@
+/**
+ * ChangePasswordPage.jsx
+ *
+ * Page for updating the user's password. Handles:
+ * - Required-field validation
+ * - Password strength validation
+ * - Backend password update
+ * - Logout + redirect after successful change
+ *
+ * Dependencies:
+ * - useAuth: Provides changePassword() and logout()
+ * - useNavigate: Navigation after cancel or success
+ * - validatePassword: Client-side password strength validation
+ * - GenericInput, GenericButton, GenericModal, ErrorList: Reusable UI components
+ */
+
 import { useState } from "react";
 import { validatePassword } from "../../utils/validation.js";
 import { useAuth } from "../../context/auth/useAuth.js";
@@ -5,23 +21,75 @@ import { useNavigate } from "react-router-dom";
 import GenericInput from "../../components/generic/GenericInput.jsx";
 import GenericButton from "../../components/generic/GenericButton.jsx";
 import GenericModal from "../../components/generic/GenericModal.jsx";
+import ErrorList from "../../components/generic/ErrorList.jsx";
 
 export default function ChangePasswordPage() {
     const navigate = useNavigate();
     const { changePassword, logout } = useAuth();
+
+    // Controlled inputs for password fields
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
+
+    // Controls visibility of cancel confirmation modal
     const [cancel, setCancel] = useState(false);
+
+    // Validation + backend error messages
     const [errors, setErrors] = useState([]);
 
+    /**
+     * handleCancel()
+     *
+     * Navigates back to the profile editing page.
+     *
+     * @returns {void}
+     */
     function handleCancel() {
         navigate("/profile/edit");
     }
 
+    /**
+     * closeCancelModal()
+     *
+     * Closes the cancel confirmation modal.
+     *
+     * @returns {void}
+     */
     function closeCancelModal() {
         setCancel(false);
     }
 
+    /**
+     * handleErrors()
+     *
+     * Handles the display of validation or backend errors and resets both password fields.
+     *
+     * @param {string[]} errors - Array of error messages to display
+     * @returns {void}
+     */
+    function handleErrors(errors) {
+        setErrors(errors);
+        setCurrentPassword("");
+        setNewPassword("");
+    }
+
+    /**
+     * updatePassword()
+     *
+     * Validates and submits a password change request.
+     *
+     * Validation steps:
+     * - Required fields must be filled
+     * - New password must differ from current password
+     * - New password must pass validatePassword() rules
+     *
+     * Backend:
+     * - Calls changePassword(currentPassword, newPassword)
+     * - On failure: displays backend message
+     * - On success: logs out user and redirects to login
+     *
+     * @returns {Promise<void>}
+     */
     async function updatePassword() {
         const emptyErrors = [];
 
@@ -29,48 +97,36 @@ export default function ChangePasswordPage() {
         if (!currentPassword.trim()) emptyErrors.push("Please enter your current password.");
         if (!newPassword.trim()) emptyErrors.push("Please enter your new password.");
 
-        // If required fields missing: show errors and reset fields
+        // Missing required fields
         if (emptyErrors.length > 0) {
-            setErrors(emptyErrors);
-            setCurrentPassword("");
-            setNewPassword("");
+            handleErrors(emptyErrors);
             return;
         }
 
+        // Prevent identical passwords
         if (currentPassword === newPassword) {
-            setErrors(["New password cannot be the same as the current password."]);
-            setCurrentPassword("");
-            setNewPassword("");
+            handleErrors(["New password cannot be the same as the current password."]);
             return;
         }
 
-        // Format and password strength validation
-        let validationErrors = [];
+        // Password strength validation
         const passwordErrors = validatePassword(newPassword);
 
-        // Combine all validation errors
-        validationErrors = [...validationErrors, ...passwordErrors];
-
-        // If validation fails: show errors and reset fields
-        if (validationErrors.length > 0) {
-            setErrors(validationErrors);
-            setCurrentPassword("");
-            setNewPassword("");
+        if (passwordErrors.length > 0) {
+            handleErrors(passwordErrors);
             return;
         }
 
-        // Attempt registration
+        // Attempt password update
         const res = await changePassword(currentPassword, newPassword);
 
-        // Backend failure: show server message
+        // Backend failure
         if (!res.success) {
-            setErrors([res.message]);
-            setCurrentPassword("");
-            setNewPassword("");
+            handleErrors([res.message]);
             return;
         }
 
-        // Successful password change: Logout and navigate to Login page
+        // Successful password change → logout + redirect
         logout();
         navigate("/login");
 
@@ -84,7 +140,7 @@ export default function ChangePasswordPage() {
         <section className="mx-auto my-auto justify-center align-middle max-w-md p-8 md:p-10">
             <title>Change Password | BookAtlas</title>
 
-            {/* Delete confirmation modal */}
+            {/* Cancel confirmation modal */}
             {cancel && (
                 <GenericModal
                     title="Cancel Password Change?"
@@ -94,12 +150,12 @@ export default function ChangePasswordPage() {
                     onCancel={closeCancelModal}
                 />
             )}
+
             <h1 className="font-bold mb-2 text-sm sm:text-base md:text-xl text-tertiary">
                 Change Password
             </h1>
-            <p
-                className="text-xs md:text-sm text-[#7E7272]"
-            >
+
+            <p className="text-xs md:text-sm text-[#7E7272]">
                 Note: You must login after this action.
             </p>
 
@@ -133,16 +189,10 @@ export default function ChangePasswordPage() {
 
                 {/* Error messages */}
                 {errors.length > 0 && (
-                    <div className="bg-error-bg text-error-text p-3 rounded-lg mb-4 text-sm">
-                        <ul className="list-disc list-inside space-y-1">
-                            {errors.map((err, idx) => (
-                                <li key={idx}>{err}</li>
-                            ))}
-                        </ul>
-                    </div>
+                    <ErrorList errors={errors} />
                 )}
 
-                {/* Submit and links to login */}
+                {/* Submit + cancel */}
                 <div className="flex flex-row mt-2 justify-center space-x-3">
                     <GenericButton
                         type="submit"

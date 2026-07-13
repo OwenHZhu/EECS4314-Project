@@ -146,13 +146,14 @@ export default function AuthProvider({ children }) {
         try {
             const res = await axios.put(API_BASE_URL + "auth/me", { username, bio, profile_picture });
 
-            // Store new user details in localStorage
-            setUser(res.data.data);
+            if (res.data.data) {
+                setUser(res.data.data);
+            }
 
-            return { success: true };
+            return { success: true, message: res.data.message };
         }
         catch (err) {
-            const message = err.response?.data?.message || "Failed to update profile. Please try again.";
+            const message = err.response?.data?.detail || "Failed to update profile. Please try again.";
             return { success: false, message };
         }
     }, [setUser, API_BASE_URL]);

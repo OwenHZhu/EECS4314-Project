@@ -1,85 +1,98 @@
 /**
- * ./pages/profile/EditProfilePage.jsx
+ * EditProfilePage.jsx
  *
- * The profile editing screen where users can update personal information and
- * manage account-related actions. This page provides functionality for:
- *
- * 1. **Editing profile details**
- *    - Username: Users can enter a new username (max 12 characters).
- *    - Bio: Users can update their personal bio (max 150 characters).
- *    - Profile picture: Clicking the avatar opens a modal for picture editing.
- *
- * 2. **Account management**
- *    - Delete account: Opens a confirmation modal before proceeding.
- *    - Cancel editing: Returns the user to the profile page without saving.
- *
- * 3. **Modal interactions**
- *    - `GenericModal`: Used for delete-account confirmation.
- *    - `EditPictureModal`: Used for editing the profile picture.
+ * Profile editing screen allowing users to update:
+ * - Username
+ * - Bio
+ * - Profile picture
  *
  * Dependencies:
- * - `useAuth`: Provides the authenticated user object.
- * - `useNavigate`: Handles navigation after delete/cancel actions.
- * - `EditPictureModal`: Modal for updating the profile picture.
- * - `GenericModal`: Reusable confirmation modal.
- * - `GenericButton`: Reusable button component.
+ * - useAuth: Provides authenticated user + update() method
+ * - validateUsername: Client-side username validation
+ * - ProfilePictureModal: Profile picture editing modal
+ * - EditProfileHeader: Page header
+ * - GenericButton, Icon, ErrorList: Reusable UI components
  *
  * State:
- * - `username`: Controlled input for the new username.
- * - `bio`: Controlled input for the new bio.
- * - `showDelete`: Controls visibility of the delete confirmation modal.
- * - `editPicture`: Controls visibility of the profile picture editing modal.
- *
- * Behaviour:
- * - Clicking the profile picture toggles the picture-edit modal.
- * - Clicking "Delete" opens a confirmation modal.
- * - Confirming delete redirects to `/register` (placeholder behavior).
- * - Clicking "Cancel" returns to `/profile`.
- * - Clicking "Save" currently does not persist changes (placeholder).
- *
- * Notes:
- * - No backend integration is present yet; delete and save actions are placeholders.
+ * - username: Controlled username input
+ * - bio: Controlled bio input
+ * - messages: Validation or update feedback messages
+ * - editPicture: Controls visibility of the picture-edit modal
  */
 
 import { useState } from "react";
 import { useAuth } from "../../context/auth/useAuth.js";
-import ProfilePictureModal from "./ProfilePictureModal.jsx";
+import { validateUsername } from "../../utils/validation.js";
+import ProfilePictureModal from "./components/ProfilePictureModal.jsx";
+import EditProfileHeader from "./components/EditProfileHeader.jsx";
 import GenericButton from "../../components/generic/GenericButton.jsx";
 import Icon from "../../components/generic/Icon.jsx";
-import EditProfileHeader from "./EditProfileHeader.jsx";
+import ErrorList from "../../components/generic/ErrorList.jsx";
 
 export default function EditProfilePage() {
+    // For displaying error messages 
+    const [messages, setMessages] = useState([]);
+
+    // Get user state and update function from AuthProvider
     const { user, update } = useAuth();
 
-    // Controlled input for new username
-    const [username, setUsername] = useState("");
+    // Controlled input for username
+    const [username, setUsername] = useState(user.username);
 
-    // Controlled input for new bio
-    const [bio, setBio] = useState("");
+    // Controlled input for bio
+    const [bio, setBio] = useState(user.bio ? user.bio : "");
 
-    // Controls visibility of the profile picture editing modal
+    // Controls visibility of the profile picture modal
     const [editPicture, setEditPicture] = useState(false);
 
     /**
-     * Save new profile details 
-     * TO-DO: Add visible error handling for if a user enters an invalid username
+     * handleSave()
+     *
+     * Validates and submits updated profile details.
+     *
+     * Validation:
+     * - Uses validateUsername() to check username rules.
+     *
+     * Update:
+     * - Calls update(username, bio, profile_picture)
+     * - Displays backend message regardless of success/failure
+     *
+     * @returns {Promise<void>}
      */
-    function handleSave() {
-        update(username, bio, "");
+    async function handleSave() {
+        const validationErrors = validateUsername(username);
+
+        // Username validation failed
+        if (validationErrors.length >= 1) {
+            setMessages([validationErrors]);
+            setUsername(user.username);
+            setBio(user.bio);
+            return;
+        }
+
+        // Submit update request
+        const res = await update(username, bio, "");
+
+        // If update failed, revert fields to previous values
+        if (!res.success) {
+            setUsername(user.username);
+            setBio(user.bio);
+        }
+
+        // Display backend response message
+        setMessages([res.message]);
+        return;
     }
 
     /**
      * handlePicture()
      *
      * Toggles the profile picture editing modal.
+     *
+     * @returns {void}
      */
     function handlePicture() {
-        if (!editPicture) {
-            setEditPicture(true);
-        }
-        else {
-            setEditPicture(false);
-        }
+        setEditPicture(prev => !prev)
     }
 
     return (
@@ -88,14 +101,12 @@ export default function EditProfilePage() {
 
             <EditProfileHeader />
 
-
-            {/* Edit picture modal */}
+            {/* Profile picture modal */}
             {editPicture && (
                 <ProfilePictureModal setEditPicture={setEditPicture} />
             )}
 
-
-            {/* Username and profile picture section */}
+            {/* Username + profile picture */}
             <div className="flex flex-row items-center ml-5">
                 <Icon
                     onClick={handlePicture}
@@ -109,10 +120,18 @@ export default function EditProfilePage() {
                     onChange={(e) => setUsername(e.target.value)}
                     type="text"
                     maxLength={12}
-                    placeholder={user.username}
-                    className="bg-primary text-xs md:text-sm focus:outline-none rounded-full p-3 ml-1 w-full sm:w-1/2 h-fit"
+                    placeholder="What should we call you?"
+                    className="bg-[#3A2A2A] text-[#BFB8AD] text-xs md:text-sm focus:outline-none rounded-full p-3 pl-5 ml-1 w-full sm:w-1/2 h-fit"
                 />
             </div>
+
+            {/* Error messages */}
+            {messages.length >= 1 && (
+                <ErrorList
+                    className="ml-24"
+                    errors={messages}
+                />
+            )}
 
             {/* Bio section */}
             <div className="mt-6 mb-6 ml-8 md:mt-8 md:mb-8">
@@ -124,27 +143,25 @@ export default function EditProfilePage() {
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     type="text"
-                    placeholder={user.bio ? user.bio : ""}
+                    placeholder="Share something about yourself!"
                     maxLength={150}
                     className="bg-transparent resize-none text-xs md:text-sm border-secondary border-2 focus:ring-0 focus:outline-none rounded-md w-full h-32 md:w-2/3 sm:h-24 p-4"
                 />
 
                 {/* Character counter */}
                 <p className="text-xs w-fit">
-                    {`${bio.length ? bio.length : (user.bio ? user.bio.length : 0)} / 150`}
+                    {`${bio.length} / 150`}
                 </p>
             </div>
 
-            {/* Action buttons */}
-            <div>
-                <GenericButton
-                    onClick={handleSave}
-                    variant="primary"
-                    className="py-3 px-6 md:px-8 mr-4 md:mr-6 mb-2"
-                >
-                    Save
-                </GenericButton>
-            </div>
+            {/* Save button */}
+            <GenericButton
+                onClick={handleSave}
+                variant="primary"
+                className="py-3 px-6 md:px-8 ml-8"
+            >
+                Save
+            </GenericButton>
         </div>
     );
 }
