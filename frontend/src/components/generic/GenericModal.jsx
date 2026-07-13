@@ -33,27 +33,29 @@ export default function GenericModal({
     onCancel,
 }) {
     return (
-        <div className="flex flex-col items-center bg-card-fill border-card-stroke border p-4 md:p-6 max-w-fit font-medium rounded-lg">
-            <h1 className="text-sm md:text-lg text-primary mb-4 tracking-wide">
-                {title}
-            </h1>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40">
+            <div className="flex flex-col items-center bg-card-fill border-card-stroke border p-4 md:p-6 max-w-fit font-medium rounded-lg">
+                <h1 className="text-sm md:text-lg text-primary mb-4 tracking-wide">
+                    {title}
+                </h1>
 
-            <div className="flex flex-row gap-3 md:gap-4">
-                <GenericButton
-                    onClick={onConfirm}
-                    variant="primary"
-                    className="py-2 md:py-3 px-6 md:px-8"
-                >
-                    {confirmLabel}
-                </GenericButton>
+                <div className="flex flex-row gap-3 md:gap-4">
+                    <GenericButton
+                        onClick={onConfirm}
+                        variant="primary"
+                        className="py-2 md:py-3 px-6 md:px-8"
+                    >
+                        {confirmLabel}
+                    </GenericButton>
 
-                <GenericButton
-                    onClick={onCancel}
-                    variant="ghost"
-                    className="py-2 md:py-3 px-6 md:px-8"
-                >
-                    {cancelLabel}
-                </GenericButton>
+                    <GenericButton
+                        onClick={onCancel}
+                        variant="ghost"
+                        className="py-2 md:py-3 px-6 md:px-8"
+                    >
+                        {cancelLabel}
+                    </GenericButton>
+                </div>
             </div>
         </div>
     );

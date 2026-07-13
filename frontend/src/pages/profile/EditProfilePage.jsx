@@ -47,10 +47,15 @@ import { useAuth } from "../../context/auth/useAuth.js";
 import EditPictureModal from "../../components/auth/EditPictureModal.jsx";
 import GenericModal from "../../components/generic/GenericModal.jsx";
 import GenericButton from "../../components/generic/GenericButton.jsx";
+import Icon from "../../components/generic/Icon.jsx";
+import Dropdown from "../../components/generic/Dropdown.jsx";
 
 export default function EditProfilePage() {
-    const { user, deleteAccount, update } = useAuth();
     const navigate = useNavigate();
+    const { user, deleteAccount, update } = useAuth();
+    const [backToProfile, setBackToProfile] = useState(false);
+    const [openSettings, setOpenSettings] = useState(false);
+    const [changePassword, setChangePassword] = useState(false);
 
     // Controlled input for new username
     const [username, setUsername] = useState("");
@@ -64,11 +69,6 @@ export default function EditProfilePage() {
     // Controls visibility of the profile picture editing modal
     const [editPicture, setEditPicture] = useState(false);
 
-    // Close the delete confirmation modal
-    function closeDeleteModal() {
-        setShowDelete(false);
-    }
-
     /**
      * Delete's the user's account and redirects them to the register page
      */
@@ -77,8 +77,15 @@ export default function EditProfilePage() {
         navigate("/register");
     }
 
+    /**
+     * Navigates back to the user's profile without saving changes
+     */
     function handleBack() {
-        navigate("/profile");
+        setBackToProfile(true);
+    }
+
+    function closeBackToProfileModal() {
+        setBackToProfile(false);
     }
 
     /**
@@ -89,15 +96,26 @@ export default function EditProfilePage() {
         update(username, bio, "");
     }
 
-    /** Cancel editing and return to the profile page */
-    function handleCancel() {
-        navigate("/profile");
-    }
-
     /** Open the delete confirmation modal */
     function openDeleteModal() {
+        setOpenSettings(false);
         setShowDelete(true);
     }
+
+    // Close the delete confirmation modal
+    function closeDeleteModal() {
+        setShowDelete(false);
+    }
+
+    function handleChangePassword() {
+        setOpenSettings(false);
+        setChangePassword(true);
+    }
+
+    function closeChangePassword() {
+        setChangePassword(false);
+    }
+
 
     /**
      * handlePicture()
@@ -119,15 +137,13 @@ export default function EditProfilePage() {
 
             {/* Delete confirmation modal */}
             {showDelete && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-                    <GenericModal
-                        title="Delete Account?"
-                        confirmLabel="Confirm"
-                        cancelLabel="Cancel"
-                        onConfirm={handleDelete}
-                        onCancel={closeDeleteModal}
-                    />
-                </div>
+                <GenericModal
+                    title="Delete Account?"
+                    confirmLabel="Confirm"
+                    cancelLabel="Cancel"
+                    onConfirm={handleDelete}
+                    onCancel={closeDeleteModal}
+                />
             )}
 
             {/* Edit picture modal */}
@@ -137,64 +153,88 @@ export default function EditProfilePage() {
                 </div>
             )}
 
+            {/* Back to profile modal */}
+            {backToProfile && (
+                <GenericModal
+                    title="Discard changes?"
+                    confirmLabel="Confirm"
+                    cancelLabel="Cancel"
+                    onConfirm={() => navigate("/profile")}
+                    onCancel={closeBackToProfileModal}
+                />
+            )}
+
+            {/* Change password modal */}
+            {changePassword && (
+                <GenericModal
+                    title="Change Password?"
+                    confirmLabel="Confirm"
+                    cancelLabel="Cancel"
+                    onConfirm={() => navigate("/change-password")}
+                    onCancel={closeChangePassword}
+                />
+            )}
+
             {/* Header */}
             <div className="flex flex-row items-center space-x-1 mb-2">
-                <span
+                <Icon
                     onClick={handleBack}
-                    className="material-symbols-outlined cursor-pointer
-                    text-2xl md:text-3xl
-                        [font-variation-settings:'opsz'_20]
-                        sm:[font-variation-settings:'opsz'_24]
-                        md:[font-variation-settings:'opsz'_32]
-                        lg:[font-variation-settings:'opsz'_40]
-                    "
-                    style={{
-                        color: "#5A4B4B"
-                    }
-                    }
+                    className="text-[#5A4B4B]"
                 >
                     arrow_back
-                </span>
+                </Icon>
 
                 <h1 className="text-base md:text-lg text-primary font-bold">Edit Profile</h1>
 
                 {/* TO-DO: Add on-click function  */}
-                <span
-                    onClick=""
-                    className="material-symbols-outlined cursor-pointer
-                    text-xl md:text-2xl
-                        [font-variation-settings:'opsz'_20]
-                        sm:[font-variation-settings:'opsz'_24]
-                        md:[font-variation-settings:'opsz'_32]
-                        lg:[font-variation-settings:'opsz'_40]
-                    "
-                    style={{
-                        color: "#482828"
-                    }
-                    }
+                <Dropdown
+                    openSettings={openSettings}
+                    setOpenSettings={setOpenSettings}
+                    trigger={
+                        <Icon
+                            className="text-[#482828] mt-1.5"
+                        >
+                            settings
+                        </Icon>}
                 >
-                    settings
-                </span>
+                    {/* Row 1: Delete Account */}
+                    <div
+                        onClick={openDeleteModal}
+                        className="flex flex-row items-center space-x-2 cursor-pointer mb-1"
+                    >
+                        <Icon
+                            className="text-[#238874] text-xl md:text-2xl"
+                        >
+                            delete
+                        </Icon>
+                        <p className="text-xs text-[#839497] text-nowrap hidden md:block">Delete Account</p>
+                    </div>
+                    {/* Row 2: Change Password */}
+                    <div>
+                        <div 
+                        onClick={handleChangePassword}
+                        className="flex flex-row items-center space-x-2 cursor-pointer"
+                        >
+                            <Icon
+                                className="text-[#238874] text-xl md:text-2xl"
+                            >
+                                key
+                            </Icon>
+                            <p className="text-xs text-[#839497] text-nowrap hidden md:block">Change Password</p>
+                        </div>
+                    </div>
+                </Dropdown>
+
             </div>
 
             {/* Username and profile picture section */}
-            <div className="flex flex-row items-center">
-                <span
+            <div className="flex flex-row items-center ml-5">
+                <Icon
                     onClick={handlePicture}
-                    className="material-symbols-outlined cursor-pointer
-                    text-6xl md:text-7xl
-                        [font-variation-settings:'opsz'_20]
-                        sm:[font-variation-settings:'opsz'_24]
-                        md:[font-variation-settings:'opsz'_32]
-                        lg:[font-variation-settings:'opsz'_40]
-                    "
-                    style={{
-                        color: "#482828"
-                    }
-                    }
+                    className="text-6xl md:text-7xl text-[#482828]"
                 >
                     account_circle
-                </span>
+                </Icon>
 
                 <input
                     value={username}
@@ -207,7 +247,7 @@ export default function EditProfilePage() {
             </div>
 
             {/* Bio section */}
-            <div className="mt-6 mb-6 md:mt-8 md:mb-8">
+            <div className="mt-6 mb-6 ml-8 md:mt-8 md:mb-8">
                 <h2 className="text-medium text-primary font-bold mb-2">Bio</h2>
 
                 <textarea
@@ -235,22 +275,6 @@ export default function EditProfilePage() {
                     className="py-3 px-6 md:px-8 mr-4 md:mr-6 mb-2"
                 >
                     Save
-                </GenericButton>
-
-                <GenericButton
-                    onClick={openDeleteModal}
-                    variant="secondary"
-                    className="py-3 px-6 md:px-8 mr-4 md:mr-6 mb-2"
-                >
-                    Delete
-                </GenericButton>
-
-                <GenericButton
-                    onClick={handleCancel}
-                    variant="ghost"
-                    className="py-3 px-6 md:px-8 mr-4 md:mr-6 mb-2"
-                >
-                    Cancel
                 </GenericButton>
             </div>
         </div>

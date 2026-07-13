@@ -130,15 +130,13 @@ export function ProfilePage() {
 
       {/* Logout confirmation modal */}
       {showLogout && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <GenericModal
-            title="Logout?"
-            cancelLabel="Cancel"
-            confirmLabel="Logout"
-            onConfirm={handleLogout}
-            onCancel={closeModal}
-          />
-        </div>
+        <GenericModal
+          title="Logout?"
+          cancelLabel="Cancel"
+          confirmLabel="Logout"
+          onConfirm={handleLogout}
+          onCancel={closeModal}
+        />
       )}
 
       {/* User identity section */}
@@ -148,7 +146,7 @@ export function ProfilePage() {
         </div>
 
         <div>
-          <div className="flex flex-row pt-2 md:pt-3">
+          <div className="flex flex-row items-center mt-3">
             <h1 className="text-lg md:text-2xl font-semibold text-primary">
               {user.username}
             </h1>
