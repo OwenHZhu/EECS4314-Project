@@ -2,14 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime, timezone
 
-class ThreadCategory(str):
-    """
-    Categories for organizing discussions within a book or genre forum.
-    """
-    SPOILERS = "spoilers"
-    QUESTIONS = "questions"
-    THEORIES = "theories"
-
 
 #possibly separate these into different models for creation vs retrieval 
 class ThreadPost(BaseModel):
@@ -26,30 +18,26 @@ class ThreadPost(BaseModel):
 
     tag_ids: list[str] = Field(default_factory=list, description="List of tag IDs linked to this thread")
 
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Thread creation time")
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Last update time")
-
 
 class ThreadReply(BaseModel):
     """
     Represents a reply inside a thread (nested discussion system).
     """
 
-    id: str = Field(description="MongoDB post ID")
+    id: str = Field(description="Reply ID")
     thread_id: str = Field(description="Parent thread ID")
     user_id: str = Field(description="Author of the post")
 
-    content: str = Field(min_length=1)
+    content: str = Field(min_length=1, max_length=1000)
     parent_reply_id: Optional[str] = Field(default=None, description="Optional parent reply ID for nested replies")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Reply creation time")
+    updated_at: Optional[datetime] = Field(default=None, description="Last update time")
 
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Post creation time")
-    updated_at: Optional[datetime] = Field(default=None, description="Optional edit timestamp")
 
 class ThreadCreate(BaseModel): #Model used for creating new threads (input validation)
     user_id: str = Field(description="ID of the user creating the thread")
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1)
-    book_id: Optional[str] = Field(default=None, description="Optional book this thread belongs to")
     tag_ids: list[str] = Field(default_factory=list, description="List of tag IDs to link to this thread")
 
 

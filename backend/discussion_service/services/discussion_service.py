@@ -10,6 +10,8 @@ from schemas.discussion_forum import ThreadPost, ThreadReply, UserActivityRespon
 DISCUSSION_THREADS_TABLE = "discussion_threads"
 DISCUSSION_REPLIES_TABLE = "discussion_replies"
 DISCUSSION_THREAD_TAGS_TABLE = "thread_tags"
+DISCUSSION_THREAD_LIKES_TABLE = "thread_likes"
+DISCUSSION_REPLY_LIKES_TABLE = "reply_likes"
 
 
 def parse_datetime(value: Any) -> datetime:
@@ -244,3 +246,108 @@ def get_user_activity(user_id: str) -> UserActivityResponse:
 	replies = [build_reply(cast(dict[str, Any], item)) for item in (reply_res.data or [])]
 
 	return UserActivityResponse(user_id=user_id, threads=threads, replies=replies)
+
+def like_thread(*, user_id: str, thread_id: str) -> bool:
+	"""Adds a like from a user to a thread if it does not already exist."""
+	try:
+		supabase.table(DISCUSSION_THREAD_LIKES_TABLE).insert({
+			"user_id": user_id,
+			"thread_id": thread_id,
+		}).execute()
+		return True
+	except Exception as exc:
+		msg = str(exc).lower()
+		if "duplicate" in msg or "already exists" in msg:
+			return False
+		raise
+
+
+def unlike_thread(*, user_id: str, thread_id: str) -> None:
+	"""Removes a user's like from a thread."""
+	supabase.table(DISCUSSION_THREAD_LIKES_TABLE).delete().eq("user_id", user_id).eq("thread_id", thread_id).execute()
+
+
+def has_thread_like(*, user_id: str, thread_id: str) -> bool:
+	"""Returns True if the user has liked the thread."""
+	res = (
+		supabase.table(DISCUSSION_THREAD_LIKES_TABLE)
+		.select("user_id")
+		.eq("user_id", user_id)
+		.eq("thread_id", thread_id)
+		.limit(1)
+		.execute()
+	)
+	return bool(res.data)
+
+
+def toggle_thread_like(*, user_id: str, thread_id: str) -> bool:
+	"""Toggles a thread like on or off for the given user."""
+	if has_thread_like(user_id=user_id, thread_id=thread_id):
+		unlike_thread(user_id=user_id, thread_id=thread_id)
+		return False
+	like_thread(user_id=user_id, thread_id=thread_id)
+	return True
+
+
+def count_thread_likes(thread_id: str) -> int:
+	"""Returns the number of likes for a specific thread."""
+	res = (
+		supabase.table(DISCUSSION_THREAD_LIKES_TABLE)
+		.select("id", count="exact")
+		.eq("thread_id", thread_id)
+		.execute()
+	)
+	return int(res.count or 0)
+
+
+def like_reply(*, user_id: str, reply_id: str) -> bool:
+	"""Adds a like from a user to a reply if it does not already exist."""
+	try:
+		supabase.table(DISCUSSION_REPLY_LIKES_TABLE).insert({
+			"user_id": user_id,
+			"reply_id": reply_id,
+		}).execute()
+		return True
+	except Exception as exc:
+		msg = str(exc).lower()
+		if "duplicate" in msg or "already exists" in msg:
+			return False
+		raise
+
+
+def unlike_reply(*, user_id: str, reply_id: str) -> None:
+	"""Removes a user's like from a reply."""
+	supabase.table(DISCUSSION_REPLY_LIKES_TABLE).delete().eq("user_id", user_id).eq("reply_id", reply_id).execute()
+
+
+def has_reply_like(*, user_id: str, reply_id: str) -> bool:
+	"""Returns True if the user has liked the reply."""
+	res = (
+		supabase.table(DISCUSSION_REPLY_LIKES_TABLE)
+		.select("user_id")
+		.eq("user_id", user_id)
+		.eq("reply_id", reply_id)
+		.limit(1)
+		.execute()
+	)
+	return bool(res.data)
+
+
+def toggle_reply_like(*, user_id: str, reply_id: str) -> bool:
+	"""Toggles a reply like on or off for the given user."""
+	if has_reply_like(user_id=user_id, reply_id=reply_id):
+		unlike_reply(user_id=user_id, reply_id=reply_id)
+		return False
+	like_reply(user_id=user_id, reply_id=reply_id)
+	return True
+
+
+def count_reply_likes(reply_id: str) -> int:
+	"""Returns the number of likes for a specific reply."""
+	res = (
+		supabase.table(DISCUSSION_REPLY_LIKES_TABLE)
+		.select("id", count="exact")
+		.eq("reply_id", reply_id)
+		.execute()
+	)
+	return int(res.count or 0)

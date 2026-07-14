@@ -8,12 +8,20 @@ from schemas.discussion_forum import (
 	UserActivityResponse,
 )
 from services.discussion_service import (
+	count_reply_likes,
+	count_thread_likes,
 	create_reply,
 	create_thread,
 	get_thread,
+	get_user_activity,
+	like_reply,
+	like_thread,
 	list_replies,
 	list_threads,
-	get_user_activity,
+	toggle_reply_like,
+	toggle_thread_like,
+	unlike_reply,
+	unlike_thread,
 )
 
 
@@ -62,7 +70,7 @@ def create_forum_reply(thread_id: str, payload: ReplyCreate):
 def read_forum_replies(thread_id: str):
 	return list_replies(thread_id=thread_id)
 
-@router.get("/forum/users/{user_id}/activity", response_model=UserActivityResponse)
+@router.get("/users/{user_id}/activity", response_model=UserActivityResponse)
 def read_user_activity(user_id: str):
 	"""
 	Retrieves a user's activity in the discussion forum, including threads and replies.
@@ -76,4 +84,16 @@ def read_user_activity(user_id: str):
 		return get_user_activity(user_id)
 	except ValueError as exc:
 		raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/threads/{thread_id}/like")
+def like_forum_thread(thread_id: str, user_id: str):
+	liked = toggle_thread_like(user_id=user_id, thread_id=thread_id)
+	return {"liked": liked, "like_count": count_thread_likes(thread_id)}
+
+
+@router.post("/replies/{reply_id}/like")
+def like_forum_reply(reply_id: str, user_id: str):
+	liked = toggle_reply_like(user_id=user_id, reply_id=reply_id)
+	return {"liked": liked, "like_count": count_reply_likes(reply_id)}
 	
