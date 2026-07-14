@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from book_atlas import app
+from book_service.book_service import app
 from book_service.tests.test_conf import make_response, mock_supabase
 
 client = TestClient(app)
