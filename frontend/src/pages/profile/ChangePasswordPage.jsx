@@ -16,7 +16,7 @@
 
 import { useState } from "react";
 import { validatePassword } from "../../utils/validation.js";
-import { useAuth } from "../../context/auth/useAuth.js";
+import { useAuth } from "../../hooks/auth/useAuth.js";
 import { useNavigate } from "react-router-dom";
 import GenericInput from "../../components/generic/GenericInput.jsx";
 import GenericButton from "../../components/generic/GenericButton.jsx";

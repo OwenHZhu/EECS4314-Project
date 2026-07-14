@@ -14,7 +14,7 @@
  */
 
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/auth/useAuth";
+import { useAuth } from "../../../hooks/auth/useAuth";
 import GenericModal from "../../../components/generic/GenericModal";
 
 export default function DeleteAccountModal({ setShowDelete }) {
@@ -47,6 +47,7 @@ export default function DeleteAccountModal({ setShowDelete }) {
     return (
         <GenericModal
             title="Delete Account?"
+            message={true}
             confirmLabel="Confirm"
             cancelLabel="Cancel"
             onConfirm={handleConfirm}

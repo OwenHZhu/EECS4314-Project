@@ -15,9 +15,9 @@ import { WishlistPage } from "./pages/WishlistPage";
 import { FavouritesPage } from "./pages/FavouritesPage";
 import { ForumsPage } from "./pages/ForumsPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
-import ChangePasswordPage from "./pages/auth/ChangePasswordPage";
+import LoginPage from "./pages/login/LoginPage";
+import RegisterPage from "./pages/register/RegisterPage";
+import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import EditProfilePage from "./pages/profile/EditProfilePage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 

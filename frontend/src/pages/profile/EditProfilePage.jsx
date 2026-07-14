@@ -21,7 +21,7 @@
  */
 
 import { useState } from "react";
-import { useAuth } from "../../context/auth/useAuth.js";
+import { useAuth } from "../../hooks/auth/useAuth.js";
 import { validateUsername } from "../../utils/validation.js";
 import ProfilePictureModal from "./components/ProfilePictureModal.jsx";
 import EditProfileHeader from "./components/EditProfileHeader.jsx";

@@ -1,0 +1,82 @@
+/**
+ * ./api/auth/authService.js
+ *
+ * Wraps all auth-related API calls for the authClient.
+ * AuthProvider handles state updates, error formatting, and side effects.
+ *
+ * Endpoints assume the following backend routes:
+ * - POST auth/login
+ * - POST auth/register
+ * - POST auth/logout
+ * - GET  auth/me
+ * - PUT  auth/me
+ * - PUT  auth/me/password
+ * - DELETE auth/me
+ */
+
+import authClient from "./authClient.js";
+
+/**
+ * Login with email and password.
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<import("axios").AxiosResponse>}
+ */
+export function login(email, password) {
+    return authClient.post("auth/login", { email, password });
+}
+
+/**
+ * Register a new user.
+ * @param {string} username
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<import("axios").AxiosResponse>}
+ */
+export function register(username, email, password) {
+    return authClient.post("auth/register", { username, email, password });
+}
+
+/**
+ * Logout the current user.
+ * @param {string} token - JWT token to invalidate
+ * @returns {Promise<import("axios").AxiosResponse>}
+ */
+export function logout(token) {
+    return authClient.post("auth/logout", { token });
+}
+
+/**
+ * Fetch the authenticated user's profile.
+ * @returns {Promise<import("axios").AxiosResponse>}
+ */
+export function me() {
+    return authClient.get("auth/me");
+}
+
+/**
+ * Update user profile fields.
+ * @param {Object} payload - Arbitrary profile fields to update
+ * @returns {Promise<import("axios").AxiosResponse>}
+ */
+export function update(payload) {
+    return authClient.put("auth/me", payload);
+}
+
+/**
+ * Change the user's password.
+ * @param {string} current_password
+ * @param {string} new_password
+ * @returns {Promise<import("axios").AxiosResponse>}
+ */
+export function changePassword(current_password, new_password) {
+    return authClient.put("auth/me/password", { current_password, new_password });
+}
+
+/**
+ * Delete the authenticated user's account.
+ * @returns {Promise<import("axios").AxiosResponse>}
+ */
+export function deleteAccount() {
+    return authClient.delete("auth/me");
+}
