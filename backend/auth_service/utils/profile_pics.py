@@ -46,7 +46,7 @@ Environment variables required (.env):
 
 import os
 import secrets
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from dotenv import load_dotenv
 from fastapi import UploadFile
@@ -109,7 +109,7 @@ def get_picture_path(filename: str) -> str:
         Absolute path inside the configured Databricks Volume.
     """
 
-    return str(Path(DATABRICKS_VOLUME_PATH) / filename)
+    return str(PurePosixPath(DATABRICKS_VOLUME_PATH) / filename)
 
 
 async def validate_image(file: UploadFile) -> None:
