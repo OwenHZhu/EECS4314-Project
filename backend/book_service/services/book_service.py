@@ -60,23 +60,77 @@ def get_all_books(q: Optional[str] = None, limit: int = 50) -> dict:
 
 def get_book_by_id(book_id: str) -> dict:
     """
-    Fetches full details for a single book by its ID.
-
-    Args:
-        book_id: The UUID string of the target book.
-
-    Returns:
-        Success: { success: True, message: str, data: dict }
-        Failure: { success: False, message: "Book not found" | error, data: None }
+    Fetches full details for a single book by its ID and attaches
+    aggregated library statistics.
     """
     try:
-        res = supabase.table("book_catalogue").select("*").eq("id", book_id).execute()
-        if not res.data:
+        # 1. Fetch the core book details
+        book_res = supabase.table("book_catalogue").select("*").eq("id", book_id).execute()
+        if not book_res.data:
             return {"success": False, "message": "Book not found", "data": None}
             
-        return {"success": True, "message": "Book fetched successfully", "data": res.data[0]}
+        book_data = book_res.data[0]
+
+        # 2. Fetch the raw library data
+        library_res = supabase.table("library").select("rating, status").eq("book_id", book_id).execute()
+        
+        # 3. Offload the math to our helper function
+        book_data["library_stats"] = _calculate_library_stats(library_res.data)
+
+        return {"success": True, "message": "Book fetched successfully", "data": book_data}
+
     except Exception as e:
         return {"success": False, "message": f"Database error: {str(e)}", "data": None}
+    
+def _calculate_library_stats(library_data: list) -> dict:
+    """
+    Private helper function to aggregate ratings and read statuses.
+    Keeps mathematical logic decoupled from database operations.
+    """
+    ratings = []
+    wishlist_count = 0
+    reading_count = 0
+
+    if library_data:
+        for entry in library_data:
+            if entry.get("status") == "wishlist":
+                wishlist_count += 1
+            elif entry.get("status") == "reading":
+                reading_count += 1
+            
+            if entry.get("rating") is not None:
+                ratings.append(entry["rating"])
+
+    total_ratings = len(ratings)
+    average_rating = 0.0
+    distribution = {
+        "1": {"count": 0, "percentage": 0.0},
+        "2": {"count": 0, "percentage": 0.0},
+        "3": {"count": 0, "percentage": 0.0},
+        "4": {"count": 0, "percentage": 0.0},
+        "5": {"count": 0, "percentage": 0.0},
+    }
+
+    if total_ratings > 0:
+        average_rating = round(sum(ratings) / total_ratings, 2)
+        for r in ratings:
+            str_rating = str(r)
+            if str_rating in distribution:
+                distribution[str_rating]["count"] += 1
+        
+        for star_level in distribution:
+            pct = (distribution[star_level]["count"] / total_ratings) * 100
+            distribution[star_level]["percentage"] = round(pct, 1)
+
+    return {
+        "wishlist_count": wishlist_count,
+        "reading_count": reading_count,
+        "ratings": {
+            "average": average_rating,
+            "total_ratings": total_ratings,
+            "distribution": distribution
+        }
+    }
 
 def add_book(book_data: dict) -> dict:
     """
