@@ -7,12 +7,14 @@ Tests for services/auth.py -> delete_account.
 from unittest.mock import patch
 
 from auth_service.services.auth import delete_account
-from .test_conf import make_response
+from .conftest import make_response
 
 
 class TestDeleteAccount:
     def test_successful_deletion(self, mock_supabase, sample_user_row):
-        mock_supabase([make_response([{"id": sample_user_row["id"]}])])
+        mock_supabase.table().delete().eq().execute.return_value = make_response(
+            [{"id": sample_user_row["id"]}]
+        )
 
         with patch("auth_service.services.auth.blacklist_token") as mock_blacklist:
             result = delete_account(sample_user_row["id"], "some.jwt.token")
@@ -24,7 +26,7 @@ class TestDeleteAccount:
         """Deliberately verifies blacklist_token runs first — the session
         should be invalidated immediately regardless of whether the
         delete itself succeeds, per the function's own docstring."""
-        mock_supabase([make_response([])])  # delete finds nothing
+        mock_supabase.table().delete().eq().execute.return_value = make_response([])  # delete finds nothing
 
         with patch("auth_service.services.auth.blacklist_token") as mock_blacklist:
             delete_account(sample_user_row["id"], "some.jwt.token")
@@ -32,7 +34,7 @@ class TestDeleteAccount:
         mock_blacklist.assert_called_once()
 
     def test_nonexistent_user_returns_not_found(self, mock_supabase):
-        mock_supabase([make_response([])])
+        mock_supabase.table().delete().eq().execute.return_value = make_response([])
 
         with patch("auth_service.services.auth.blacklist_token"):
             result = delete_account("00000000-0000-0000-0000-000000000000", "token")

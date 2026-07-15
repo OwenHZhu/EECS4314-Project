@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 from typing import Optional
-from database.db import supabase
-from schemas.library import LibraryEntryCreate, ReadingStatus
+from shared.db import supabase
+from library_service.schemas.library import LibraryEntryCreate, ReadingStatus
+
 
 
 def add_or_update_library_entry(entry: LibraryEntryCreate, user_id: str) -> dict:

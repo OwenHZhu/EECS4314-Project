@@ -28,7 +28,7 @@ import { BOOKS, STATUS_LABELS, STATUS_COLORS } from "../../data/mockBook";
 import { LIBRARY, FAVOURITES_IDS } from "../../data/mockUser";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/auth/useAuth";
+import { useAuth } from "../../hooks/auth/useAuth";
 import { format } from "date-fns";
 import GenericModal from "../../components/generic/GenericModal";
 import GenericButton from "../../components/generic/GenericButton";
@@ -130,39 +130,47 @@ export function ProfilePage() {
 
       {/* Logout confirmation modal */}
       {showLogout && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <GenericModal
-            title="Logout?"
-            cancelLabel="Cancel"
-            confirmLabel="Logout"
-            onConfirm={handleLogout}
-            onCancel={closeModal}
-          />
-        </div>
+        <GenericModal
+          title="Logout?"
+          cancelLabel="Cancel"
+          confirmLabel="Logout"
+          onConfirm={handleLogout}
+          onCancel={closeModal}
+        />
       )}
 
       {/* User identity section */}
-      <div className="flex items-start gap-5 mb-6 md:mb-10 pb-2">
+      <div className="flex items-start gap-5 mb-6 md:mb-10">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#2d2845] flex items-center justify-center text-2xl font-semibold text-[#b8b0ff] shrink-0">
           {user.username[0]}
         </div>
 
         <div>
-          <div className="flex flex-row pt-2 md:pt-3">
-            <h1 className="text-lg md:text-2xl font-semibold text-primary leading-tight">
+          <div className="flex flex-row items-center mt-3">
+            <h1 className="text-lg md:text-2xl font-semibold text-primary">
               {user.username}
             </h1>
 
             {/* Logout icon */}
-            <img
+            <span
               onClick={openModal}
-              src="../../src/assets/logout-icon.png"
               alt="Logout icon"
-              className="w-4 h-4 md:w-6 md:h-6 cursor-pointer mt-1 ml-1 md:ml-2"
-            />
+              className="
+                material-symbols-outlined cursor-pointer 
+                ml-1 text-xl md:text-2xl
+                [font-variation-settingss:'opsz'_20]
+                sm:[font-variation-settings:'opsz'_20]
+                md:[font-variation-settings:'opsz'_24]
+                lg:[font-variation-settings:'opsz'_32]
+              "
+              style={{
+                color: "#774949"
+              }}>
+              logout
+            </span>
           </div>
 
-          <p className="text-xs text-caption mt-1">
+          <p className="text-xs text-caption">
             {user.email} · joined {format(new Date(user.created_at), "MMMM dd, yyyy")}
           </p>
 
