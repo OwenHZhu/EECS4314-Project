@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
-from utils.jwt import get_current_user_id
-from schemas.library import LibraryEntryCreate, LibraryEntryUpdate
-from services.lib_service import (
+from auth_service.utils.jwt import get_current_user_id
+from library_service.schemas.library import LibraryEntryCreate, LibraryEntryUpdate
+from library_service.services.lib_service import (
     add_or_update_library_entry,
     get_user_library,
     update_library,
