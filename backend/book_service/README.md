@@ -1,15 +1,17 @@
 # 📚 Book Service (BookAtlas)
 
-The Book Service is a standalone microservice responsible for managing the global catalogue of books for the BookAtlas platform. It handles all CRUD operations for book metadata and dynamically aggregates real-time user engagement metrics (ratings and reading statuses) from the Library Service.
+The Book Service is a standalone microservice responsible for managing the global catalogue of books for the BookAtlas platform.
+
+It handles CRUD operations for book metadata and dynamically aggregates real-time user engagement metrics, such as ratings and reading statuses, from the Library Service.
 
 ## Architecture
 
-*   **Framework:** FastAPI (Python)
-*   **Data Validation:** Pydantic
-*   **Database:** Supabase (PostgreSQL)
-*   **Design Pattern:** Controller/Service pattern. 
-    *   `routers/books.py` handles HTTP routing and strict data validation.
-    *   `services/book_service.py` handles business logic and database execution.
+- **Framework:** FastAPI (Python)
+- **Data Validation:** Pydantic
+- **Database:** Supabase (PostgreSQL)
+- **Design Pattern:** Controller/Service pattern
+  - `routers/books.py` handles HTTP routing and request validation.
+  - `services/book_service.py` handles business logic and database operations.
 
 ---
 
@@ -17,9 +19,9 @@ The Book Service is a standalone microservice responsible for managing the globa
 
 **Base URL:** `/api/v1/books`
 
-### The Book Object
+## The Book Object
 
-All successful single-book `GET` requests return a unified JSON payload combining the core book details with aggregated `library_stats`.
+Successful single-book requests return a unified JSON response containing the book's metadata and aggregated `library_stats`.
 
 ```json
 {
@@ -29,8 +31,12 @@ All successful single-book `GET` requests return a unified JSON payload combinin
     "author": "Jane Austen",
     "description": "An 1813 novel of manners...",
     "isbn": "9798518711563",
-    "cover_image": "[https://covers.openlibrary.org/](https://covers.openlibrary.org/)...",
-    "genre": ["Romance", "Historical", "Fiction"],
+    "cover_image": "https://covers.openlibrary.org/example.jpg",
+    "genre": [
+      "Romance",
+      "Historical",
+      "Fiction"
+    ],
     "published_date": "1813",
     "page_count": 351,
     "publisher": "Crafting 52",
@@ -43,55 +49,130 @@ All successful single-book `GET` requests return a unified JSON payload combinin
         "average": 4.5,
         "total_ratings": 2,
         "distribution": {
-          "1": { "count": 0, "percentage": 0.0 },
-          "2": { "count": 0, "percentage": 0.0 },
-          "3": { "count": 0, "percentage": 0.0 },
-          "4": { "count": 1, "percentage": 50.0 },
-          "5": { "count": 1, "percentage": 50.0 }
+          "1": {
+            "count": 0,
+            "percentage": 0.0
+          },
+          "2": {
+            "count": 0,
+            "percentage": 0.0
+          },
+          "3": {
+            "count": 0,
+            "percentage": 0.0
+          },
+          "4": {
+            "count": 1,
+            "percentage": 50.0
+          },
+          "5": {
+            "count": 1,
+            "percentage": 50.0
+          }
         }
       }
     }
   }
 }
+```
+
+---
 
 ## API Endpoints
 
-**Base URL:** `/api/v1/books`
+### `GET /`
 
-### GET /
-Retrieves a list of all books in the catalogue.
+Retrieves a list of books from the catalogue.
 
-*   **Query `q`:** Optional string to search against book titles (case-insensitive).
-*   **Query `limit`:** Optional integer for the maximum number of records to return. Defaults to `50`.
-*   **Success (200):** Returns an array of Book Objects.
+#### Query Parameters
 
-### GET /{book_id}
-Retrieves the full details and aggregated library statistics for a single book.
+- `q` — Optional string used to search book titles. The search is case-insensitive.
+- `limit` — Optional integer specifying the maximum number of records to return. Defaults to `50`.
 
-*   **Path `book_id`:** Required UUIDv4 of the book.
-*   **Success (200):** Returns the full Book Object, including the dynamically generated `library_stats`.
-*   **Error (404):** Returned if the book does not exist.
+#### Responses
 
-### POST /
-Adds a completely new book to the global catalogue.
+- **200 OK** — Returns an array of book objects.
 
-*   **Body (Required):** `title` (string, max 300 chars) and `author` (string).
-*   **Body (Optional):** `description`, `isbn`, `cover_image`, `genre` (array of strings), `published_date`, `page_count`, `publisher`, `series`, `time_period`.
-*   **Success (201):** Returns the newly generated Book Object.
-*   **Error (500):** Returned if database insertion fails.
+---
 
-### PATCH /{book_id}
-Modifies specific fields of an existing book using a partial update. 
+### `GET /{book_id}`
 
-*   **Path `book_id`:** Required UUIDv4 of the book to update.
-*   **Body:** Send only the specific keys you wish to update (e.g., `{"page_count": 300}`).
-*   **Success (200):** Returns the fully updated Book Object.
-*   **Error (400):** Returned if no valid fields are provided in the request body.
-*   **Error (404):** Returned if the book does not exist.
+Retrieves the details and aggregated library statistics for a single book.
 
-### DELETE /{book_id}
+#### Path Parameters
+
+- `book_id` — Required UUIDv4 identifier of the book.
+
+#### Responses
+
+- **200 OK** — Returns the complete book object, including the dynamically generated `library_stats`.
+- **404 Not Found** — Returned when the book does not exist.
+
+---
+
+### `POST /`
+
+Adds a new book to the global catalogue.
+
+#### Required Body Fields
+
+- `title` — String with a maximum length of 300 characters.
+- `author` — String containing the book author's name.
+
+#### Optional Body Fields
+
+- `description`
+- `isbn`
+- `cover_image`
+- `genre` — Array of strings.
+- `published_date`
+- `page_count`
+- `publisher`
+- `series`
+- `time_period`
+
+#### Responses
+
+- **201 Created** — Returns the newly created book object.
+- **500 Internal Server Error** — Returned when the database insertion fails.
+
+---
+
+### `PATCH /{book_id}`
+
+Updates selected fields of an existing book.
+
+#### Path Parameters
+
+- `book_id` — Required UUIDv4 identifier of the book to update.
+
+#### Request Body
+
+Send only the fields that need to be updated.
+
+```json
+{
+  "page_count": 300
+}
+```
+
+#### Responses
+
+- **200 OK** — Returns the updated book object.
+- **400 Bad Request** — Returned when no valid fields are provided.
+- **404 Not Found** — Returned when the book does not exist.
+
+---
+
+### `DELETE /{book_id}`
+
 Permanently removes a book from the catalogue.
 
-*   **Path `book_id`:** Required UUIDv4 of the book to delete.
-*   **Success (204):** No body content is returned upon successful deletion.
-*   **Error (404):** Returned if the book does not exist.
+#### Path Parameters
+
+- `book_id` — Required UUIDv4 identifier of the book to delete.
+
+#### Responses
+
+- **204 No Content** — The book was deleted successfully. No response body is returned.
+- **404 Not Found** — Returned when the book does not exist.
