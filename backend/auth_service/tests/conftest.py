@@ -1,5 +1,5 @@
 """
-auth_service/tests/test_conf.py
+auth_service/tests/conftest.py
 
 Shared pytest fixtures for the Auth Service test suite.
 

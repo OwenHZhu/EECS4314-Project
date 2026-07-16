@@ -4,7 +4,7 @@ auth_service/tests/__init__.py
 Test package for the BookAtlas Auth Service.
 
 Layout:
-    test_conf.py              - shared pytest fixtures (mock Supabase client, sample data)
+    conftest.py              - shared pytest fixtures (mock Supabase client, sample data)
     test_security.py          - utils/security.py (hashing, password strength rules)
     test_schemas_user.py      - schemas/user.py (Pydantic validation)
     test_register_user.py     - services/auth.py -> register_user

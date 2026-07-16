@@ -10,13 +10,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { Navbar } from "./components/nav/Navbar";
 import { DiscoverPage } from "./pages/DiscoverPage";
-import { LibraryPage } from "./pages/LibraryPage";
+import LibraryPage from "./pages/library/LibraryPage";
 import { WishlistPage } from "./pages/WishlistPage";
 import { FavouritesPage } from "./pages/FavouritesPage";
 import { ForumsPage } from "./pages/ForumsPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
+import LoginPage from "./pages/login/LoginPage";
+import RegisterPage from "./pages/register/RegisterPage";
+import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import EditProfilePage from "./pages/profile/EditProfilePage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -85,6 +86,15 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected route: Change Password */}
+            <Route path="/change-password"
+              element={
+                <ProtectedRoute>
+                  <ChangePasswordPage />
                 </ProtectedRoute>
               }
             />
