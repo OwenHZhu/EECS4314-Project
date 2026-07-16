@@ -32,6 +32,7 @@ import { useAuth } from "../../hooks/auth/useAuth";
 import { format } from "date-fns";
 import GenericModal from "../../components/generic/GenericModal";
 import GenericButton from "../../components/generic/GenericButton";
+import Icon from "../../components/generic/Icon.jsx"
 
 /**
  * StatCard
@@ -140,10 +141,12 @@ export function ProfilePage() {
       )}
 
       {/* User identity section */}
-      <div className="flex items-start gap-5 mb-6 md:mb-10">
-        <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#2d2845] flex items-center justify-center text-2xl font-semibold text-[#b8b0ff] shrink-0">
-          {user.username[0]}
-        </div>
+      <div className="flex flex-row items-center gap-5 mb-6 md:mb-10">
+        <Icon
+          className="text-secondary text-6xl cursor-default"
+        >
+          account_circle
+        </Icon>
 
         <div>
           <div className="flex flex-row items-center mt-3">

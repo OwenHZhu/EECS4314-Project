@@ -38,13 +38,14 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { NavButton } from "./NavButton";
+import Icon from "../generic/Icon.jsx"
 
 const NAV_ITEMS = [
-  { id: "discover", label: "Discover", path: "/", auth: "any" },
-  { id: "library", label: "My Library", path: "/library", auth: "user" },
-  { id: "wishlist", label: "Wishlist", path: "/wishlist", auth: "user" },
-  { id: "favourites", label: "Favourites", path: "/favourites", auth: "user" },
-  { id: "forums", label: "Forums", path: "/forums", auth: "any" },
+  { id: "discover", label: "Discover", path: "/" },
+  { id: "library", label: "My Library", path: "/library" },
+  { id: "wishlist", label: "Wishlist", path: "/wishlist" },
+  { id: "favourites", label: "Favourites", path: "/favourites" },
+  { id: "forums", label: "Forums", path: "/forums" },
 ];
 
 export function Navbar() {
@@ -98,11 +99,13 @@ export function Navbar() {
           <NavButton
             to="/profile"
             rounded="rounded-full"
-            className="flex items-center gap-2 pl-2 pr-3 py-1.5 border shrink-0"
+            className="flex flex-row items-center gap-2 pl-2 pr-3 py-1.5 border shrink-0"
           >
-            <div className="w-6 h-6 rounded-full bg-[#2d2845] flex items-center justify-center text-xs font-semibold text-[#b8b0ff]">
-              {user.username[0]}
-            </div>
+            <Icon
+            className="text-secondary/60"
+            >
+              account_circle
+            </Icon>
             <span className="text-xs text-tertiary">{user.username}</span>
           </NavButton>
 
