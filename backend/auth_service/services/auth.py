@@ -38,6 +38,7 @@ from shared.db import supabase
 from auth_service.utils.security import hash_password, verify_password
 from auth_service.utils.jwt import create_token, blacklist_token
 from auth_service.schemas.user import UserRegister, UserLogin, UserAccount, UserUpdate, UserUpdatePassword
+from auth_service.utils.profile_pics import validate_image, delete_profile_picture
 from auth_service.utils.record import UserRecord
 
 def register_user(user: UserRegister) -> dict:
