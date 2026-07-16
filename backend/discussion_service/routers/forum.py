@@ -22,6 +22,7 @@ from services.discussion_service import (
 	toggle_thread_like,
 	unlike_reply,
 	unlike_thread,
+	list_replies_tree,
 )
 
 
@@ -67,8 +68,11 @@ def create_forum_reply(thread_id: str, payload: ReplyCreate):
 
 
 @router.get("/threads/{thread_id}/replies", response_model=list[ThreadReply])
-def read_forum_replies(thread_id: str):
-	return list_replies(thread_id=thread_id)
+@router.get("/threads/{thread_id}/replies")
+def read_forum_replies(thread_id: str, nested: bool = False):
+    if nested:
+        return list_replies_tree(thread_id=thread_id)
+    return list_replies(thread_id=thread_id)
 
 @router.get("/users/{user_id}/activity", response_model=UserActivityResponse)
 def read_user_activity(user_id: str):

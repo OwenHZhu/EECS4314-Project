@@ -15,8 +15,8 @@ class ThreadPost(BaseModel):
 
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1)
-
-    tag_ids: list[str] = Field(default_factory=list, description="List of tag IDs linked to this thread")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Thread creation time")
+    updated_at: Optional[datetime] = Field(default=None, description="Last update time")
 
 
 class ThreadReply(BaseModel):
@@ -31,7 +31,6 @@ class ThreadReply(BaseModel):
     content: str = Field(min_length=1, max_length=1000)
     parent_reply_id: Optional[str] = Field(default=None, description="Optional parent reply ID for nested replies")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Reply creation time")
-    updated_at: Optional[datetime] = Field(default=None, description="Last update time")
 
 
 class ThreadCreate(BaseModel): #Model used for creating new threads (input validation)

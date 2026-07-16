@@ -1,14 +1,22 @@
 from __future__ import annotations
 
-from datetime import datetime
+import sys
+from pathlib import Path
+from datetime import datetime, timezone
 from typing import Any, cast
+
+BACKEND_ROOT = Path(__file__).resolve().parents[2]
+DISCUSSION_SERVICE_ROOT = Path(__file__).resolve().parents[1]
+for path in [str(BACKEND_ROOT), str(DISCUSSION_SERVICE_ROOT)]:
+	if path not in sys.path:
+		sys.path.insert(0, path)
 
 from shared.db import supabase
 from schemas.discussion_forum import ThreadPost, ThreadReply, UserActivityResponse
 
 
-DISCUSSION_THREADS_TABLE = "discussion_threads"
-DISCUSSION_REPLIES_TABLE = "discussion_replies"
+DISCUSSION_THREADS_TABLE = "thread_forum"
+DISCUSSION_REPLIES_TABLE = "replies"
 DISCUSSION_THREAD_TAGS_TABLE = "thread_tags"
 DISCUSSION_THREAD_LIKES_TABLE = "thread_likes"
 DISCUSSION_REPLY_LIKES_TABLE = "reply_likes"
@@ -50,15 +58,14 @@ def build_thread(record: dict[str, Any], *, tag_ids: list[str] | None = None) ->
 	Returns:
 		ThreadPost: The constructed ThreadPost object.
 	"""
+	book_id = record.get("book_id")
 	return ThreadPost(
 		id=str(record["id"]),
-		book_id=str(record["book_id"]) if record.get("book_id") is not None else None,
+		book_id=str(book_id) if book_id is not None else None,
 		user_id=str(record["user_id"]),
 		title=str(record["title"]),
 		content=str(record["content"]),
-		tag_ids=tag_ids or [],
 		created_at=parse_datetime(record["created_at"]),
-		updated_at=parse_datetime(record["updated_at"]),
 	)
 
 
@@ -101,6 +108,7 @@ def create_thread(*, book_id: str | None = None, user_id: str, title: str, conte
 		"user_id": user_id,
 		"title": title,
 		"content": content,
+		"created_at": datetime.now(timezone.utc).isoformat(),
 	}
 
 	if book_id is not None:
@@ -200,6 +208,12 @@ def create_reply(*, thread_id: str, user_id: str, content: str, parent_reply_id:
 def list_replies(*, thread_id: str) -> list[ThreadReply]:
 	"""
 	Lists replies for a specific discussion thread.
+
+	Args:
+		thread_id (str): The ID of the thread for which to list replies.
+
+	Returns:
+		list[ThreadReply]: The list of replies for the thread.
 	"""
 	res = (
 		supabase.table(DISCUSSION_REPLIES_TABLE)
@@ -210,6 +224,27 @@ def list_replies(*, thread_id: str) -> list[ThreadReply]:
 	)
 
 	return [build_reply(cast(dict[str, Any], item)) for item in (res.data or [])]
+
+def list_replies_tree(*, thread_id: str) -> list[dict]:
+	"""
+	List nested replies for a specific discussion thread, returning a tree structure.
+
+	Args:
+		thread_id (str): The ID of the thread for which to list replies.
+
+	Returns:
+		list[dict]: The list of replies in a nested tree structure.
+	"""
+	flat = list_replies(thread_id=thread_id)  # returns list[ThreadReply]
+	nodes = {r.id: {**(r.dict() if hasattr(r, "dict") else r.__dict__), "children": []} for r in flat}
+	roots = []
+	for r in flat:
+		node = nodes[r.id]
+		if r.parent_reply_id and r.parent_reply_id in nodes:
+			nodes[r.parent_reply_id]["children"].append(node)
+		else:
+			roots.append(node)
+	return roots
 
 def get_user_activity(user_id: str) -> UserActivityResponse:
 	"""
