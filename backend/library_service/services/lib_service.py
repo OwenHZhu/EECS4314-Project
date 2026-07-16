@@ -4,7 +4,6 @@ from shared.db import supabase
 from library_service.schemas.library import LibraryEntryCreate, ReadingStatus
 
 
-
 def add_or_update_library_entry(entry: LibraryEntryCreate, user_id: str) -> dict:
     """ 
     Add a book to a user's library, or update it if it already exists. 
@@ -30,13 +29,26 @@ def add_or_update_library_entry(entry: LibraryEntryCreate, user_id: str) -> dict
     now = datetime.now(timezone.utc).isoformat()
 
     if existing.data:
-        update_data = {"status" : entry.status.value, "rating" : entry.rating, "updated_at" : now}
+        update_data = {
+            "status" : entry.status.value,
+            "is_favourite" : entry.is_favourite,
+            "rating" : entry.rating,
+            "updated_at" : now
+        }
         res = (supabase.table("library").update(update_data).eq("user_id", user_id).eq("book_id", entry.book_id).execute())
         if not res.data:
             return {"success" : False, "message" : "Failed to update library", "data" : None}
         return {"success" : True, "message" : "Library updated successfully", "data" : res.data[0]}
     
-    insert_data = {"user_id" : user_id, "book_id" : entry.book_id, "status" : entry.status.value, "rating" : entry.rating, "added_at" : now, "updated_at" : now}
+    insert_data = {
+        "user_id" : user_id,
+        "book_id" : entry.book_id,
+        "status" : entry.status.value,
+        "is_favourite" : entry.is_favourite,
+        "rating" : entry.rating,
+        "added_at" : now,
+        "updated_at" : now
+    }
     res = (supabase.table("library").insert(insert_data).execute())
     if not res.data:
         return {"success" : False, "message" : "Failed to add book to library", "data" : None}
@@ -46,20 +58,32 @@ def get_user_library(user_id: str) -> dict:
     """ 
     Retrieve all library entries for a specific user. 
     
-    Queries the library table using the provided user_id and returns all books 
-    associated with that user's library. 
+    Queries the library table using the provided user_id and returns all
+    library entries with their matching book_catalogue records.
     
     Args: 
         user_id: ID of the user whose library should be retrieved. 
     
     Returns: 
         Success: { "success": True, "message": str, "data": list } 
-        The data field contains all library entries that belong to the user. 
+        The data field contains all library entries that belong to the user,
+        including a nested book object with catalogue details.
     """
-    res = (supabase.table("library").select("*").eq("user_id", user_id).execute())
+    res = (
+        supabase.table("library")
+        .select("*, book:book_catalogue(*)")
+        .eq("user_id", user_id)
+        .execute()
+    )
     return {"success" : True, "message" : "Library retrieved successfully", "data" : res.data}
 
-def update_library(user_id: str, book_id: str, status: Optional[ReadingStatus] = None, rating: Optional[int] = None) -> dict:
+def update_library(
+    user_id: str,
+    book_id: str,
+    status: Optional[ReadingStatus] = None,
+    is_favourite: Optional[bool] = None,
+    rating: Optional[int] = None
+) -> dict:
     """ 
     Update a user's library entry for a specific book. 
     
@@ -73,6 +97,7 @@ def update_library(user_id: str, book_id: str, status: Optional[ReadingStatus] =
         user_id: ID of the user who owns the library entry. 
         book_id: ID of the book being updated. 
         status: Optional new reading status. 
+        is_favourite: Optional favourite flag.
         rating: Optional new rating from 1 to 5. 
         
     Returns: 
@@ -83,6 +108,8 @@ def update_library(user_id: str, book_id: str, status: Optional[ReadingStatus] =
     
     if status is not None:
         update_data["status"] = status.value
+    if is_favourite is not None:
+        update_data["is_favourite"] = is_favourite
     if rating is not None:
         if rating < 1 or rating > 5:
             return {"success" : False, "message" : "Rating must be between 1 and 5", "data" : None}
