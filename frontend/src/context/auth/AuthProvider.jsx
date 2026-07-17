@@ -32,6 +32,9 @@ export default function AuthProvider({ children }) {
     // JWT
     const [token, setToken] = useLocalStorage("token", null);
 
+    // User library
+    const [library, setLibrary] = useLocalStorage("library", null);
+
     // Boolean indicating whether a user is authenticated
     const isAuthenticated = !!token;
 
@@ -113,12 +116,13 @@ export default function AuthProvider({ children }) {
             // Clear session
             setToken(null);
             setUser(null);
+            setLibrary(null);
 
             return { success: true, message: res.data?.message };
         } catch (err) {
             return { success: false, message: err.response?.data?.detail };
         }
-    }, [token, setToken, setUser]);
+    }, [token, setToken, setUser, setLibrary]);
 
     /**
      * update(username, bio, profile_picture)
@@ -184,12 +188,13 @@ export default function AuthProvider({ children }) {
             // Clear session
             setToken(null);
             setUser(null);
+            setLibrary(null);
 
             return { success: true, message: res.data?.message };
         } catch (err) {
             return { success: false, message: err.response?.data?.detail };
         }
-    }, [setToken, setUser]);
+    }, [setToken, setUser, setLibrary]);
 
     /**
      * restoreSession()
@@ -213,6 +218,7 @@ export default function AuthProvider({ children }) {
                 // Token invalid or expired: clear session
                 setToken(null);
                 setUser(null);
+                setLibrary(null);
             }
         }
 

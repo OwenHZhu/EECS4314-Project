@@ -111,7 +111,7 @@ export default function LibraryTab({
             */}
             <div className="flex flex-col space-y-3 mb-3 pl-2">
                 {/* Display a basic message if the list or selected entries are empty */}
-                {(!libraryList || !selectedEntries) && (
+                {(!libraryList.length || !selectedEntries.length) && (
                     <p className="text-[#BFB8AD] text-xs">
                         {emptyText[variant]}
                     </p>

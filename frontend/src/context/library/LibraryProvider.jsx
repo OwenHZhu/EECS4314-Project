@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from "react";
 import { LibraryContext } from "./LibraryContext.jsx"
 import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { useAuth } from "../../hooks/auth/useAuth.js"
 
 import {
     getLibrary,
@@ -12,16 +13,10 @@ import {
 import libraryClient from "../../api/library/libraryClient.js";
 
 export default function LibraryProvider({ children }) {
-    const [token] = useLocalStorage("token", null);
+    const { token } = useAuth();
     const [library, setLibrary] = useLocalStorage("library", null);
 
-    useEffect(() => {
-        if (token) {
-            libraryClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        } else {
-            delete libraryClient.defaults.headers.common["Authorization"];
-        }
-    }, [token]);
+    console.log("LibraryProvider: token:", token);
 
     const getLibraryEntries = useCallback(async () => {
         try {
@@ -71,10 +66,13 @@ export default function LibraryProvider({ children }) {
 
     useEffect(() => {
         if (!token) {
+            delete libraryClient.defaults.headers.common["Authorization"];
             return;
         }
+
+        libraryClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         getLibraryEntries();
-    }, [token, getLibraryEntries])
+    }, [token, getLibraryEntries]);
 
     return (
         <LibraryContext.Provider
