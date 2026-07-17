@@ -150,7 +150,7 @@ export default function LibraryTab({
                 />
             </header>
 
-            {/* Content: sorted list or empty-state message */}
+            {/* Content: sorted list or empty-state message in a scrollable panel */}
             <div 
             className="flex flex-col space-y-3 mb-3 pl-2 max-h-80 overflow-auto custom-scrollbar"
             >

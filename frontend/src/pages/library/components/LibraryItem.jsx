@@ -4,12 +4,12 @@
  * High-level responsibilities:
  * - Render a single library entry (book) inside a category list
  * - Display book metadata: cover, title, author
- * - Show an action button when the entry is not in the "finished" category
- * - Display a formatted date string describing when the entry was added/updated
+ * - Show a variant‑specific action button when applicable
+ * - Display a formatted date string describing when the entry was added or updated
+ * - Allow the user to delete the entry via a modal
  *
- * This component acts as the visual representation of a user's book entry
- * and delegates variant-specific behavior (button text, date text, actions)
- * to `useLibraryActions`.
+ * This component visually represents a user's book entry and delegates
+ * variant‑specific behavior (button text, date text, actions) to `useLibraryActions`.
  */
 
 import { cn } from "../../../utils/utils";
@@ -17,7 +17,7 @@ import { useState } from "react";
 import { useLibraryActions } from "../../../hooks/library/useLibraryActions";
 import DeleteEntryModal from "./DeleteEntryModal";
 import GenericButton from "../../../components/generic/GenericButton";
-import Icon from "../../../components/generic/Icon"
+import Icon from "../../../components/generic/Icon";
 
 
 /**
@@ -29,7 +29,9 @@ import Icon from "../../../components/generic/Icon"
  * @param {string} props.libraryEntry.book.title
  * @param {string} props.libraryEntry.book.author
  * @param {string} props.libraryEntry.book.cover_image
- * @param {string} props.variant - Category variant controlling behavior/styling
+ * @param {string} props.variant - Category variant controlling behavior and styling.
+ *   - "finished": hides the action button
+ *   - other variants: show an action button with variant‑specific behavior
  * @param {string} [props.className] - Additional classes for the outer container
  *
  * @returns {JSX.Element} A styled library item row
@@ -41,12 +43,21 @@ export default function LibraryItem({
     ...props
 }) {
     /**
-     * useLibraryActions provides:
-     * - buttonText: label for the action button
-     * - dateText: formatted date string
-     * - doAction: variant-specific update function
+     * useLibraryActions
+     *
+     * Provides variant‑specific UI and behavior:
+     * - buttonText: label for the action button (only used when variant !== "finished")
+     * - dateText: formatted date string describing the entry's last update
+     * - doAction: handler for the variant‑specific action (e.g., mark as reading/finished)
+     *
+     * The hook receives both the variant and the libraryEntry.
      */
     const { buttonText, dateText, doAction } = useLibraryActions(variant, libraryEntry);
+
+    /**
+     * Controls visibility of the DeleteEntryModal.
+     * Toggled by clicking the delete icon in the right section.
+     */
     const [deleteModal, setDeleteModal] = useState(false);
 
     return (
@@ -57,15 +68,14 @@ export default function LibraryItem({
                 className
             )}
         >
-            {
-                deleteModal && 
+            {deleteModal && (
                 <DeleteEntryModal
                     libraryEntry={libraryEntry}
                     setDeleteModal={setDeleteModal}
                 />
-            }
+            )}
 
-            {/* Left section: cover image, title, author, action button */}
+            {/* Left section: cover image, title, author, and optional action button */}
             <div className="flex flex-row space-x-3 flex-1">
                 <img
                     src={libraryEntry.book.cover_image}
@@ -82,6 +92,7 @@ export default function LibraryItem({
                         {libraryEntry.book.author}
                     </p>
 
+                    {/* Action button shown only when the variant is not "finished" */}
                     {variant !== "finished" && (
                         <GenericButton
                             onClick={doAction}
@@ -94,14 +105,14 @@ export default function LibraryItem({
                 </div>
             </div>
 
-            {/* Right section: date text */}
+            {/* Right section: date text and delete icon */}
             <div className="flex flex-row items-center space-x-2 mr-2">
                 <p className="hidden md:block text-xs text-[#BFB8AD] text-wrap">
                     {dateText}
                 </p>
 
                 <Icon
-                    onClick={() => {setDeleteModal(prev => !prev)}}
+                    onClick={() => setDeleteModal(prev => !prev)}
                     className="text-slate-700"
                 >
                     close
