@@ -14,6 +14,7 @@
  */
 import { cn } from "../../../utils/utils";
 import Icon from "../../../components/generic/Icon";
+import LibraryItem from "./LibraryItem";
 
 /**
  * Background and border styles for each tab variant.
@@ -57,6 +58,31 @@ export default function LibraryTab({
     className = "",
     ...props
 }) {
+
+    function filterEntriesByVariant() {
+        switch (variant) {
+            case "finished":
+                return libraryList.filter(e => e.status === "read");
+
+            case "reading":
+                return libraryList.filter(e => e.status === "reading");
+
+            case "dropped":
+                return libraryList.filter(e => e.status === "dropped");
+
+            case "wishlist":
+                return libraryList.filter(e => e.status === "wishlist");
+
+            case "favourite":
+                return libraryList.filter(e => e.is_favourite);
+
+            default:
+                return libraryList;
+        }
+    }
+
+    const selectedEntries = filterEntriesByVariant();
+
     return (
         <div
             {...props}
@@ -82,13 +108,26 @@ export default function LibraryTab({
                 Contains the library items.
                 TO-DO: Connect to actual library list when Library Service is live.
             */}
-            <div className="flex flex-col mb-3 pl-2">
-                {/* Display a basic message if empty */}
-                {!libraryList && (
+            <div className="flex flex-col space-y-3 mb-3 pl-2">
+                {/* Display a basic message if the list or selected entries are empty */}
+                {(!libraryList || !selectedEntries) && (
                     <p className="text-[#BFB8AD] text-xs">
                         {emptyText[variant]}
                     </p>
                 )}
+
+                {/* Otherwise, fill in the library items */}
+                {selectedEntries &&
+                    selectedEntries.map(entry => {
+                        return (
+                            <LibraryItem
+                                key={entry.id}
+                                libraryEntry={entry}
+                                variant={variant}
+                            />
+                        );
+                    })
+                }
             </div>
         </div>
     );

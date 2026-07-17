@@ -9,29 +9,16 @@
  * - Display basic book information (cover, title, author).
  * - Show an action button for non‑finished variants (e.g., “Continue”, “Add”, etc.).
  * - Display a date string associated with the item (e.g., finished date, added date).
- * - Apply variant‑specific styling once variants are fully implemented.
  *
  * Dependencies:
  * - `GenericButton` — used for the action button when the item is not finished.
  * - `cn` — utility for merging Tailwind class names.
- * - `variants` — placeholder style map for future category‑specific styling.
  *
  */
-
-import GenericButton from "../../../components/generic/GenericButton";
 import { cn } from "../../../utils/utils";
+import { format } from "date-fns";
+import GenericButton from "../../../components/generic/GenericButton";
 
-/**
- * Placeholder variant styles.
- * These will be expanded once the library service provides real data.
- */
-const variants = {
-    finished: "",
-    inProgress: "",
-    wishlist: "",
-    dropped: "",
-    favourite: ""
-};
 
 /* 
     TO-DO: 
@@ -49,36 +36,92 @@ const variants = {
  * @returns {JSX.Element} A rough, placeholder library item component.
  */
 export default function LibraryItem({
-    //bookData,
-    buttonText,
-    dateText,
+    libraryEntry,
     variant = "finished",
     className = "",
     ...props
 }) {
+
+    function getButtonText() {
+        switch (variant) {
+            case "reading":
+                return "Mark as Finished";
+
+            case "dropped":
+                return "Resume";
+
+            case "wishlist":
+                return "Start Reading";
+
+            case "favourite":
+                return "Remove";
+
+        }
+    }
+
+    function getDateText() {
+        switch (variant) {
+            case "finished":
+                return `${format(libraryEntry.added_at, "MMM d, yyy")} to ${format(libraryEntry.updated_at, "MMM d, yyy")}`;
+
+            case "reading":
+                return `Since ${format(libraryEntry.added_at, "MMM d, yyy")}`;
+
+            case "dropped":
+                return `${format(libraryEntry.added_at, "MMM d, yyy")} to ${format(libraryEntry.updated_at, "MMM d, yyy")}`;
+
+            case "wishlist", "favourite":
+                return `Added on ${format(libraryEntry.updated_at, "MMM d, yyy")}`;
+
+            default:
+                return `${format(libraryEntry.added_at, "MMM d, yyy")}`;
+        }
+    }
+
+    const buttonText = getButtonText();
+    const dateText = getDateText(); 
+
     return (
         <div
             {...props}
-            className={cn("flex flex-row", variants[variant], className)}
+            className={cn(
+                "flex flex-row justify-between items-start w-full py-2",
+                className
+            )}
         >
-            {/* Book Cover Image (placeholder) */}
-            <img src="" alt="book cover" />
+            {/* Left side: Cover, title, author, action button */}
+            <div className="flex flex-row space-x-3 flex-1">
+                <img
+                    src={libraryEntry.book.cover_image}
+                    alt={`Cover image for ${libraryEntry.book.title}`}
+                    className="w-16 h-24 object-cover rounded-md"
+                />
 
-            {/* Book Information and Action Button */}
-            <div className="flex flex-col">
-                <h3>Book Title</h3>
-                <p>Book Author</p>
+                <div className="flex flex-col w-1/2">
+                    <h3 className="text-sm text-[#F9EDCC] font-semibold break-works text-wrap">
+                        {libraryEntry.book.title}
+                    </h3>
 
-                {/* Show button only for non-finished variants */}
-                {variant !== "finished" && (
-                    <GenericButton>
-                        {buttonText}
-                    </GenericButton>
-                )}
+                    <p className="text-xs text-[#BFB8AD] font-medium">
+                        {libraryEntry.book.author}
+                    </p>
+
+                    {variant !== "finished" && (
+                        <GenericButton 
+                        variant="ghost"
+                        className="max-w-fit py-1 px-4 mt-3 text-xs md:text-xs"
+                        >
+                            {buttonText}
+                        </GenericButton>
+                    )}
+                </div>
             </div>
 
-            {/* Date (e.g., finished date, added date, etc.) */}
-            <p>{dateText}</p>
+            {/* Right side: Date */}
+            <p className="hidden md:block text-xs text-[#BFB8AD] text-wrap">
+                {dateText}
+            </p>
         </div>
     );
+
 }

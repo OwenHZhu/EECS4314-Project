@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { LibraryContext } from "./LibraryContext.jsx"
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 
@@ -11,7 +11,7 @@ import {
 
 import libraryClient from "../../api/library/libraryClient.js";
 
-export default function AuthProvider({ children }) {
+export default function LibraryProvider({ children }) {
     const [token] = useLocalStorage("token", null);
     const [library, setLibrary] = useLocalStorage("library", null);
 
@@ -26,45 +26,55 @@ export default function AuthProvider({ children }) {
     const getLibraryEntries = useCallback(async () => {
         try {
             const res = await getLibrary();
-
-            console.log(res);
+            setLibrary(res.data);
         }
         catch (err) {
-            console.log(err);
+            alert(err.response);
         }
-    });
+    }, [setLibrary]);
 
-    const addLibraryEntry = useCallback(async (book_id, status, is_favourite, rating) => {
+    const addLibraryEntry = async (book_id, status, is_favourite, rating) => {
         try {
             const res = await addEntry(book_id, status, is_favourite, rating);
 
             console.log(res);
+            getLibraryEntries();
         }
         catch (err) {
             console.log(err);
         }
-    });
+    };
 
-    const updateLibraryEntry = useCallback(async (book_id, status, is_favourite, rating) => {
+    const updateLibraryEntry = async (book_id, status, is_favourite, rating) => {
         try {
             const res = await updateEntry(book_id, status, is_favourite, rating);
 
             console.log(res);
+
+            getLibraryEntries();
         }
         catch (err) {
             console.log(err);
         }
-    });
+    };
 
-    const deleteLibraryEntry = useCallback(async (book_id) => {
+    const deleteLibraryEntry = async (book_id) => {
         try {
             const res = await deleteEntry(book_id);
             console.log(res);
+            getLibraryEntries();
         }
         catch (err) {
             console.log(err);
         }
-    });
+    };
+
+    useEffect(() => {
+        if (!token) {
+            return;
+        }
+        getLibraryEntries();
+    }, [token, getLibraryEntries])
 
     return (
         <LibraryContext.Provider

@@ -13,6 +13,7 @@
  *
  */
 import { useState } from "react";
+import { useLibrary } from "../../hooks/library/useLibrary";
 import LibraryTab from "./components/LibraryTab";
 import FilterButton from "./components/FilterButton";
 import Icon from "../../components/generic/Icon";
@@ -29,6 +30,13 @@ const options = [
 ];
 
 export default function LibraryPage() {
+    const {
+        library,
+        addLibraryEntry,
+        updateLibraryEntry,
+        deleteLibraryEntry
+    } = useLibrary();
+
     /** 
      * Tracks the currently selected filter option.
      * Defaults to "finished".
@@ -72,6 +80,7 @@ export default function LibraryPage() {
 
             {/* Main content tab showing books for the selected category */}
             <LibraryTab
+                libraryList={library}
                 icon={selected.icon}
                 iconColour={selected.icon_colour}
                 title={selected.label}
