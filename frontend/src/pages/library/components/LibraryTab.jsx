@@ -151,7 +151,9 @@ export default function LibraryTab({
             </header>
 
             {/* Content: sorted list or empty-state message */}
-            <div className="flex flex-col space-y-3 mb-3 pl-2">
+            <div 
+            className="flex flex-col space-y-3 mb-3 pl-2 max-h-80 overflow-auto custom-scrollbar"
+            >
                 {(!libraryList.length || !selectedEntries.length) && (
                     <p className="text-[#BFB8AD] text-xs">
                         {emptyText[variant]}

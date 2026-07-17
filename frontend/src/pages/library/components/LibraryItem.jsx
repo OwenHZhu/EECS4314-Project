@@ -95,7 +95,7 @@ export default function LibraryItem({
             </div>
 
             {/* Right section: date text */}
-            <div className="flex flex-row items-center space-x-2">
+            <div className="flex flex-row items-center space-x-2 mr-2">
                 <p className="hidden md:block text-xs text-[#BFB8AD] text-wrap">
                     {dateText}
                 </p>
