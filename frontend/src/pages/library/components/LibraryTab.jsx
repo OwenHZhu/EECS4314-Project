@@ -82,6 +82,7 @@ export default function LibraryTab({
     }
 
     const selectedEntries = filterEntriesByVariant();
+    console.log(selectedEntries);
 
     return (
         <div

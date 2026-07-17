@@ -30,12 +30,7 @@ const options = [
 ];
 
 export default function LibraryPage() {
-    const {
-        library,
-        addLibraryEntry,
-        updateLibraryEntry,
-        deleteLibraryEntry
-    } = useLibrary();
+    const { library } = useLibrary();
 
     /** 
      * Tracks the currently selected filter option.

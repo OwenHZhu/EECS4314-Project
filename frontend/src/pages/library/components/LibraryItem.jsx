@@ -16,7 +16,7 @@
  *
  */
 import { cn } from "../../../utils/utils";
-import { format } from "date-fns";
+import { useLibraryActions } from "../../../hooks/library/useLibraryActions";
 import GenericButton from "../../../components/generic/GenericButton";
 
 
@@ -42,44 +42,7 @@ export default function LibraryItem({
     ...props
 }) {
 
-    function getButtonText() {
-        switch (variant) {
-            case "reading":
-                return "Mark as Finished";
-
-            case "dropped":
-                return "Resume";
-
-            case "wishlist":
-                return "Start Reading";
-
-            case "favourite":
-                return "Remove";
-
-        }
-    }
-
-    function getDateText() {
-        switch (variant) {
-            case "finished":
-                return `${format(libraryEntry.added_at, "MMM d, yyy")} to ${format(libraryEntry.updated_at, "MMM d, yyy")}`;
-
-            case "reading":
-                return `Since ${format(libraryEntry.added_at, "MMM d, yyy")}`;
-
-            case "dropped":
-                return `${format(libraryEntry.added_at, "MMM d, yyy")} to ${format(libraryEntry.updated_at, "MMM d, yyy")}`;
-
-            case "wishlist", "favourite":
-                return `Added on ${format(libraryEntry.updated_at, "MMM d, yyy")}`;
-
-            default:
-                return `${format(libraryEntry.added_at, "MMM d, yyy")}`;
-        }
-    }
-
-    const buttonText = getButtonText();
-    const dateText = getDateText(); 
+    const { buttonText, dateText, doAction } = useLibraryActions(variant, libraryEntry);
 
     return (
         <div
@@ -107,9 +70,10 @@ export default function LibraryItem({
                     </p>
 
                     {variant !== "finished" && (
-                        <GenericButton 
-                        variant="ghost"
-                        className="max-w-fit py-1 px-4 mt-3 text-xs md:text-xs"
+                        <GenericButton
+                            onClick={doAction}
+                            variant="ghost"
+                            className="max-w-fit py-1 px-4 mt-3 text-xs md:text-xs"
                         >
                             {buttonText}
                         </GenericButton>
