@@ -45,7 +45,7 @@ export default function AuthProvider({ children }) {
     const [token, setToken] = useLocalStorage("token", null);
 
     /** @type {[any, Function]} User library data */
-    const [library, setLibrary] = useLocalStorage("library", null);
+    const [, setLibrary] = useLocalStorage("library", null);
 
     /** Whether a user is authenticated */
     const isAuthenticated = !!token;
