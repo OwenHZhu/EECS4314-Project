@@ -38,7 +38,7 @@ export default function LibraryProvider({ children }) {
 
     /**
      * @typedef {Object} LibraryEntry
-     * @property {number} book_id
+     * @property {string} book_id
      * @property {string} status
      * @property {boolean} is_favourite
      * @property {number|null} rating
@@ -64,7 +64,7 @@ export default function LibraryProvider({ children }) {
     /**
      * Add a new entry to the user's library.
      *
-     * @param {number} book_id
+     * @param {string} book_id
      * @param {string} status
      * @param {boolean} is_favourite
      * @param {number|null} rating
@@ -85,7 +85,7 @@ export default function LibraryProvider({ children }) {
     /**
      * Update an existing library entry.
      *
-     * @param {number} book_id
+     * @param {string} book_id
      * @param {string} status
      * @param {boolean} is_favourite
      * @param {number|null} rating
@@ -106,7 +106,7 @@ export default function LibraryProvider({ children }) {
     /**
      * Delete a library entry by book ID.
      *
-     * @param {number} book_id
+     * @param {string} book_id
      * @returns {Promise<void>}
      */
     const deleteLibraryEntry = async (book_id) => {

@@ -42,11 +42,11 @@ export default function GenericModal({
                     </div>
                 )}
 
-                <div className="flex flex-row gap-3 md:gap-4">
+                <div className="flex flex-row gap-3 md:gap-4 mt-2">
                     <GenericButton
                         onClick={onConfirm}
                         variant="secondary"
-                        className="text-xs py-2 md:py-3 px-6 md:px-8"
+                        className="text-xs py-2 px-6"
                     >
                         {confirmLabel}
                     </GenericButton>
@@ -54,7 +54,7 @@ export default function GenericModal({
                     <GenericButton
                         onClick={onCancel}
                         variant="ghost"
-                        className="text-xs py-2 md:py-3 px-6 md:px-8"
+                        className="text-xs py-2 px-6"
                     >
                         {cancelLabel}
                     </GenericButton>

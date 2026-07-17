@@ -13,8 +13,12 @@
  */
 
 import { cn } from "../../../utils/utils";
+import { useState } from "react";
 import { useLibraryActions } from "../../../hooks/library/useLibraryActions";
+import DeleteEntryModal from "./DeleteEntryModal";
 import GenericButton from "../../../components/generic/GenericButton";
+import Icon from "../../../components/generic/Icon"
+
 
 /**
  * LibraryItem
@@ -43,6 +47,7 @@ export default function LibraryItem({
      * - doAction: variant-specific update function
      */
     const { buttonText, dateText, doAction } = useLibraryActions(variant, libraryEntry);
+    const [deleteModal, setDeleteModal] = useState(false);
 
     return (
         <div
@@ -52,6 +57,14 @@ export default function LibraryItem({
                 className
             )}
         >
+            {
+                deleteModal && 
+                <DeleteEntryModal
+                    libraryEntry={libraryEntry}
+                    setDeleteModal={setDeleteModal}
+                />
+            }
+
             {/* Left section: cover image, title, author, action button */}
             <div className="flex flex-row space-x-3 flex-1">
                 <img
@@ -82,9 +95,18 @@ export default function LibraryItem({
             </div>
 
             {/* Right section: date text */}
-            <p className="hidden md:block text-xs text-[#BFB8AD] text-wrap">
-                {dateText}
-            </p>
+            <div className="flex flex-row items-center space-x-2">
+                <p className="hidden md:block text-xs text-[#BFB8AD] text-wrap">
+                    {dateText}
+                </p>
+
+                <Icon
+                    onClick={() => {setDeleteModal(prev => !prev)}}
+                    className="text-slate-700"
+                >
+                    close
+                </Icon>
+            </div>
         </div>
     );
 }
