@@ -47,8 +47,6 @@ export default function LibraryProvider({ children }) {
     /** @type {[LibraryEntry[]|null, Function]} */
     const [library, setLibrary] = useLocalStorage("library", null);
 
-    console.log("LibraryProvider: token:", token);
-
     /**
      * Fetch all library entries for the authenticated user.
      *
