@@ -1,23 +1,24 @@
 /**
- * ./pages/library/components/LibraryTab.jsx
+ * LibraryTab.jsx
  *
- * Container used to display a specific category of the user's
- * library (Finished, Reading, Wishlist, Dropped, Favourite). Each category has
- * its own background/border styling, icon, and empty‑state message.
+ * High-level responsibilities:
+ * - Render a category section of the user's library (Finished, Reading, Wishlist, Dropped, Favourite)
+ * - Apply variant-specific background and border styling
+ * - Display a header with an icon + title
+ * - Filter the provided library list based on the selected category
+ * - Show an empty-state message when no entries match the category
+ * - Render a list of LibraryItem components for the filtered entries
  *
- * Dependencies:
- * - `cn` — utility for merging Tailwind class names.
- * - `Icon` — renders the category icon in the header.
- * - `variants` — defines background + border styling per category.
- * - `emptyText` — defines the fallback message when the list is empty.
- * 
+ * This component acts as a structured container for each library category,
+ * ensuring consistent layout, styling, and behavior across the library UI.
  */
+
 import { cn } from "../../../utils/utils";
 import Icon from "../../../components/generic/Icon";
 import LibraryItem from "./LibraryItem";
 
 /**
- * Background and border styles for each tab variant.
+ * Background + border styles for each tab variant.
  */
 const variants = {
     finished: "bg-[#121210] border-2 border-[#132E27]",
@@ -28,7 +29,7 @@ const variants = {
 };
 
 /**
- * Messages shown when a category has no items.
+ * Empty-state messages shown when a category has no entries.
  */
 const emptyText = {
     finished: "Keep reading to fill this list!",
@@ -39,15 +40,17 @@ const emptyText = {
 };
 
 /**
- * @param {object} props
- * @param {Array<any>} [props.libraryList] - The list of books for this category.
- * @param {string} props.icon - Icon name to display in the header.
- * @param {string} props.iconColour - Colour applied to the icon and title.
- * @param {string} props.title - Title of the tab (e.g., "Finished").
- * @param {string} [props.variant="finished"] - Category variant controlling styling.
- * @param {string} [props.className] - Additional class names for the container.
+ * LibraryTab
  *
- * @returns {JSX.Element} A styled tab section for a library category.
+ * @param {object} props
+ * @param {Array<any>} props.libraryList - Full list of library entries
+ * @param {string} props.icon - Icon name displayed in the header
+ * @param {string} props.iconColour - Colour applied to the icon + title
+ * @param {string} props.title - Title of the tab (e.g., "Finished")
+ * @param {string} [props.variant="finished"] - Category variant controlling styling + filtering
+ * @param {string} [props.className] - Additional classes for the outer container
+ *
+ * @returns {JSX.Element} A styled tab section for a library category
  */
 export default function LibraryTab({
     libraryList,
@@ -58,7 +61,12 @@ export default function LibraryTab({
     className = "",
     ...props
 }) {
-
+    /**
+     * Filter the full library list based on the selected category variant.
+     * Each variant corresponds to a specific status or flag.
+     *
+     * @returns {Array<any>}
+     */
     function filterEntriesByVariant() {
         switch (variant) {
             case "finished":
@@ -89,7 +97,7 @@ export default function LibraryTab({
             {...props}
             className={cn("rounded-xl p-4", variants[variant], className)}
         >
-            {/* Tab header displaying the icon, section title, and dropdown */}
+            {/* Header: icon + title */}
             <header className="flex flex-row space-x-1 items-center mb-3">
                 <Icon style={{ color: iconColour }}>
                     {icon}
@@ -102,32 +110,26 @@ export default function LibraryTab({
                     {title}
                 </h1>
 
-                {/* TO-DO: Add button to filter newest, oldest, etc. */}
+                {/* Placeholder for future sorting controls */}
+                {/* Example: newest, oldest, alphabetical */}
             </header>
 
-            {/* 
-                Contains the library items.
-                TO-DO: Connect to actual library list when Library Service is live.
-            */}
+            {/* Content: list of library items or empty-state message */}
             <div className="flex flex-col space-y-3 mb-3 pl-2">
-                {/* Display a basic message if the list or selected entries are empty */}
                 {(!libraryList.length || !selectedEntries.length) && (
                     <p className="text-[#BFB8AD] text-xs">
                         {emptyText[variant]}
                     </p>
                 )}
 
-                {/* Otherwise, fill in the library items */}
                 {selectedEntries &&
-                    selectedEntries.map(entry => {
-                        return (
-                            <LibraryItem
-                                key={entry.id}
-                                libraryEntry={entry}
-                                variant={variant}
-                            />
-                        );
-                    })
+                    selectedEntries.map(entry => (
+                        <LibraryItem
+                            key={entry.id}
+                            libraryEntry={entry}
+                            variant={variant}
+                        />
+                    ))
                 }
             </div>
         </div>

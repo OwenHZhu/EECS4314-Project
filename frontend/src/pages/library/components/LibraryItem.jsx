@@ -1,39 +1,34 @@
 /**
- * ./pages/library/components/LibraryItem.jsx
+ * LibraryItem.jsx
  *
- * Component representing a single book entry inside a library category. 
- * This component is intentionally rough and lightly
- * styled while the library service continues development.
+ * High-level responsibilities:
+ * - Render a single library entry (book) inside a category list
+ * - Display book metadata: cover, title, author
+ * - Show an action button when the entry is not in the "finished" category
+ * - Display a formatted date string describing when the entry was added/updated
  *
- * Responsibilities:
- * - Display basic book information (cover, title, author).
- * - Show an action button for non‑finished variants (e.g., “Continue”, “Add”, etc.).
- * - Display a date string associated with the item (e.g., finished date, added date).
- *
- * Dependencies:
- * - `GenericButton` — used for the action button when the item is not finished.
- * - `cn` — utility for merging Tailwind class names.
- *
+ * This component acts as the visual representation of a user's book entry
+ * and delegates variant-specific behavior (button text, date text, actions)
+ * to `useLibraryActions`.
  */
+
 import { cn } from "../../../utils/utils";
 import { useLibraryActions } from "../../../hooks/library/useLibraryActions";
 import GenericButton from "../../../components/generic/GenericButton";
 
-
-/* 
-    TO-DO: 
-    - Uncomment book data when connected to library service 
-    - Style the component properly
-*/
-
 /**
- * @param {object} props
- * @param {string} props.buttonText - Text displayed inside the action button.
- * @param {string} props.dateText - Date string shown on the right side.
- * @param {string} [props.variant="finished"] - Category variant controlling styling.
- * @param {string} [props.className] - Additional class names for the outer container.
+ * LibraryItem
  *
- * @returns {JSX.Element} A rough, placeholder library item component.
+ * @param {object} props
+ * @param {object} props.libraryEntry - The full library entry object
+ * @param {object} props.libraryEntry.book - Book metadata
+ * @param {string} props.libraryEntry.book.title
+ * @param {string} props.libraryEntry.book.author
+ * @param {string} props.libraryEntry.book.cover_image
+ * @param {string} props.variant - Category variant controlling behavior/styling
+ * @param {string} [props.className] - Additional classes for the outer container
+ *
+ * @returns {JSX.Element} A styled library item row
  */
 export default function LibraryItem({
     libraryEntry,
@@ -41,7 +36,12 @@ export default function LibraryItem({
     className = "",
     ...props
 }) {
-
+    /**
+     * useLibraryActions provides:
+     * - buttonText: label for the action button
+     * - dateText: formatted date string
+     * - doAction: variant-specific update function
+     */
     const { buttonText, dateText, doAction } = useLibraryActions(variant, libraryEntry);
 
     return (
@@ -52,7 +52,7 @@ export default function LibraryItem({
                 className
             )}
         >
-            {/* Left side: Cover, title, author, action button */}
+            {/* Left section: cover image, title, author, action button */}
             <div className="flex flex-row space-x-3 flex-1">
                 <img
                     src={libraryEntry.book.cover_image}
@@ -61,7 +61,7 @@ export default function LibraryItem({
                 />
 
                 <div className="flex flex-col w-1/2">
-                    <h3 className="text-sm text-[#F9EDCC] font-semibold break-works text-wrap">
+                    <h3 className="text-sm text-[#F9EDCC] font-semibold break-words text-wrap">
                         {libraryEntry.book.title}
                     </h3>
 
@@ -81,11 +81,10 @@ export default function LibraryItem({
                 </div>
             </div>
 
-            {/* Right side: Date */}
+            {/* Right section: date text */}
             <p className="hidden md:block text-xs text-[#BFB8AD] text-wrap">
                 {dateText}
             </p>
         </div>
     );
-
 }

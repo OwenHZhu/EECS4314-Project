@@ -1,22 +1,21 @@
 /**
- * ./pages/library/components/FilterButton.jsx
+ * FilterButton.jsx
  *
- * Reusable UI element used to switch between library categories
- * (Finished, Reading, Wishlist, Dropped, Favourite). Each button displays
- * a styled pill that visually reflects its category through color and border
- * styling. When selected, the button uses its variant’s full styling; when not
- * selected, it falls back to the neutral "ghost" style.
+ * High-level responsibilities:
+ * - Render a styled pill-shaped button used for filtering library categories
+ * - Apply variant-specific styling (Finished, Reading, Wishlist, Dropped, Favourite)
+ * - When not selected, fall back to the neutral "ghost" style
+ * - Allow callers to pass additional class names and props
  *
- * Dependencies:
- * - `cn` — utility for merging class names safely.
- * - `variants` — local style map defining the appearance of each category.
- * 
+ * This component centralizes all styling logic for category filter buttons,
+ * ensuring consistent appearance across the library UI.
  */
 
 import { cn } from "../../../utils/utils";
 
 /**
- * Variants for each filter: keys are category names and values are Tailwind class strings.
+ * Style variants for each filter category.
+ * Keys correspond to category names; values are Tailwind class strings.
  */
 const variants = {
     ghost: "rounded-full bg-transparent border-2 border-generic-button-ghost-border hover:border-generic-button-ghost-border-hover hover:bg-generic-button-ghost-fill-hover",
@@ -28,28 +27,29 @@ const variants = {
 };
 
 /**
- * @param {object} props
- * @param {React.ReactNode} props.children - Content inside the button (icon, label, etc.)
- * @param {string} props.variant - Category variant determining styling.
- * @param {boolean} props.isSelected - Whether this button is currently active.
- * @param {string} [props.className] - Additional class names to merge.
+ * FilterButton
  *
- * @returns {JSX.Element} A styled filter button.
+ * @param {object} props
+ * @param {React.ReactNode} props.children - Inner content (text, icon, etc.)
+ * @param {string} props.variant - Category variant determining styling
+ * @param {boolean} props.isSelected - Whether this filter is currently active
+ * @param {string} [props.className] - Additional classes to merge
+ *
+ * @returns {JSX.Element} A styled filter pill button
  */
 export default function FilterButton({
-    children, 
+    children,
     variant,
-    isSelected, 
+    isSelected,
     className = "",
     ...props
 }) {
-
     return (
         <span
             {...props}
             /**
-             * Combine:
-             * - caller‑provided classes
+             * Final className merges:
+             * - caller-provided classes
              * - variant styling
              * - selected or ghost styling depending on state
              */

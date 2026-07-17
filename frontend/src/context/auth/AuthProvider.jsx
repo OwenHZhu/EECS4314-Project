@@ -1,12 +1,15 @@
 /**
- * ./context/auth/AuthProvider.jsx
- * 
- * Responsibilities:
- * - Store and persist `user` and `token`
- * - Sync JWT token to the authClient Authorization header
- * - Provide login, register, logout, update, changePassword, deleteAccount
- * - Restore session on mount or token change
+ * AuthProvider.jsx
  *
+ * High-level responsibilities:
+ * - Persist and expose `user` and `token` via context
+ * - Keep authClient's Authorization header in sync with the stored JWT
+ * - Provide authentication actions: login, register, logout
+ * - Provide account actions: update profile, change password, delete account
+ * - Restore user session on mount or whenever the token changes
+ *
+ * This provider centralizes all authentication state and actions so that
+ * consuming components can easily access and modify auth-related data.
  */
 
 import { useEffect, useCallback } from "react";
@@ -26,21 +29,30 @@ import {
 import authClient from "../../api/auth/authClient";
 
 export default function AuthProvider({ children }) {
-    // User object
+    /**
+     * @typedef {Object|null} User
+     * @property {string} id
+     * @property {string} username
+     * @property {string} email
+     * @property {string} bio
+     * @property {string} profile_picture
+     */
+
+    /** @type {[User, Function]} */
     const [user, setUser] = useLocalStorage("user", null);
 
-    // JWT
+    /** @type {[string|null, Function]} JWT token */
     const [token, setToken] = useLocalStorage("token", null);
 
-    // User library
+    /** @type {[any, Function]} User library data */
     const [library, setLibrary] = useLocalStorage("library", null);
 
-    // Boolean indicating whether a user is authenticated
+    /** Whether a user is authenticated */
     const isAuthenticated = !!token;
 
     /**
-     * Sync Authorization header with current token.
-     * Runs whenever the token changes.
+     * Sync the Authorization header with the current token.
+     * Ensures all authenticated requests automatically include the JWT.
      */
     useEffect(() => {
         if (token) {
@@ -51,19 +63,16 @@ export default function AuthProvider({ children }) {
     }, [token]);
 
     /**
-     * login(email, password)
+     * Authenticate the user using email + password.
      *
-     * Attempts to authenticate the user.
-     *
-     * @param {string} email - User's email
-     * @param {string} password - User's password
+     * @param {string} email
+     * @param {string} password
      * @returns {Promise<{success: boolean, message?: string}>}
      */
     const login = useCallback(async (email, password) => {
         try {
             const res = await loginRequest(email, password);
 
-            // Store token + user in localStorage
             setToken(res.data.token);
             setUser(res.data.data);
 
@@ -76,20 +85,17 @@ export default function AuthProvider({ children }) {
     }, [setToken, setUser]);
 
     /**
-     * register(username, email, password)
+     * Register a new user account.
      *
-     * Creates a new user account.
-     *
-     * @param {string} username - Desired username
-     * @param {string} email - User's email
-     * @param {string} password - User's password
+     * @param {string} username
+     * @param {string} email
+     * @param {string} password
      * @returns {Promise<{success: boolean, message?: string}>}
      */
     const register = useCallback(async (username, email, password) => {
         try {
             const res = await registerRequest(username, email, password);
 
-            // Store token + user in localStorage
             setToken(res.data.token);
             setUser(res.data.data);
 
@@ -103,9 +109,7 @@ export default function AuthProvider({ children }) {
     }, [setToken, setUser]);
 
     /**
-     * logout()
-     *
-     * Logs the user out and clears stored credentials.
+     * Log the user out and clear all stored session data.
      *
      * @returns {Promise<{success: boolean, message?: string}>}
      */
@@ -113,7 +117,6 @@ export default function AuthProvider({ children }) {
         try {
             const res = await logoutRequest(token);
 
-            // Clear session
             setToken(null);
             setUser(null);
             setLibrary(null);
@@ -125,13 +128,11 @@ export default function AuthProvider({ children }) {
     }, [token, setToken, setUser, setLibrary]);
 
     /**
-     * update(username, bio, profile_picture)
+     * Update the user's profile information.
      *
-     * Updates the user's profile information.
-     *
-     * @param {string} username - Updated username
-     * @param {string} bio - Updated bio
-     * @param {string} profile_picture - Updated profile picture URL
+     * @param {string} username
+     * @param {string} bio
+     * @param {string} profile_picture
      * @returns {Promise<{success: boolean, message?: string}>}
      */
     const update = useCallback(async (username, bio, profile_picture) => {
@@ -139,7 +140,6 @@ export default function AuthProvider({ children }) {
             const payload = { username, bio, profile_picture };
             const res = await updateRequest(payload);
 
-            // Update local user if backend returned new data
             if (res.data?.data) {
                 setUser(res.data.data);
             }
@@ -154,12 +154,10 @@ export default function AuthProvider({ children }) {
     }, [setUser]);
 
     /**
-     * changePassword(current_password, new_password)
+     * Change the user's password.
      *
-     * Changes the user's password.
-     *
-     * @param {string} current_password - Current password
-     * @param {string} new_password - New password
+     * @param {string} current_password
+     * @param {string} new_password
      * @returns {Promise<{success: boolean, message?: string}>}
      */
     const changePassword = useCallback(async (current_password, new_password) => {
@@ -175,9 +173,8 @@ export default function AuthProvider({ children }) {
     }, []);
 
     /**
-     * deleteAccount()
-     *
-     * Deletes the user's account and clears local session.
+     * Permanently delete the user's account.
+     * Clears all local session data afterward.
      *
      * @returns {Promise<{success: boolean, message?: string}>}
      */
@@ -185,7 +182,6 @@ export default function AuthProvider({ children }) {
         try {
             const res = await deleteAccountRequest();
 
-            // Clear session
             setToken(null);
             setUser(null);
             setLibrary(null);
@@ -197,10 +193,10 @@ export default function AuthProvider({ children }) {
     }, [setToken, setUser, setLibrary]);
 
     /**
-     * restoreSession()
-     *
-     * Attempts to restore the user's session using the stored token.
+     * Restore the user's session using the stored token.
      * Called on mount and whenever the token changes.
+     *
+     * If the token is invalid or expired, the session is cleared.
      */
     useEffect(() => {
         async function restoreSession() {
@@ -215,7 +211,6 @@ export default function AuthProvider({ children }) {
             } catch (err) {
                 console.log(err);
 
-                // Token invalid or expired: clear session
                 setToken(null);
                 setUser(null);
                 setLibrary(null);
@@ -223,7 +218,7 @@ export default function AuthProvider({ children }) {
         }
 
         restoreSession();
-    }, [token, setToken, setUser]);
+    }, [token, setToken, setUser, setLibrary]);
 
     return (
         <AuthContext.Provider
