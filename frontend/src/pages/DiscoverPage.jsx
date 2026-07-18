@@ -37,8 +37,12 @@
 
 import { useState } from "react";
 import { useBookSearch } from "../hooks/useBookSearch";
-import { BookCard } from "../components/BookCard";
+import { BookCard } from "../components/books/BookCard";
 import { GENRES, GENRE_LABELS } from "../data/mockBook";
+import BookDetailsModal from "../components/books/BookDetailsModal";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/auth/useAuth";
+
 
 export function DiscoverPage() {
   // Search text input
@@ -49,6 +53,14 @@ export function DiscoverPage() {
 
   // Debounced search results + loading state
   const { results, loading } = useBookSearch(query, genre);
+
+  const [selectedBook, setSelectedBook] = useState(null);
+
+  // Allows redirecting to a book detail route when needed
+  const navigate = useNavigate();
+
+  // Accesses the current authentication state
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
@@ -149,12 +161,41 @@ export function DiscoverPage() {
         </div>
       ) : (
         /* Results grid */
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {results.map((book) => (
-            <BookCard key={book.id} book={book} />
-          ))}
-        </div>
+       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        {results.map((book) => (
+        <div key={book.id} className="flex justify-center">
+        <BookCard
+         book={book}
+          onClick={() => setSelectedBook(book)}
+        />
+      </div>
+     ))}
+    </div>
       )}
+            <BookDetailsModal
+              book={selectedBook}
+              isOpen={Boolean(selectedBook)}
+              isAuthenticated={isAuthenticated}
+              onClose={() => setSelectedBook(null)}
+              onAuthRequired={() => {
+                
+                navigate("/login");
+              }}
+              onViewMore={(book) => {
+                
+                navigate(`/books/${book.id}`);
+              }}
+              onFavouriteChange={(isFavourite, book) => {
+                console.log("Favourite:", isFavourite, book.title);
+              }}
+              onStatusChange={(status, book) => {
+                console.log("Status:", status, book.title);
+              }}
+              onRatingChange={(rating, book) => {
+                console.log("Rating:", rating, book.title);
+              }}
+          />
+  
     </div>
   );
 }

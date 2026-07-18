@@ -56,6 +56,8 @@ export default function BookDetailsModal({
   onFavouriteChange,
   onStatusChange,
   onRatingChange,
+  isAuthenticated = false,
+  onAuthRequired,
 }) {
   const [isFavourite, setIsFavourite] = useState(initialFavourite);
   const [status, setStatus] = useState(initialStatus);
@@ -262,7 +264,7 @@ export default function BookDetailsModal({
               {shortDescription}
             </p>
 
-            {hasLongDescription && (
+            
               <button
                 type="button"
                 onClick={() => onViewMore?.(book)}
@@ -276,7 +278,7 @@ export default function BookDetailsModal({
               >
                 View More
               </button>
-            )}
+            
           </div>
 
           {/* Bottom actions: library status and personal rating */}
@@ -291,6 +293,8 @@ export default function BookDetailsModal({
               <BookStatusDropdown
                 status={status}
                 onStatusChange={handleStatusChange}
+                isAuthenticated={isAuthenticated}
+                onAuthRequired={onAuthRequired}
               />
 
               <div className="flex flex-col items-center gap-1">
