@@ -41,7 +41,7 @@ export default function LibraryItem({
      * Provides variant‑specific helpers:
      * - getDateText: formatted date string for the entry
      */
-    const { getDateText } = useLibraryActions();
+    const { getDateText, doAction } = useLibraryActions();
 
     /** Controls visibility of delete and edit modals */
     const [deleteModal, setDeleteModal] = useState(false);
@@ -97,6 +97,17 @@ export default function LibraryItem({
                             className="max-w-fit py-1 px-4 mt-3 text-xs md:text-xs"
                         >
                             Edit
+                        </GenericButton>
+                    )}
+                    
+                    {/* Unfavourite button only for favourite variant */}
+                    {variant === "favourite" && (
+                        <GenericButton
+                            onClick={() => doAction(libraryEntry, variant, false, null)}
+                            variant="primary"
+                            className="max-w-fit py-1 px-4 mt-3 text-xs md:text-xs"
+                        >
+                            Unfavourite
                         </GenericButton>
                     )}
                 </div>

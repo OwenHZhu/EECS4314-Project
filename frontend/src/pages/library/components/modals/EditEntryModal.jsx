@@ -46,10 +46,10 @@ export default function EditEntryModal({ libraryEntry, variant, setEditModal }) 
     const [dropdown, setDropdown] = useState(false);
 
     /** Favourite toggle */
-    const [favourite, setFavourite] = useState(false);
+    const [favourite, setFavourite] = useState(libraryEntry.is_favourite || false);
 
     /** Rating value */
-    const [rating, setRating] = useState(0);
+    const [rating, setRating] = useState(libraryEntry.rating || 0);
 
     /** Variant-specific update action */
     const { doAction } = useLibraryActions();
@@ -88,50 +88,52 @@ export default function EditEntryModal({ libraryEntry, variant, setEditModal }) 
                 {/* Rating + favourite only for finished/dropped */}
                 {(selected.variant === "dropped" ||
                     selected.variant === "finished") && (
-                    <>
-                        {/* Rating */}
-                        <div className="flex flex-row space-x-2 items-center">
-                            <Icon className="text-[#22C9A8] text-base">
-                                stars_2
-                            </Icon>
-                            <h3 className="text-xs md:text-sm text-[#839497] font-semibold">
-                                Rating:
-                            </h3>
+                        <>
+                            {/* Rating */}
+                            <div className="flex flex-row space-x-2 items-center">
+                                <Icon className="text-[#22C9A8] text-base">
+                                    stars_2
+                                </Icon>
+                                <h3 className="text-xs md:text-sm text-[#839497] font-semibold">
+                                    Rating:
+                                </h3>
 
-                            <StarRating rating={rating} setRating={setRating} />
-                        </div>
+                                <StarRating rating={rating} setRating={setRating} />
+                            </div>
 
-                        {/* Favourite toggle */}
-                        <div className="flex flex-row space-x-2 items-center">
-                            <Icon className="text-[#22C9A8] text-base">
-                                favorite
-                            </Icon>
-                            <h3 className="text-xs md:text-sm text-[#839497] font-semibold">
-                                Favourite:
-                            </h3>
+                            {/* Favourite toggle */}
+                            <div className="flex flex-row space-x-2 items-center">
+                                <Icon className="text-[#22C9A8] text-base">
+                                    favorite
+                                </Icon>
+                                <h3 className="text-xs md:text-sm text-[#839497] font-semibold">
+                                    Favourite:
+                                </h3>
 
-                            <Icon
-                                className="text-[#839497] text-base cursor-pointer"
-                                onClick={() => setFavourite((prev) => !prev)}
-                            >
-                                {favourite
-                                    ? "check_box"
-                                    : "check_box_outline_blank"}
-                            </Icon>
-                        </div>
-                    </>
-                )}
+                                <Icon
+                                    className="text-[#839497] text-base cursor-pointer"
+                                    onClick={() => setFavourite((prev) => !prev)}
+                                >
+                                    {favourite
+                                        ? "check_box"
+                                        : "check_box_outline_blank"}
+                                </Icon>
+                            </div>
+                        </>
+                    )}
 
                 {/* Action buttons */}
                 <div className="flex flex-row space-x-3 items-center">
                     <GenericButton
-                        onClick={() =>
+                        onClick={() => {
                             doAction(
                                 libraryEntry,
                                 selected.variant,
                                 favourite,
                                 rating
                             )
+                            setEditModal(false);
+                        }
                         }
                         variant="secondary"
                         className="text-xs md:text-xs py-1 px-3"
