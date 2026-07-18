@@ -13,8 +13,8 @@
  * - Allow the parent to control open/close state
  */
 
-import Dropdown from "../../../components/generic/Dropdown";
-import Icon from "../../../components/generic/Icon";
+import Dropdown from "../../../../components/generic/Dropdown";
+import Icon from "../../../../components/generic/Icon";
 
 /**
  * SortingDropdown

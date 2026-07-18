@@ -14,8 +14,8 @@
 
 import { useState } from "react";
 import { useLibrary } from "../../hooks/library/useLibrary";
-import LibraryTab from "./components/LibraryTab";
-import FilterButton from "./components/FilterButton";
+import LibraryTab from "./components/entries/LibraryTab";
+import FilterButton from "./components/ui/FilterButton";
 import Icon from "../../components/generic/Icon";
 
 /**

@@ -10,8 +10,8 @@
  * the correct labels and wiring the delete action from `useLibrary`.
  */
 
-import { useLibrary } from "../../../hooks/library/useLibrary";
-import GenericModal from "../../../components/generic/GenericModal";
+import { useLibrary } from "../../../../hooks/library/useLibrary";
+import GenericModal from "../../../../components/generic/GenericModal";
 
 /**
  * DeleteEntryModal

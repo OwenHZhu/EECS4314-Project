@@ -11,7 +11,7 @@
  * ensuring consistent appearance across the library UI.
  */
 
-import { cn } from "../../../utils/utils";
+import { cn } from "../../../../utils/utils";
 
 /**
  * Style variants for each filter category.

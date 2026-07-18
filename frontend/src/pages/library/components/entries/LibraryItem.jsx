@@ -9,13 +9,13 @@
  * Delegates variant‑specific formatting to useLibraryActions.
  */
 
-import { cn } from "../../../utils/utils";
+import { cn } from "../../../../utils/utils";
 import { useState } from "react";
-import { useLibraryActions } from "../../../hooks/library/useLibraryActions";
-import DeleteEntryModal from "./DeleteEntryModal";
-import EditEntryModal from "./EditEntryModal";
-import GenericButton from "../../../components/generic/GenericButton";
-import Icon from "../../../components/generic/Icon";
+import { useLibraryActions } from "../../../../hooks/library/useLibraryActions";
+import DeleteEntryModal from "../modals/DeleteEntryModal";
+import EditEntryModal from "../modals/EditEntryModal";
+import GenericButton from "../../../../components/generic/GenericButton";
+import Icon from "../../../../components/generic/Icon";
 
 /**
  * LibraryItem

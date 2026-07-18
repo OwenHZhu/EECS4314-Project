@@ -10,7 +10,7 @@
  */
 
 import { useState } from "react";
-import Icon from "../../../components/generic/Icon";
+import Icon from "../../../../components/generic/Icon";
 
 /**
  * StarRating

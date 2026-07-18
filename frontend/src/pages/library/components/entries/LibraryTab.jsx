@@ -17,10 +17,10 @@ import { useState } from "react";
 import {
     filterLibraryListByVariant,
     sortSelectedEntries
-} from "../../../hooks/library/useLibrarySorting";
-import { cn } from "../../../utils/utils";
-import Icon from "../../../components/generic/Icon";
-import SortingDropdown from "./SortingDropdown";
+} from "../../../../hooks/library/useLibrarySorting";
+import { cn } from "../../../../utils/utils";
+import Icon from "../../../../components/generic/Icon";
+import SortingDropdown from "../ui/SortingDropdown";
 import LibraryItem from "./LibraryItem";
 
 /** Variant-specific background + border styles */

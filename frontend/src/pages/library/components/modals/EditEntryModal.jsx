@@ -12,11 +12,11 @@
  */
 
 import { useState } from "react";
-import EditEntryDropdown from "./EditEntryDropdown";
-import StarRating from "./StarRating";
-import GenericButton from "../../../components/generic/GenericButton";
-import Icon from "../../../components/generic/Icon";
-import { useLibraryActions } from "../../../hooks/library/useLibraryActions";
+import EditEntryDropdown from "../ui/EditEntryDropdown";
+import StarRating from "../ui/StarRating";
+import GenericButton from "../../../../components/generic/GenericButton";
+import Icon from "../../../../components/generic/Icon";
+import { useLibraryActions } from "../../../../hooks/library/useLibraryActions";
 
 /** Available reading statuses for selection */
 const readingStatus = [

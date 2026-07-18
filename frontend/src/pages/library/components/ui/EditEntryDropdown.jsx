@@ -11,8 +11,8 @@
  * - selection handler (`handleSelection`)
  */
 
-import Dropdown from "../../../components/generic/Dropdown";
-import Icon from "../../../components/generic/Icon";
+import Dropdown from "../../../../components/generic/Dropdown";
+import Icon from "../../../../components/generic/Icon";
 
 /**
  * EditEntryDropdown
