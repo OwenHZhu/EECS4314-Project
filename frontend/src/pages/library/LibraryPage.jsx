@@ -1,24 +1,30 @@
 /**
- * ./pages/library/LibraryPage.jsx
+ * LibraryPage.jsx
  *
- * Displays the user's personal book library.
- * Provides a filterable interface that lets users switch between different
- * reading categories (Finished, Reading, Wishlist, Dropped, Favourite).
+ * High-level responsibilities:
+ * - Display the user's personal book library
+ * - Provide a filterable interface for switching between reading categories
+ *   (Finished, Reading, Wishlist, Dropped, Favourite)
+ * - Render category-specific content using LibraryTab
+ * - Render category-switching controls using FilterButton
  *
- * Dependencies:
- * - React `useState` — manages the active filter selection.
- * - `LibraryTab` — displays books for the currently selected category.
- * - `FilterButton` — reusable button component for category switching.
- * - `Icon` — renders category icons inside filter buttons.
- *
+ * This page acts as the main entry point for viewing and navigating
+ * the user's library, combining filtering controls with category views.
  */
+
 import { useState } from "react";
-import LibraryTab from "./components/LibraryTab";
-import FilterButton from "./components/FilterButton";
+import { useLibrary } from "../../hooks/library/useLibrary";
+import LibraryTab from "./components/entries/LibraryTab";
+import FilterButton from "./components/ui/FilterButton";
 import Icon from "../../components/generic/Icon";
 
 /**
  * Filter options controlling which category of books is shown.
+ * Each option defines:
+ * - label: Display name
+ * - variant: Category key used for filtering + styling
+ * - icon: Icon name for the filter button
+ * - icon_colour: Colour applied to the icon + title
  */
 const options = [
     { label: "Finished", variant: "finished", icon: "bookmark_check", icon_colour: "#CCEED6" },
@@ -28,10 +34,17 @@ const options = [
     { label: "Favourite", variant: "favourite", icon: "bookmark_heart", icon_colour: "#EDCFE5" }
 ];
 
+/**
+ * LibraryPage
+ *
+ * @returns {JSX.Element} The main library page with filters + category content
+ */
 export default function LibraryPage() {
-    /** 
+    const { library } = useLibrary();
+
+    /**
      * Tracks the currently selected filter option.
-     * Defaults to "finished".
+     * Defaults to the "Finished" category.
      */
     const [selected, setSelected] = useState(options[0]);
 
@@ -42,7 +55,9 @@ export default function LibraryPage() {
             {/* Page header */}
             <header className="flex flex-col space-y-2 border-b-2 border-[#5A4B4B] p-2 pb-3">
                 <h1 className="font-bold text-[#C6C1B3] text-lg md:text-xl">My Library</h1>
-                <p className="text-sm md:text-base text-[#7E7272]">Track your reading journey!</p>
+                <p className="text-sm md:text-base text-[#7E7272]">
+                    Track your reading journey!
+                </p>
             </header>
 
             {/* Filter buttons row */}
@@ -72,6 +87,7 @@ export default function LibraryPage() {
 
             {/* Main content tab showing books for the selected category */}
             <LibraryTab
+                libraryList={library}
                 icon={selected.icon}
                 iconColour={selected.icon_colour}
                 title={selected.label}
