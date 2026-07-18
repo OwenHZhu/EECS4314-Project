@@ -1,15 +1,12 @@
 /**
  * LibraryItem.jsx
  *
- * High-level responsibilities:
- * - Render a single library entry (book) inside a category list
- * - Display book metadata: cover, title, author
- * - Show a variant‑specific action button when applicable
- * - Display a formatted date string describing when the entry was added or updated
- * - Allow the user to delete the entry via a modal
+ * Renders a single library entry row, including:
+ * - Book metadata (cover, title, author)
+ * - Variant‑specific UI (edit button visibility, date text)
+ * - Delete and edit modals
  *
- * This component visually represents a user's book entry and delegates
- * variant‑specific behavior (button text, date text, actions) to `useLibraryActions`.
+ * Delegates variant‑specific formatting to useLibraryActions.
  */
 
 import { cn } from "../../../utils/utils";
@@ -20,22 +17,19 @@ import EditEntryModal from "./EditEntryModal";
 import GenericButton from "../../../components/generic/GenericButton";
 import Icon from "../../../components/generic/Icon";
 
-
 /**
  * LibraryItem
  *
- * @param {object} props
- * @param {object} props.libraryEntry - The full library entry object
- * @param {object} props.libraryEntry.book - Book metadata
+ * @param {Object} props
+ * @param {Object} props.libraryEntry - Full library entry object
+ * @param {Object} props.libraryEntry.book - Book metadata
  * @param {string} props.libraryEntry.book.title
  * @param {string} props.libraryEntry.book.author
  * @param {string} props.libraryEntry.book.cover_image
- * @param {string} props.variant - Category variant controlling behavior and styling.
- *   - "finished": hides the action button
- *   - other variants: show an action button with variant‑specific behavior
- * @param {string} [props.className] - Additional classes for the outer container
+ * @param {string} props.variant - Controls UI behavior (e.g., finished, reading, wishlist, favourite)
+ * @param {string} [props.className] - Optional container classes
  *
- * @returns {JSX.Element} A styled library item row
+ * @returns {JSX.Element}
  */
 export default function LibraryItem({
     libraryEntry,
@@ -44,20 +38,12 @@ export default function LibraryItem({
     ...props
 }) {
     /**
-     * useLibraryActions
-     *
-     * Provides variant‑specific UI and behavior:
-     * - dateText: formatted date string describing the entry's last update
-     * - doAction: handler for the variant‑specific action (e.g., mark as reading/finished)
-     *
-     * The hook receives both the variant and the libraryEntry.
+     * Provides variant‑specific helpers:
+     * - getDateText: formatted date string for the entry
      */
     const { getDateText } = useLibraryActions();
 
-    /**
-     * Controls visibility of the DeleteEntryModal.
-     * Toggled by clicking the delete icon in the right section.
-     */
+    /** Controls visibility of delete and edit modals */
     const [deleteModal, setDeleteModal] = useState(false);
     const [editModal, setEditModal] = useState(false);
 
@@ -69,6 +55,7 @@ export default function LibraryItem({
                 className
             )}
         >
+            {/* Delete modal */}
             {deleteModal && (
                 <DeleteEntryModal
                     libraryEntry={libraryEntry}
@@ -76,6 +63,7 @@ export default function LibraryItem({
                 />
             )}
 
+            {/* Edit modal */}
             {editModal && (
                 <EditEntryModal
                     libraryEntry={libraryEntry}
@@ -84,7 +72,7 @@ export default function LibraryItem({
                 />
             )}
 
-            {/* Left section: cover image, title, author, and optional action button */}
+            {/* Left: cover, title, author, edit button */}
             <div className="flex flex-row space-x-3 flex-1">
                 <img
                     src={libraryEntry.book.cover_image}
@@ -101,6 +89,7 @@ export default function LibraryItem({
                         {libraryEntry.book.author}
                     </p>
 
+                    {/* Edit button hidden for favourite variant */}
                     {variant !== "favourite" && (
                         <GenericButton
                             onClick={() => setEditModal(prev => !prev)}
@@ -113,12 +102,13 @@ export default function LibraryItem({
                 </div>
             </div>
 
-            {/* Right section: date text and delete icon */}
+            {/* Right: date text + delete icon */}
             <div className="flex flex-row items-center space-x-2 mr-2">
                 <p className="hidden md:block text-xs text-[#BFB8AD] text-wrap">
                     {getDateText(libraryEntry, variant)}
                 </p>
 
+                {/* Close icon toggles modal */}
                 <Icon
                     onClick={() => setDeleteModal(prev => !prev)}
                     className="text-slate-700"
