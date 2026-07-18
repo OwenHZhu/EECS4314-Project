@@ -104,7 +104,7 @@ export default function LibraryItem({
                     {variant === "favourite" && (
                         <GenericButton
                             onClick={() => doAction(libraryEntry, variant, false, null)}
-                            variant="primary"
+                            variant="ghost"
                             className="max-w-fit py-1 px-4 mt-3 text-xs md:text-xs"
                         >
                             Unfavourite
