@@ -16,6 +16,7 @@ import { cn } from "../../../utils/utils";
 import { useState } from "react";
 import { useLibraryActions } from "../../../hooks/library/useLibraryActions";
 import DeleteEntryModal from "./DeleteEntryModal";
+import EditEntryModal from "./EditEntryModal";
 import GenericButton from "../../../components/generic/GenericButton";
 import Icon from "../../../components/generic/Icon";
 
@@ -46,19 +47,19 @@ export default function LibraryItem({
      * useLibraryActions
      *
      * Provides variant‑specific UI and behavior:
-     * - buttonText: label for the action button (only used when variant !== "finished")
      * - dateText: formatted date string describing the entry's last update
      * - doAction: handler for the variant‑specific action (e.g., mark as reading/finished)
      *
      * The hook receives both the variant and the libraryEntry.
      */
-    const { buttonText, dateText, doAction } = useLibraryActions(variant, libraryEntry);
+    const { getDateText } = useLibraryActions();
 
     /**
      * Controls visibility of the DeleteEntryModal.
      * Toggled by clicking the delete icon in the right section.
      */
     const [deleteModal, setDeleteModal] = useState(false);
+    const [editModal, setEditModal] = useState(false);
 
     return (
         <div
@@ -72,6 +73,14 @@ export default function LibraryItem({
                 <DeleteEntryModal
                     libraryEntry={libraryEntry}
                     setDeleteModal={setDeleteModal}
+                />
+            )}
+
+            {editModal && (
+                <EditEntryModal
+                    libraryEntry={libraryEntry}
+                    setEditModal={setEditModal}
+                    variant={variant}
                 />
             )}
 
@@ -92,14 +101,13 @@ export default function LibraryItem({
                         {libraryEntry.book.author}
                     </p>
 
-                    {/* Action button shown only when the variant is not "finished" */}
-                    {variant !== "finished" && (
+                    {variant !== "favourite" && (
                         <GenericButton
-                            onClick={doAction}
+                            onClick={() => setEditModal(prev => !prev)}
                             variant="ghost"
                             className="max-w-fit py-1 px-4 mt-3 text-xs md:text-xs"
                         >
-                            {buttonText}
+                            Edit
                         </GenericButton>
                     )}
                 </div>
@@ -108,7 +116,7 @@ export default function LibraryItem({
             {/* Right section: date text and delete icon */}
             <div className="flex flex-row items-center space-x-2 mr-2">
                 <p className="hidden md:block text-xs text-[#BFB8AD] text-wrap">
-                    {dateText}
+                    {getDateText(libraryEntry, variant)}
                 </p>
 
                 <Icon

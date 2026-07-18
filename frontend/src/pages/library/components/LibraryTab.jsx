@@ -103,6 +103,7 @@ export default function LibraryTab({
      * The dropdown only updates the selected option — sorting is derived.
      */
     function handleSelection(option) {
+        setDropdown(false);
         setSelected(option);
     }
 

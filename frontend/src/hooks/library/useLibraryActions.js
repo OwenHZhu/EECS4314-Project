@@ -32,39 +32,15 @@ import { format } from "date-fns";
  *   doAction: Function
  * }}
  */
-export function useLibraryActions(variant, entry) {
+export function useLibraryActions() {
     const { updateLibraryEntry } = useLibrary();
-
-    /**
-     * Get the button label associated with the current variant.
-     *
-     * @returns {string}
-     */
-    function getButtonText() {
-        switch (variant) {
-            case "reading":
-                return "Mark as Finished";
-
-            case "dropped":
-                return "Resume";
-
-            case "wishlist":
-                return "Start Reading";
-
-            case "favourite":
-                return "Remove";
-
-            default:
-                return "";
-        }
-    }
 
     /**
      * Get the formatted date text associated with the current variant.
      *
      * @returns {string}
      */
-    function getDateText() {
+    function getDateText(entry, variant) {
         switch (variant) {
             case "finished":
                 return `${format(entry.added_at, "MMM d, yyy")} to ${format(entry.updated_at, "MMM d, yyy")}`;
@@ -90,16 +66,17 @@ export function useLibraryActions(variant, entry) {
      *
      * @returns {Promise<any>|null}
      */
-    async function doAction() {
+    async function doAction(entry, variant, isFavourite, rating) {
         switch (variant) {
+            case "finished":
+                return updateLibraryEntry(entry.book_id, "read", isFavourite, rating);
+
             case "reading":
-                return updateLibraryEntry(entry.book_id, "read", entry.is_favourite, 5);
+            case "wishlist":
+                return updateLibraryEntry(entry.book_id, variant, null, null);
 
             case "dropped":
-                return updateLibraryEntry(entry.book_id, "reading", entry.is_favourite, null);
-
-            case "wishlist":
-                return updateLibraryEntry(entry.book_id, "reading", entry.is_favourite, null);
+                return updateLibraryEntry(entry.book_id, "dropped", isFavourite, rating);
 
             case "favourite":
                 return updateLibraryEntry(entry.book_id, entry.status, false, entry.rating);
@@ -110,8 +87,7 @@ export function useLibraryActions(variant, entry) {
     }
 
     return {
-        buttonText: getButtonText(),
-        dateText: getDateText(),
+        getDateText,
         doAction
     };
 }
