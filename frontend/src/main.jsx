@@ -14,6 +14,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import AuthProvider from './context/auth/AuthProvider.jsx'
+import LibraryProvider from './context/library/LibraryProvider.jsx'
 
 /*
  * Mount the React application:
@@ -25,7 +26,9 @@ import AuthProvider from './context/auth/AuthProvider.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <App />
+      <LibraryProvider>
+        <App />
+      </LibraryProvider>
     </AuthProvider>
   </StrictMode>,
 )
