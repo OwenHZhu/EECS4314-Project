@@ -7,8 +7,12 @@
  * - Backend password update
  * - Logout + redirect after successful change
  *
+ * Props:
+ * (none)
+ *
  * Dependencies:
- * - useAuth: Provides changePassword() and logout()
+ * - useAuth: Provides logout()
+ * - useUser: Provides changePassword()
  * - useNavigate: Navigation after cancel or success
  * - validatePassword: Client-side password strength validation
  * - GenericInput, GenericButton, GenericModal, ErrorList: Reusable UI components
@@ -17,29 +21,36 @@
 import { useState } from "react";
 import { validatePassword } from "../../utils/validation.js";
 import { useAuth } from "../../hooks/auth/useAuth.js";
+import { useUser } from "../../hooks/user/useUser.js";
 import { useNavigate } from "react-router-dom";
 import GenericInput from "../../components/generic/GenericInput.jsx";
 import GenericButton from "../../components/generic/GenericButton.jsx";
 import GenericModal from "../../components/generic/GenericModal.jsx";
 import ErrorList from "../../components/generic/ErrorList.jsx";
 
+/**
+ * ChangePasswordPage
+ *
+ * Renders the password change form and handles validation + submission.
+ *
+ * @returns {JSX.Element}
+ */
 export default function ChangePasswordPage() {
     const navigate = useNavigate();
-    const { changePassword, logout } = useAuth();
+    const { logout } = useAuth();
+    const { changePassword } = useUser();
 
-    // Controlled inputs for password fields
+    // Controlled inputs
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
 
-    // Controls visibility of cancel confirmation modal
+    // Cancel confirmation modal
     const [cancel, setCancel] = useState(false);
 
-    // Validation + backend error messages
+    // Validation + backend errors
     const [errors, setErrors] = useState([]);
 
     /**
-     * handleCancel()
-     *
      * Navigates back to the profile editing page.
      *
      * @returns {void}
@@ -49,8 +60,6 @@ export default function ChangePasswordPage() {
     }
 
     /**
-     * closeCancelModal()
-     *
      * Closes the cancel confirmation modal.
      *
      * @returns {void}
@@ -60,11 +69,9 @@ export default function ChangePasswordPage() {
     }
 
     /**
-     * handleErrors()
+     * Displays validation or backend errors and resets password fields.
      *
-     * Handles the display of validation or backend errors and resets both password fields.
-     *
-     * @param {string[]} errors - Array of error messages to display
+     * @param {string[]} errors
      * @returns {void}
      */
     function handleErrors(errors) {
@@ -74,30 +81,24 @@ export default function ChangePasswordPage() {
     }
 
     /**
-     * updatePassword()
-     *
      * Validates and submits a password change request.
      *
-     * Validation steps:
-     * - Required fields must be filled
-     * - New password must differ from current password
-     * - New password must pass validatePassword() rules
-     *
-     * Backend:
-     * - Calls changePassword(currentPassword, newPassword)
-     * - On failure: displays backend message
-     * - On success: logs out user and redirects to login
+     * Steps:
+     * - Required-field validation
+     * - Prevent identical passwords
+     * - Password strength validation
+     * - Backend password update
+     * - Logout and redirect on success
      *
      * @returns {Promise<void>}
      */
     async function updatePassword() {
         const emptyErrors = [];
 
-        // Required-field validation
+        // Required fields
         if (!currentPassword.trim()) emptyErrors.push("Please enter your current password.");
         if (!newPassword.trim()) emptyErrors.push("Please enter your new password.");
 
-        // Missing required fields
         if (emptyErrors.length > 0) {
             handleErrors(emptyErrors);
             return;
@@ -109,28 +110,26 @@ export default function ChangePasswordPage() {
             return;
         }
 
-        // Password strength validation
+        // Strength validation
         const passwordErrors = validatePassword(newPassword);
-
         if (passwordErrors.length > 0) {
             handleErrors(passwordErrors);
             return;
         }
 
-        // Attempt password update
+        // Backend request
         const res = await changePassword(currentPassword, newPassword);
 
-        // Backend failure
         if (!res.success) {
             handleErrors([res.message]);
             return;
         }
 
-        // Successful password change → logout + redirect
+        // On success: logout the user and redirect them to login
         logout();
         navigate("/login");
 
-        // Clear UI state
+        // Reset UI
         setCurrentPassword("");
         setNewPassword("");
         setErrors([]);
@@ -192,7 +191,7 @@ export default function ChangePasswordPage() {
                     <ErrorList errors={errors} />
                 )}
 
-                {/* Submit + cancel */}
+                {/* Save and cancel buttons */}
                 <div className="flex flex-row mt-2 justify-center space-x-3">
                     <GenericButton
                         type="submit"

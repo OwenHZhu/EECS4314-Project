@@ -27,11 +27,13 @@ Status codes:
 """
 
 from pathlib import Path
-
-from fastapi import APIRouter, HTTPException, Response
-
+ 
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
+ 
+from auth_service.services.auth import update_profile_picture
+from auth_service.utils.jwt import get_current_user_id
 from auth_service.utils.profile_pics import download_profile_picture
-
+ 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 _CONTENT_TYPES = {
@@ -59,8 +61,35 @@ async def get_profile_picture(filename: str):
 
     try:
         image_bytes = await download_profile_picture(filename)
-        print(image_bytes)
     except Exception:
         raise HTTPException(status_code=404, detail="Profile picture not found")
 
     return Response(content=image_bytes, media_type=content_type)
+
+@router.put("/profile-picture")
+async def put_profile_picture(
+    profile_picture: UploadFile = File(...),
+    user_id: str = Depends(get_current_user_id),
+):
+    """
+    Upload a new profile picture for the authenticated user, replacing
+    whichever one they currently have (if any).
+ 
+    Delegates to services/auth.update_profile_picture(), which handles
+    validation, upload, retiring the old image, and persisting the new
+    filename to Supabase — see that function's docstring for the full
+    workflow and failure-cleanup behavior.
+ 
+    Returns:
+        200 - { success: True, message: str, data: UserAccount }
+        400 - Validation failure (bad file type, too large, etc.)
+        404 - User not found
+    """
+ 
+    result = await update_profile_picture(user_id, profile_picture)
+ 
+    if not result["success"]:
+        status_code = 404 if result["message"] == "User not found" else 400
+        raise HTTPException(status_code=status_code, detail=result["message"])
+ 
+    return result

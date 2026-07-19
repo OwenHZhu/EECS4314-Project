@@ -18,7 +18,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import RegisterPage from "../../pages/auth/RegisterPage.jsx"
+import RegisterPage from "../../pages/register/RegisterPage.jsx"
 import "@testing-library/jest-dom/vitest";
 
 // Mock functions allow tests to observe registration and navigation behaviour
@@ -233,7 +233,7 @@ describe("RegisterPage", () => {
     );
 
     expect(
-      screen.getByText("Invalid email.")
+      screen.getByText("Please enter a valid email address.")
     ).toBeInTheDocument();
 
     expect(mockRegister).not.toHaveBeenCalled();

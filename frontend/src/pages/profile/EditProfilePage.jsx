@@ -7,7 +7,8 @@
  * - Profile picture
  *
  * Dependencies:
- * - useAuth: Provides authenticated user + update() method
+ * - useAuth: Provides authenticated user
+ * - useUser: Provides update() method
  * - validateUsername: Client-side username validation
  * - ProfilePictureModal: Profile picture editing modal
  * - EditProfileHeader: Page header
@@ -22,6 +23,7 @@
 
 import { useState } from "react";
 import { useAuth } from "../../hooks/auth/useAuth.js";
+import { useUser } from "../../hooks/user/useUser.js";
 import { validateUsername } from "../../utils/validation.js";
 import ProfilePictureModal from "./components/ProfilePictureModal.jsx";
 import EditProfileHeader from "./components/EditProfileHeader.jsx";
@@ -29,40 +31,37 @@ import GenericButton from "../../components/generic/GenericButton.jsx";
 import Icon from "../../components/generic/Icon.jsx";
 import ErrorList from "../../components/generic/ErrorList.jsx";
 
+/**
+ * EditProfilePage
+ *
+ * Renders the profile editing interface and handles validation + updates.
+ *
+ * @returns {JSX.Element}
+ */
 export default function EditProfilePage() {
-    // For displaying error messages 
     const [messages, setMessages] = useState([]);
 
-    // Get user state and update function from AuthProvider
-    const { user, update } = useAuth();
+    const { user } = useAuth();
+    const { update } = useUser();
 
-    // Controlled input for username
     const [username, setUsername] = useState(user.username);
-
-    // Controlled input for bio
     const [bio, setBio] = useState(user.bio ? user.bio : "");
-
-    // Controls visibility of the profile picture modal
     const [editPicture, setEditPicture] = useState(false);
 
     /**
-     * handleSave()
-     *
      * Validates and submits updated profile details.
      *
-     * Validation:
-     * - Uses validateUsername() to check username rules.
-     *
-     * Update:
-     * - Calls update(username, bio, profile_picture)
-     * - Displays backend message regardless of success/failure
+     * Steps:
+     * - Validate username using validateUsername()
+     * - Submit update request
+     * - Revert fields on failure
+     * - Display backend response message
      *
      * @returns {Promise<void>}
      */
     async function handleSave() {
         const validationErrors = validateUsername(username);
 
-        // Username validation failed
         if (validationErrors.length >= 1) {
             setMessages([validationErrors]);
             setUsername(user.username);
@@ -70,29 +69,23 @@ export default function EditProfilePage() {
             return;
         }
 
-        // Submit update request
         const res = await update(username, bio, "");
 
-        // If update failed, revert fields to previous values
         if (!res.success) {
             setUsername(user.username);
             setBio(user.bio);
         }
 
-        // Display backend response message
         setMessages([res.message]);
-        return;
     }
 
     /**
-     * handlePicture()
-     *
      * Toggles the profile picture editing modal.
      *
      * @returns {void}
      */
     function handlePicture() {
-        setEditPicture(prev => !prev)
+        setEditPicture(prev => !prev);
     }
 
     return (
@@ -106,7 +99,7 @@ export default function EditProfilePage() {
                 <ProfilePictureModal setEditPicture={setEditPicture} />
             )}
 
-            {/* Username + profile picture */}
+            {/* Username and profile picture */}
             <div className="flex flex-row items-center ml-5">
                 <Icon
                     onClick={handlePicture}
@@ -148,7 +141,6 @@ export default function EditProfilePage() {
                     className="bg-transparent resize-none text-xs md:text-sm border-secondary border-2 focus:ring-0 focus:outline-none rounded-md w-full h-32 md:w-2/3 sm:h-24 p-4"
                 />
 
-                {/* Character counter */}
                 <p className="text-xs w-fit">
                     {`${bio.length} / 150`}
                 </p>
