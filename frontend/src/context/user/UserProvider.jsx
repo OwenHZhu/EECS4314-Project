@@ -16,7 +16,7 @@
  * - changePasswordRequest: API call for updating user password.
  * - UserContext: React context used to expose user data and actions.
  */
-import { useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { UserContext } from "./UserContext";
 import { useAuth } from "../../hooks/auth/useAuth";
 
@@ -38,6 +38,7 @@ import {
  */
 export default function UserProvider({ children }) {
     const { user, setUser } = useAuth();
+    const [profilePictureUrl, setProfilePictureUrl] = useState(null);
 
     /**
      * updateProfile()
@@ -82,15 +83,23 @@ export default function UserProvider({ children }) {
     };
 
     /**
-    * getProfilePicture()
-    *
-    * Gets the user's profile picture.
-    */
+     * getProfilePicture()
+     *
+     * Retrieves the user's profile picture from the backend.
+     *
+     * @async
+     * @param {string} filename - The stored filename/key of the user's profile picture.
+     * @returns {Promise<{success: boolean, message: string} | void>}
+     *          Returns an error object on failure, or success message on success.
+     */
     const getProfilePicture = async (filename) => {
         try {
-            const res = await getProfilePictureRequest(filename);
+            await getProfilePictureRequest(filename);
 
-            console.log(res);
+            return {
+                success: true,
+                message: "Successfully fetched user's profile picture."
+            }
         } catch (err) {
             return {
                 success: false,
@@ -121,21 +130,41 @@ export default function UserProvider({ children }) {
         }
     }, []);
 
+    /**
+     * useEffect: Fetch and update the user's profile picture URL
+     * 
+     * Runs whenever the user's profile picture filename changes.
+     * If the user has no profile picture, clears the stored URL.
+     * Otherwise, retrieves the image blob from the backend and
+     * generates a temporary object URL for rendering in the UI.
+     * 
+     * @async
+     * @returns {void}
+     */
     useEffect(() => {
-        if (!user?.profile_picture) return;
+        async function getProfilePic() {
+            if (!user?.profile_picture || !user) {
+                setProfilePictureUrl(null);
+            }
 
-        async function fetchPfp() {
-            const res = await getProfilePictureRequest(user.profile_picture);
-            setUser(prev => ({ ...prev, profile_picture_blob: res.data }));
+            else {
+                const res = await getProfilePictureRequest(user.profile_picture);
+
+                const blob = new Blob([res.data], { type: "image/jpeg" });
+                const url = URL.createObjectURL(blob);
+
+                setProfilePictureUrl(url);
+            }
         }
 
-        fetchPfp();
-    }, [user?.profile_picture, setUser]);
+        getProfilePic();
+    }, [user?.profile_picture]);
 
     return (
         <UserContext.Provider
             value={{
                 user,
+                profilePictureUrl,
                 updateProfile,
                 updateProfilePicture,
                 getProfilePicture,
