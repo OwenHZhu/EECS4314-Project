@@ -1,18 +1,18 @@
 /**
  * LibraryProvider.jsx
  *
- * High-level responsibilities:
- * - Persist and expose the user's `library` collection via context
- * - Sync the libraryClient Authorization header with the current JWT
- * - Provide CRUD operations for library entries:
- *      - getLibraryEntries()
- *      - addLibraryEntry()
- *      - updateLibraryEntry()
- *      - deleteLibraryEntry()
- * - Automatically fetch the library when authentication changes
+ * Provides library state and CRUD actions for the authenticated user.
+ * Persists the library in localStorage and syncs the Authorization header
+ * for library API requests based on the current JWT.
  *
- * This provider centralizes all library-related state and actions so that
- * consuming components can easily read and modify the user's book entries.
+ * Props:
+ * @param {React.ReactNode} children - Components that consume library context.
+ *
+ * Dependencies:
+ * - useAuth: Supplies JWT token for authenticated requests.
+ * - useLocalStorage: Persists the library array.
+ * - libraryService: Provides CRUD operations for library entries.
+ * - libraryClient: Axios instance for library API calls.
  */
 
 import { useEffect, useCallback } from "react";
@@ -29,11 +29,16 @@ import {
 
 import libraryClient from "../../api/library/libraryClient.js";
 
+/**
+ * LibraryProvider
+ *
+ * Wraps children with LibraryContext and exposes library state + CRUD actions.
+ *
+ * @param {object} props
+ * @param {React.ReactNode} props.children
+ * @returns {JSX.Element}
+ */
 export default function LibraryProvider({ children }) {
-    /**
-     * JWT token from AuthProvider.
-     * Used to authorize library API requests.
-     */
     const { token } = useAuth();
 
     /**
@@ -74,8 +79,6 @@ export default function LibraryProvider({ children }) {
         try {
             const res = await addEntry(book_id, status, is_favourite, rating);
             console.log(res);
-
-            // Refresh library after mutation
             getLibraryEntries();
         } catch (err) {
             console.log(err);
@@ -95,8 +98,6 @@ export default function LibraryProvider({ children }) {
         try {
             const res = await updateEntry(book_id, status, is_favourite, rating);
             console.log(res);
-
-            // Refresh library after mutation
             getLibraryEntries();
         } catch (err) {
             console.log(err);
@@ -113,8 +114,6 @@ export default function LibraryProvider({ children }) {
         try {
             const res = await deleteEntry(book_id);
             console.log(res);
-
-            // Refresh library after mutation
             getLibraryEntries();
         } catch (err) {
             console.log(err);
@@ -124,18 +123,19 @@ export default function LibraryProvider({ children }) {
     /**
      * Sync Authorization header and fetch library entries when token changes.
      *
-     * - If no token: remove Authorization header and skip fetching.
+     * - If no token: clear Authorization header and reset library.
      * - If token exists: set Authorization header and fetch library.
      */
     useEffect(() => {
         if (!token) {
             delete libraryClient.defaults.headers.common["Authorization"];
+            setLibrary(null);
             return;
         }
 
         libraryClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         getLibraryEntries();
-    }, [token, getLibraryEntries]);
+    }, [token, setLibrary, getLibraryEntries]);
 
     return (
         <LibraryContext.Provider
