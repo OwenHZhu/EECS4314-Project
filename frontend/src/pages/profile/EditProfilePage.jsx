@@ -42,7 +42,7 @@ export default function EditProfilePage() {
     const [messages, setMessages] = useState([]);
 
     const { user } = useAuth();
-    const { update } = useUser();
+    const { updateProfile } = useUser();
 
     const [username, setUsername] = useState(user.username);
     const [bio, setBio] = useState(user.bio ? user.bio : "");
@@ -69,7 +69,7 @@ export default function EditProfilePage() {
             return;
         }
 
-        const res = await update(username, bio, "");
+        const res = await updateProfile(username, bio, "");
 
         if (!res.success) {
             setUsername(user.username);

@@ -59,8 +59,22 @@ export function me() {
  * @param {Object} payload - Arbitrary profile fields to update
  * @returns {Promise<import("axios").AxiosResponse>}
  */
-export function update(payload) {
+export function updateProfile(payload) {
     return authClient.put("auth/me", payload);
+}
+
+/**
+ * Update the user's profile picture.
+ */
+export function updateProfilePicture(profile_picture) {
+    return authClient.put("users/profile-picture", profile_picture);
+}
+
+/**
+ * Get the user's profile picture.
+ */
+export function getProfilePicture(filename) {
+    return authClient.put(`users/profile-picture/${filename}`, filename);
 }
 
 /**

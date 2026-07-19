@@ -29,6 +29,7 @@ import { LIBRARY, FAVOURITES_IDS } from "../../data/mockUser";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuth";
+import { useUser } from "../../hooks/user/useUser.js";
 import { format } from "date-fns";
 import GenericModal from "../../components/generic/GenericModal";
 import GenericButton from "../../components/generic/GenericButton";

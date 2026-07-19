@@ -4,7 +4,7 @@
  * Provides user authentication state and user-related actions to the application.
  * Wraps the app with UserContext, exposing:
  * - user: the authenticated user object (or null)
- * - update: function for updating profile information
+ * - updateProfile: function for updating profile information
  * - changePassword: function for updating the user's password
  *
  * Props:
@@ -12,17 +12,18 @@
  *
  * Dependencies:
  * - useAuth: Supplies user state and setUser() for updating it.
- * - updateRequest: API call for updating user profile data.
+ * - updateProfileRequest: API call for updating user profile data.
  * - changePasswordRequest: API call for updating user password.
  * - UserContext: React context used to expose user data and actions.
  */
-
-import { useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { UserContext } from "./UserContext";
 import { useAuth } from "../../hooks/auth/useAuth";
 
 import {
-    update as updateRequest,
+    updateProfile as updateProfileRequest,
+    updateProfilePicture as updateProfilePictureRequest,
+    getProfilePicture as getProfilePictureRequest,
     changePassword as changePasswordRequest,
 } from "../../api/auth/authService";
 
@@ -39,19 +40,19 @@ export default function UserProvider({ children }) {
     const { user, setUser } = useAuth();
 
     /**
-     * update()
+     * updateProfile()
      *
-     * Updates the user's profile information and syncs the new data into context.
+     * Updates the user's username and bio and syncs the new data into context.
      *
      * @async
      * @param {string} username - Updated username.
      * @param {string} bio - Updated biography text.
-     * @param {string|File|null} profile_picture - New profile picture or null.
+     * @param {string} profile_picture - New profile picture or null.
      * @returns {Promise<{success: boolean, message: string}>}
      */
-    const update = useCallback(async (username, bio, profile_picture) => {
+    const updateProfile = useCallback(async (username, bio, profile_picture) => {
         try {
-            const res = await updateRequest({ username, bio, profile_picture });
+            const res = await updateProfileRequest({ username, bio, profile_picture });
             if (res.data?.data) setUser(res.data.data);
             return { success: true, message: res.data?.message };
         } catch (err) {
@@ -61,6 +62,42 @@ export default function UserProvider({ children }) {
             };
         }
     }, [setUser]);
+
+    /**
+     * updateProfilePicture()
+     *
+     * Updates the user's profile picture.
+     */
+    const updateProfilePicture = async (profile_picture) => {
+        try {
+            const res = await updateProfilePictureRequest(profile_picture);
+            console.log(res.data);
+            if (res.data?.data) setUser(res.data.data);
+        } catch (err) {
+            return {
+                success: false,
+                message: err.response?.data?.detail || "Failed to update profile picture."
+            };
+        }
+    };
+
+    /**
+    * getProfilePicture()
+    *
+    * Gets the user's profile picture.
+    */
+    const getProfilePicture = async (filename) => {
+        try {
+            const res = await getProfilePictureRequest(filename);
+
+            console.log(res);
+        } catch (err) {
+            return {
+                success: false,
+                message: err.response?.data?.detail || "Failed to get profile picture."
+            };
+        }
+    }
 
     /**
      * changePassword()
@@ -84,11 +121,24 @@ export default function UserProvider({ children }) {
         }
     }, []);
 
+    useEffect(() => {
+        if (!user?.profile_picture) return;
+
+        async function fetchPfp() {
+            const res = await getProfilePictureRequest(user.profile_picture);
+            setUser(prev => ({ ...prev, profile_picture_blob: res.data }));
+        }
+
+        fetchPfp();
+    }, [user?.profile_picture, setUser]);
+
     return (
         <UserContext.Provider
             value={{
                 user,
-                update,
+                updateProfile,
+                updateProfilePicture,
+                getProfilePicture,
                 changePassword
             }}
         >
