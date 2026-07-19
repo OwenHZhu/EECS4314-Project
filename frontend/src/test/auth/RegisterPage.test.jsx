@@ -233,7 +233,7 @@ describe("RegisterPage", () => {
     );
 
     expect(
-      screen.getByText("Invalid email.")
+      screen.getByText("Please enter a valid email address.")
     ).toBeInTheDocument();
 
     expect(mockRegister).not.toHaveBeenCalled();

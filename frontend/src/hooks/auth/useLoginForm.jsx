@@ -41,16 +41,22 @@ export function useLoginForm() {
   function validateLogin() {
     const validationErrors = [];
 
+    // Required fields
     if (!email.trim()) validationErrors.push("Please enter your email.");
     if (!password.trim()) validationErrors.push("Please enter your password.");
 
-    // Email format validation only if email is present
-    if (email && !validateEmail(email)) {
-      validationErrors.push("Please enter a valid email address.");
+    // Email validation
+    if (email) {
+      const emailErrors = validateEmail(email);
+
+      if (emailErrors.length > 0) {
+        validationErrors.push(...emailErrors);
+      }
     }
 
     return validationErrors;
   }
+
 
   /**
    * handleSubmit()
