@@ -18,14 +18,19 @@ Errors are returned as { "success": False, ... } rather than raising exceptions 
 the router is responsible for converting these into HTTP error responses.
 
 Functions:
-    register_user  - Create a new user account
-    login_user     - Authenticate a user and return a JWT token
-    logout_user    - Blacklist the current JWT token
-    get_me         - Fetch the currently authenticated user's profile
+    register_user           - Create a new user account
+    login_user               - Authenticate a user and return a JWT token
+    logout_user              - Blacklist the current JWT token
+    get_me                   - Fetch the currently authenticated user's profile
+    update_profile           - Update the authenticated user's text profile fields (username, bio)
+    update_profile_picture   - Validate + swap the authenticated user's profile picture
+    update_password          - Change the authenticated user's password
+    delete_account           - Permanently delete the authenticated user's account
 
 Dependencies:
     utils/security.py  - hash_password, verify_password (bcrypt)
     utils/jwt.py       - create_token, blacklist_token (JWT + Supabase blacklist)
+    utils/profile_pics.py - replace_profile_picture, delete_profile_picture
     schemas/user.py    - UserRegister, UserLogin, UserAccount (Pydantic validation)
     database/record.py - UserRecord (TypedDict for Supabase row type safety)
 """
@@ -37,8 +42,10 @@ from fastapi import UploadFile
 from shared.db import supabase
 from auth_service.utils.security import hash_password, verify_password
 from auth_service.utils.jwt import create_token, blacklist_token
+from auth_service.utils.profile_pics import delete_profile_picture, replace_profile_picture
 from auth_service.schemas.user import UserRegister, UserLogin, UserAccount, UserUpdate, UserUpdatePassword
 from auth_service.utils.record import UserRecord
+
 
 def register_user(user: UserRegister) -> dict:
     """
@@ -195,18 +202,84 @@ def get_me(user_id: str) -> dict:
             created_at=datetime.fromisoformat(user["created_at"])
         )
     }
-    
-async def update_profile(user_id: str, updates: UserUpdate, profile_picture: UploadFile | None = None) -> dict:
-    """
-    Update the authenticated user's profile fields.
 
-    Fields are validated and committed in order: username, then bio, then
-    profile_picture. A field only counts as "changed" if it differs from
-    the user's current stored value — if the frontend resends the same
-    username, or bio/profile_picture stay at their default (None), that
-    field is treated as untouched, not an update. This matters because
-    the frontend may submit all three fields on every save even if the
-    user only edited one.
+
+async def update_profile_picture(user_id: str, profile_picture: UploadFile) -> dict:
+    """
+    Replace the authenticated user's profile picture.
+
+    Split out of update_profile so the profile-picture-specific workflow
+    (validate, upload, retire the old file, persist the new filename) lives
+    on its own instead of being interleaved with the rest of the profile
+    update flow.
+
+    Delegates the actual storage work to
+    utils/profile_pics.replace_profile_picture(), which validates and
+    uploads the new image first and only deletes the previous one once that
+    upload succeeds — so a rejected/failed upload never destroys the user's
+    existing picture. The returned filename is then written to the user's
+    row in Supabase.
+
+    If the Supabase write fails after the new image has already been
+    uploaded, the newly uploaded file is deleted so it doesn't sit in
+    storage unreferenced by any user.
+
+    Args:
+        user_id: UUID of the authenticated user (from the JWT)
+        profile_picture: The newly uploaded image file
+
+    Returns:
+        Success: { success: True, message: str, data: UserAccount }
+        Failure: { success: False, message: str, data: None }
+    """
+    current = supabase.table("users").select("*").eq("id", user_id).limit(1).execute()
+    if not current.data:
+        return {"success": False, "message": "User not found", "data": None}
+
+    current_user = cast(list[UserRecord], current.data)[0]
+
+    try:
+        new_filename = await replace_profile_picture(current_user.get("profile_picture"), profile_picture)
+    except ValueError as e:
+        return {"success": False, "message": str(e), "data": None}
+
+    res = supabase.table("users").update({"profile_picture": new_filename}).eq("id", user_id).execute()
+
+    if not res.data or len(res.data) == 0:
+        # DB write failed after the new image was already uploaded — clean it
+        # up so it doesn't sit in storage unreferenced by any user.
+        await delete_profile_picture(new_filename)
+        return {"success": False, "message": "Failed to update profile picture", "data": None}
+
+    updated_user = cast(list[UserRecord], res.data)[0]
+
+    return {
+        "success": True,
+        "message": "Profile picture updated successfully",
+        "data": UserAccount(
+            id=updated_user["id"],
+            username=updated_user["username"],
+            email=updated_user["email"],
+            bio=updated_user.get("bio"),
+            profile_picture=updated_user.get("profile_picture"),
+            created_at=datetime.fromisoformat(updated_user["created_at"])
+        )
+    }
+
+
+def update_profile(user_id: str, updates: UserUpdate) -> dict:
+    """
+    Update the authenticated user's profile fields (username, bio).
+
+    Profile picture changes are handled separately by
+    update_profile_picture() — this function only deals with the plain
+    text fields.
+
+    A field only counts as "changed" if it differs from the user's current
+    stored value — if the frontend resends the same username, or bio stays
+    at its default (None), that field is treated as untouched, not an
+    update. This matters because the frontend may submit all fields on
+    every save even if the user only edited one.
 
     Nothing is written to the database until every field that DID change
     passes its checks — a failure on any changed field aborts the whole
@@ -217,11 +290,9 @@ async def update_profile(user_id: str, updates: UserUpdate, profile_picture: Upl
     only handles checks that require hitting the database (e.g. username
     uniqueness).
 
-
     Args:
         user_id: UUID of the authenticated user (from the JWT)
-        updates: Validated UserUpdate schema (username, bio, profile_picture
-                  — all optional)
+        updates: Validated UserUpdate schema (username, bio — both optional)
 
     Returns:
         Success: { success: True, message: str, data: UserAccount }
@@ -238,7 +309,7 @@ async def update_profile(user_id: str, updates: UserUpdate, profile_picture: Upl
 
     submitted = {k: v for k, v in submitted.items() if v is not None}
 
-    if not submitted and not profile_picture:
+    if not submitted:
         return {"success": True, "message": "No fields provided to update", "data": None}
 
      # Fetch the current row so we can tell what actually changed.
@@ -254,7 +325,7 @@ async def update_profile(user_id: str, updates: UserUpdate, profile_picture: Upl
         if value != current_user.get(key)
     }
     
-    if not changed and profile_picture is None:
+    if not changed:
         return {"success": True, "message": "No changes detected", "data": None}
     
     # 1. username check
@@ -275,32 +346,10 @@ async def update_profile(user_id: str, updates: UserUpdate, profile_picture: Upl
         # didn't intend as part of their bio.
         changed["bio"] = stripped_bio
     
-    # 3. prof pic
-    if profile_picture is not None:
-        try:
-            await validate_image(profile_picture)
-        except ValueError as e:
-            return {"success": False, "message": str(e), "data": None}
-    
-    if profile_picture is not None:
-        old_filename = current_user.get("profile_picture")
-        if old_filename:
-            await delete_profile_picture(old_filename)
-    
     res = supabase.table("users").update(changed).eq("id", user_id).execute()
     
     if not res.data or len(res.data) == 0:
-        # DB write failed — if we already uploaded a new image, clean it up
-        # so it doesn't sit in storage unreferenced by any user.
-        if profile_picture is not None:
-            await delete_profile_picture(changed["profile_picture"])
         return {"success": False, "message": "Failed to update profile", "data": None}
-
-    # --- DB write succeeded — now safe to delete the OLD image, if one existed ---
-    if profile_picture is not None:
-        old_filename = current_user.get("profile_picture")
-        if old_filename:
-            await delete_profile_picture(old_filename)
 
     updated_user = cast(list[UserRecord], res.data)[0]
  
