@@ -28,7 +28,6 @@ class ReadingStatus(str, Enum):
     READING = "reading"
     DROPPED = "dropped"
     WISHLIST = "wishlist"
-    FAVOURITE = "favourite"
 
 
 class LibraryEntryCreate(BaseModel):
@@ -42,6 +41,10 @@ class LibraryEntryCreate(BaseModel):
     book_id: str = Field(description="ID of the book in the global catalogue")
 
     status: ReadingStatus = Field(description="Current reading status of the book")
+    is_favourite: bool = Field(
+        default=False,
+        description="Whether this book is in the user's favourites"
+    )
     rating: Optional[int] = Field(
         default=None,
         ge=1,
@@ -67,6 +70,10 @@ class LibraryEntryUpdate(BaseModel):
         default=None,
         description="Updated reading status"
     )
+    is_favourite: Optional[bool] = Field(
+        default=None,
+        description="Updated favourite flag"
+    )
     rating: Optional[int] = Field(
         default=None,
         ge=1,
@@ -88,6 +95,7 @@ class LibraryEntry(BaseModel):
     user_id: str
     book_id: str
     status: ReadingStatus
+    is_favourite: bool = False
     rating: Optional[int] = None
 
     added_at: datetime = Field(

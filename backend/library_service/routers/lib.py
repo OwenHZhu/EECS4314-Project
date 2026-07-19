@@ -90,6 +90,7 @@ def update_entry(entry: LibraryEntryUpdate, user_id: str = Depends(get_current_u
         user_id = user_id,
         book_id = entry.book_id,
         status = entry.status,
+        is_favourite = entry.is_favourite,
         rating = entry.rating
     )
     if not result["success"]:
