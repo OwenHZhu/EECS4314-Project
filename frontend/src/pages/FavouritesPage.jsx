@@ -29,7 +29,7 @@
 
 import { BOOKS } from "../data/mockBook";
 import { FAVOURITES_IDS } from "../data/mockUser";
-import { BookCard } from "../components/BookCard";
+import { BookCard } from "../components/books/BookCard";
 
 export function FavouritesPage() {
   // Build an array of favourite book objects by matching IDs to BOOKS

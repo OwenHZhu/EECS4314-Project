@@ -1,40 +1,84 @@
 /**
  * ./hooks/useBookSearch.js
  *
- * A custom hook that provides debounced client-side searching and filtering
- * over the BOOKS dataset. It supports:
- * - Text search (title, author, genre)
- * - Genre filtering
- * - Debounced updates to avoid excessive re-renders
+ * A custom hook that provides debounced searching and filtering for the
+ * Discover page. It supports:
+ * - Text search through the Book Service API
+ * - Genre filtering on the returned book results
+ * - Debounced updates to avoid excessive API requests while typing
+ * - Loading and error state management for the Discover page
  *
  * Dependencies:
  * - useState, useEffect, useRef (React): Manage search results, loading state,
- *   and debounce timer.
- * - BOOKS: Static mock book data used as the search source.
+ *   error state, and debounce timer.
+ * - getBooks: Frontend API helper used to request books from the Book Service.
  *
  * Arguments:
- * @param {string} query - The user's search input. Can match title, author, or genre.
+ * @param {string} query - The user's search input. Sent to the Book Service.
  * @param {string} genre - A genre key ("all", "sci-fi", "fantasy", etc.) used to filter results.
  *
  * Returns:
- * @returns {{ results: Array, loading: boolean }}
+ * @returns {{ results: Array, loading: boolean, error: string }}
  *   - results: Array of books matching the search + genre filter.
- *   - loading: Boolean indicating whether the hook is currently processing a search.
+ *   - loading: Boolean indicating whether the hook is currently fetching books.
+ *   - error: Error message shown when the Book Service request fails.
  *
  * Notes:
- * - Search is debounced by 250ms to prevent rapid filtering on every keystroke.
- * - Filtering is case-insensitive.
- * - When query is empty, all books matching the genre are returned.
+ * - Search is debounced by 250ms to prevent an API request on every keystroke.
+ * - Backend search handles the text query.
+ * - Genre filtering is currently handled on the frontend because the Book
+ *   Service GET books endpoint does not require a genre query parameter.
+ * - When query is empty, the hook requests books up to the configured limit.
  */
+
 import { useState, useEffect, useRef } from "react";
-import { BOOKS } from "../data/mockBook";
+import { getBooks } from "../api/books/bookService";
+
+const SEARCH_DEBOUNCE_MS = 250;
+const BOOK_SEARCH_LIMIT = 50;
+
+/**
+ * Checks whether a book matches the selected genre filter.
+ *
+ * The Book Service returns genre as an array, while older mock data may use a
+ * single string. Supporting both formats keeps the Discover page compatible
+ * during the transition from mock data to backend data.
+ *
+ * @param {object} book - Book object returned from the Book Service.
+ * @param {string} selectedGenre - Currently selected genre filter.
+ * @returns {boolean} True when the book should be shown.
+ */
+function matchesSelectedGenre(book, selectedGenre) {
+  // Genre filter: "all" means no restriction
+  if (selectedGenre === "all") {
+    return true;
+  }
+
+  // Book Service format: genre is an array of strings
+  if (Array.isArray(book.genre)) {
+    return book.genre.some(
+      (bookGenre) =>
+        String(bookGenre).toLowerCase() ===
+        String(selectedGenre).toLowerCase(),
+    );
+  }
+
+  // Legacy mock data format: genre is a single string
+  return (
+    String(book.genre).toLowerCase() ===
+    String(selectedGenre).toLowerCase()
+  );
+}
 
 export function useBookSearch(query, genre) {
-  // Search results (default: all books)
-  const [results, setResults] = useState(BOOKS);
+  // Search results returned from the Book Service
+  const [results, setResults] = useState([]);
 
-  // Indicates whether the hook is currently processing a search
+  // Indicates whether the hook is currently fetching books
   const [loading, setLoading] = useState(false);
+
+  // Stores any Book Service request error message
+  const [error, setError] = useState("");
 
   // Ref used to store the debounce timer ID
   const timer = useRef(null);
@@ -44,34 +88,35 @@ export function useBookSearch(query, genre) {
     clearTimeout(timer.current);
 
     setLoading(true);
+    setError("");
 
     // Debounce search by 250ms
-    timer.current = setTimeout(() => {
-      const q = query.trim().toLowerCase();
+    timer.current = setTimeout(async () => {
+      try {
+        // Backend search handles the text query
+        const books = await getBooks(query, BOOK_SEARCH_LIMIT);
 
-      // Filter books based on genre + query
-      setResults(
-        BOOKS.filter((b) => {
-          // Genre filter: "all" means no restriction
-          const matchGenre = genre === "all" || b.genre === genre;
+        // Frontend genre filtering is applied to the returned results
+        const filteredBooks = books.filter((book) =>
+          matchesSelectedGenre(book, genre),
+        );
 
-          // Query filter: match title, author, or genre
-          const matchQuery =
-            !q ||
-            b.title.toLowerCase().includes(q) ||
-            b.author.toLowerCase().includes(q) ||
-            b.genre.toLowerCase().includes(q);
-
-          return matchGenre && matchQuery;
-        }),
-      );
-
-      setLoading(false);
-    }, 250);
+        setResults(filteredBooks);
+      } catch (requestError) {
+        setResults([]);
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Failed to load books.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }, SEARCH_DEBOUNCE_MS);
 
     // Cleanup: clear timer when query/genre changes or component unmounts
     return () => clearTimeout(timer.current);
   }, [query, genre]);
 
-  return { results, loading };
+  return { results, loading, error };
 }

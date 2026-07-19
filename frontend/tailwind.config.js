@@ -75,6 +75,12 @@ export default {
         // Edit profile form colours
         'container-fill': '#151111',
         'input-stroke': '#3A2A2A',
+
+        // Book details modal colours
+        'book-rating': '#F4C542',
+        'book-rating-empty': '#766F5D',
+        'book-favourite': '#DC264A',
+        'book-status-read': '#10B981',
       }
     },
   },

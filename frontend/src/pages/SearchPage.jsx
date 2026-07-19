@@ -35,7 +35,7 @@
 
 import { useState } from "react";
 import { useBookSearch } from "../hooks/useBookSearch";
-import { BookCard } from "../components/BookCard";
+import { BookCard } from "../components/books/BookCard";
 import { GENRES, GENRE_LABELS } from "../data/mockBook";
 
 export function SearchPage() {

@@ -52,7 +52,7 @@ export function DiscoverPage() {
   const [genre, setGenre] = useState("all");
 
   // Debounced search results + loading state
-  const { results, loading } = useBookSearch(query, genre);
+  const { results, loading, error } = useBookSearch(query, genre);
 
   const [selectedBook, setSelectedBook] = useState(null);
 
@@ -145,6 +145,12 @@ export function DiscoverPage() {
         ))}
       </div>
 
+          {error && (
+        <div className="mb-4 rounded-lg border border-secondary bg-error-bg px-4 py-3 text-sm text-error-text">
+      {error}
+    </div>
+      )}
+      
       {/* Search result summary */}
       <p className="text-[11px] text-[#333] mb-5">
         {loading

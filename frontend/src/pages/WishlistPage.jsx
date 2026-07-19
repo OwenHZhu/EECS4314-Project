@@ -24,7 +24,7 @@
 
 import { BOOKS } from "../data/mockBook";
 import { WISHLIST_IDS } from "../data/mockUser";
-import { BookCard } from "../components/BookCard";
+import { BookCard } from "../components/books/BookCard";
 
 export function WishlistPage() {
   // Build an array of wishlist book objects by matching IDs to BOOKS
