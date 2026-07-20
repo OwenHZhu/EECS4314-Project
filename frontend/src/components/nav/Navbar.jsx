@@ -2,7 +2,7 @@
  * Navbar.jsx
  *
  * The main navigation bar for BookAtlas. Provides quick access to core
- * sections (Discover, Library, Wishlist, Favourites, Forums) and displays
+ * sections (Discover, Search, Library, Forums) and displays
  * authentication-related actions (Login, Register, Profile).
  *
  * Dependencies:
@@ -22,9 +22,8 @@ import Icon from "../generic/Icon.jsx";
 const NAV_ITEMS = [
   { id: "discover", label: "Discover", path: "/" },
   { id: "library", label: "My Library", path: "/library" },
-  { id: "wishlist", label: "Wishlist", path: "/wishlist" },
-  { id: "favourites", label: "Favourites", path: "/favourites" },
   { id: "forums", label: "Forums", path: "/forums" },
+  { id: "search", label: "Search", path: "/search" },
 ];
 
 /**
