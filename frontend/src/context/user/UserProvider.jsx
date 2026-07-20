@@ -4,8 +4,11 @@
  * Provides user authentication state and user-related actions to the application.
  * Wraps the app with UserContext, exposing:
  * - user: the authenticated user object (or null)
- * - updateProfile: function for updating profile information
- * - changePassword: function for updating the user's password
+ * - profilePictureUrl: blob URL for rendering the user's profile picture
+ * - updateProfile: updates username/bio/profile fields
+ * - updateProfilePicture: uploads a new profile picture (FormData)
+ * - getProfilePicture: retrieves the user's profile picture blob
+ * - changePassword: updates the user's password
  *
  * Props:
  * @param {React.ReactNode} children - Components that will consume the user context.
@@ -13,6 +16,8 @@
  * Dependencies:
  * - useAuth: Supplies user state and setUser() for updating it.
  * - updateProfileRequest: API call for updating user profile data.
+ * - updateProfilePictureRequest: API call for uploading a new profile picture.
+ * - getProfilePictureRequest: API call for retrieving the profile picture blob.
  * - changePasswordRequest: API call for updating user password.
  * - UserContext: React context used to expose user data and actions.
  */
@@ -67,17 +72,30 @@ export default function UserProvider({ children }) {
     /**
      * updateProfilePicture()
      *
-     * Updates the user's profile picture.
+     * Uploads and updates the user's profile picture.
+     * Expects a FormData object containing the image file.
+     * Syncs updated user data into context on success.
+     *
+     * @async
+     * @param {FormData} profile_picture - FormData containing the new profile picture file.
+     * @returns {Promise<{success: boolean, message: string}>}
      */
     const updateProfilePicture = async (profile_picture) => {
         try {
             const res = await updateProfilePictureRequest(profile_picture);
-            console.log(res.data);
-            if (res.data?.data) setUser(res.data.data);
+
+            if (res.data?.data) {
+                setUser(res.data.data);
+            }
+
+            return {
+                success: true,
+                message: res.data.message
+            }
         } catch (err) {
             return {
                 success: false,
-                message: err.response?.data?.detail || "Failed to update profile picture."
+                message: err.response?.data?.detail[0].msg || "Failed to update profile picture."
             };
         }
     };

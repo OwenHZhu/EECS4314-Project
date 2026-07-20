@@ -71,7 +71,13 @@ export function updateProfile(payload) {
 }
 
 /**
- * Update the user's profile picture.
+ * updateProfilePicture()
+ *
+ * Uploads and updates the user's profile picture.
+ * Expects a FormData object containing the image file.
+ *
+ * @param {FormData} profile_picture - FormData containing the new profile picture file.
+ * @returns {Promise<import("axios").AxiosResponse>}
  */
 export function updateProfilePicture(profile_picture) {
     return authClient.put("users/profile-picture", profile_picture);

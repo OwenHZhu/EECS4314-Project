@@ -8,13 +8,12 @@
  *
  * Dependencies:
  * - useAuth: Provides authenticated user data.
- * - useUser: Provides updateProfile() and profilePictureUrl.
+ * - useUser: Provides updateProfile(), updateProfilePicture(), and profilePictureUrl.
  * - validateUsername: Client-side username validation.
- * - ProfilePictureModal: Modal for editing profile picture.
+ * - ProfilePictureModal: Modal for uploading a new profile picture.
  * - EditProfileHeader: Page header UI.
  * - GenericButton, Icon, ErrorList: Reusable UI components.
  */
-
 import { useState } from "react";
 import { useAuth } from "../../hooks/auth/useAuth.js";
 import { useUser } from "../../hooks/user/useUser.js";
@@ -95,7 +94,10 @@ export default function EditProfilePage() {
 
             {/* Profile picture modal */}
             {editPicture && (
-                <ProfilePictureModal setEditPicture={setEditPicture} />
+                <ProfilePictureModal
+                    setEditPicture={setEditPicture}
+                    setMessages={setMessages}
+                />
             )}
 
             {/* Username and profile picture */}
