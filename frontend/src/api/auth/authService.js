@@ -62,12 +62,18 @@ export function me() {
 }
 
 /**
- * Update user profile fields.
- * @param {Object} payload - Arbitrary profile fields to update
+ * updateProfile()
+ *
+ * Updates the user's profile fields (username and bio).
+ * Sends a PUT request with the updated values.
+ *
+ * @async
+ * @param {string} username - The updated username.
+ * @param {string} bio - The updated bio text.
  * @returns {Promise<import("axios").AxiosResponse>}
  */
-export function updateProfile(payload) {
-    return authClient.put("auth/me", payload);
+export function updateProfile(username, bio) {
+    return authClient.put("auth/me", {username, bio});
 }
 
 /**

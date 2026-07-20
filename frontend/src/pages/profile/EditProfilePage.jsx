@@ -65,7 +65,7 @@ export default function EditProfilePage() {
             return;
         }
 
-        const res = await updateProfile(username, bio, "");
+        const res = await updateProfile(username, bio);
 
         if (!res.success) {
             setUsername(user.username);

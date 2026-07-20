@@ -52,13 +52,12 @@ export default function UserProvider({ children }) {
      *
      * @async
      * @param {string} username - Updated username.
-     * @param {string} bio - Updated biography text.
-     * @param {string} profile_picture - New profile picture or null.
+     * @param {string} bio - Updated bio text.
      * @returns {Promise<{success: boolean, message: string}>}
      */
-    const updateProfile = useCallback(async (username, bio, profile_picture) => {
+    const updateProfile = useCallback(async (username, bio) => {
         try {
-            const res = await updateProfileRequest({ username, bio, profile_picture });
+            const res = await updateProfileRequest({ username, bio });
             if (res.data?.data) setUser(res.data.data);
             return { success: true, message: res.data?.message };
         } catch (err) {
