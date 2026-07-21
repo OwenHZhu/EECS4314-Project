@@ -3,57 +3,69 @@ services/book_service.py
 
 Business logic for the Book Service (Global Catalog).
 Handles all interactions with the Supabase `book_catalogue` and `book_ratings` tables.
-
-This service sits between the router (routers/books.py) and the database (Supabase).
-The router handles HTTP — this file handles the actual database queries.
-
-All functions return a consistent response shape:
-    {
-        "success": bool,
-        "message": str,
-        "data":    dict | list | None
-    }
-
-Errors are returned as { "success": False, ... } rather than raising exceptions —
-the router is responsible for converting these into HTTP error responses.
-
-Functions:
-    get_all_books  - Fetch all books with optional search filtering
-    get_book_by_id - Fetch a single book's details by UUID
-    add_book       - Add a new book to the catalog
-    update_book    - Update specific fields of an existing book
-    delete_book    - Remove a book from the catalog entirely
-
-Dependencies:
-    database/db.py - supabase (Supabase client)
+Now includes RabbitMQ event publishing for analytics.
 """
 
 import uuid
+import pika
+import json
+from datetime import datetime, timezone
 from typing import Optional
 from shared.db import supabase
 
-def get_all_books(q: Optional[str] = None, limit: int = 50) -> dict:
+
+# Analytics Helper
+
+def publish_analytics_event(event_type: str, payload: dict):
+    """Publishes a fire-and-forget message to RabbitMQ for analytics tracking."""
+    try:
+        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+        channel = connection.channel()
+        channel.exchange_declare(exchange="analytics_events", exchange_type="fanout")
+        
+        event = {
+            "event_type": event_type,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "payload": payload
+        }
+        
+        channel.basic_publish(
+            exchange="analytics_events",
+            routing_key="",
+            body=json.dumps(event)
+        )
+        connection.close()
+    except Exception as e:
+        print(f"Failed to publish analytics event: {e}")
+
+# Core Service Logic
+
+def get_all_books(q: Optional[str] = None, author: Optional[str] = None, genre: Optional[str] = None, limit: int = 50) -> dict:
     """
-    Fetches books from the catalog, optionally filtering by a search query.
-
-    If a query string `q` is provided, it uses PostgreSQL's `ilike` to perform 
-    a case-insensitive search against the book titles. Limits the result set 
-    to prevent massive data payloads.
-
-    Args:
-        q: Optional search string for the book title.
-        limit: Maximum number of records to return (default 50).
-
-    Returns:
-        Success: { success: True, message: str, data: list }
-        Failure: { success: False, message: str, data: None }
+    Fetches books from the catalog, optionally filtering by title, author, or genre.
     """
     try:
         query = supabase.table("book_catalogue").select("*")
+        
+        # Stack our filters based on what the frontend provided
         if q:
             query = query.ilike("title", f"%{q}%")
+        if author:
+            query = query.ilike("author", f"%{author}%")
+        if genre:
+            # Because genre is an array in Supabase, we use .contains
+            query = query.contains("genre", [genre])
             
         res = query.limit(limit).execute()
+
+        # --- ANALYTICS TRIGGER ---
+        if q or author or genre:
+            publish_analytics_event("SearchExecuted", {
+                "query": q,
+                "author": author,
+                "genre": genre
+            })
+
         return {"success": True, "message": "Books fetched successfully", "data": res.data}
     except Exception as e:
         return {"success": False, "message": f"Database error: {str(e)}", "data": None}
@@ -76,6 +88,11 @@ def get_book_by_id(book_id: str) -> dict:
         
         # 3. Offload the math to our helper function
         book_data["library_stats"] = _calculate_library_stats(library_res.data)
+
+        # --- ANALYTICS TRIGGER ---
+        publish_analytics_event("BookViewed", {
+            "book_id": book_id
+        })
 
         return {"success": True, "message": "Book fetched successfully", "data": book_data}
 
@@ -138,15 +155,7 @@ def add_book(book_data: dict) -> dict:
 
     Automatically generates a manual `external_id` (since the database seed script 
     usually relies on external IDs from APIs like Open Library).
-
-    Args:
-        book_data: Dictionary containing title, author, and optional fields.
-
-    Returns:
-        Success: { success: True, message: str, data: dict }
-        Failure: { success: False, message: str, data: None }
     """
-    # Generate a fake external_id for manually added books to satisfy DB constraints
     book_data["external_id"] = f"manual_{uuid.uuid4().hex[:8]}" 
     
     try:
@@ -164,16 +173,7 @@ def update_book(book_id: str, update_data: dict) -> dict:
 
     Cleans the incoming data by dropping any `None` values to ensure we don't 
     accidentally overwrite existing database fields with empty nulls.
-
-    Args:
-        book_id: The UUID string of the target book.
-        update_data: Dictionary containing the fields to update.
-
-    Returns:
-        Success: { success: True, message: str, data: dict }
-        Failure: { success: False, message: str, data: None }
     """
-    # Drop any None values so we don't overwrite existing data with nulls
     clean_data = {k: v for k, v in update_data.items() if v is not None}
     
     if not clean_data:
@@ -191,13 +191,6 @@ def update_book(book_id: str, update_data: dict) -> dict:
 def delete_book(book_id: str) -> dict:
     """
     Permanently deletes a book from the catalog.
-
-    Args:
-        book_id: The UUID string of the target book.
-
-    Returns:
-        Success: { success: True, message: str, data: dict }
-        Failure: { success: False, message: str, data: None }
     """
     try:
         res = supabase.table("book_catalogue").delete().eq("id", book_id).execute()
