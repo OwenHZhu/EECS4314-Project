@@ -57,7 +57,7 @@ export default function UserProvider({ children }) {
      */
     const updateProfile = useCallback(async (username, bio) => {
         try {
-            const res = await updateProfileRequest({ username, bio });
+            const res = await updateProfileRequest(username, bio);
             if (res.data?.data) setUser(res.data.data);
             return { success: true, message: res.data?.message };
         } catch (err) {

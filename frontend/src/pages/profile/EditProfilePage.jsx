@@ -47,6 +47,7 @@ export default function EditProfilePage() {
      * Validates and submits updated profile details.
      *
      * Steps:
+     * - Check if the fields are actually different to avoid unnecessary API calls
      * - Validate username using validateUsername()
      * - Submit update request
      * - Revert fields on failure
@@ -56,6 +57,10 @@ export default function EditProfilePage() {
      * @returns {Promise<void>}
      */
     async function handleSave() {
+        if (username === user.username && bio === user.bio) {
+            setMessages(["No changes detected."]);
+            return; 
+        }
         const validationErrors = validateUsername(username);
 
         if (validationErrors.length >= 1) {
