@@ -80,7 +80,7 @@ async def update_me(payload: UserUpdate, user_id: str = Depends(get_current_user
     Profile Picture will not work because we have nowhere to store them at the current moment
     """
 
-    result = await update_profile(user_id, payload)
+    result = update_profile(user_id, payload)
     if not result["success"]:
         status_code = 409 if "username" in result["message"].lower() else 404
         raise HTTPException(status_code=status_code, detail=result["message"])

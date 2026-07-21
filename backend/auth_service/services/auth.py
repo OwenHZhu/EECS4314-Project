@@ -302,7 +302,6 @@ def update_profile(user_id: str, updates: UserUpdate) -> dict:
  
     # Build a dict of only the fields the caller actually provided.
     submitted = updates.model_dump(exclude_unset=True, exclude_none=True)
-    submitted.pop("profile_picture", None)
     
     for key in ("bio",):
         if submitted.get(key) == "":
