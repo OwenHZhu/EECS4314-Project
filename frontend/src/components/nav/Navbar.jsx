@@ -1,23 +1,34 @@
 /**
  * Navbar.jsx
  *
- * The main navigation bar for BookAtlas. Provides quick access to core
- * sections (Discover, Search, Library, Forums) and displays
- * authentication-related actions (Login, Register, Profile).
+ * Main navigation bar for BookAtlas. Provides quick access to core sections:
+ * - Discover
+ * - My Library
+ * - Forums
+ * - Search
+ *
+ * Also displays authentication actions (Login/Register) or the user's profile
+ * when authenticated. Includes a desktop search bar with quick results.
  *
  * Dependencies:
- * - NavLink: Route navigation + active styling.
- * - useAuth: Provides isAuthenticated and user.
- * - useUser: Provides profilePictureUrl for profile avatar rendering.
- * - NavButton: Reusable navigation button component.
- * - Icon: Generic icon component for fallback profile avatar.
+ * - NavLink: Routing + active styling
+ * - useAuth: Provides isAuthenticated and user
+ * - useUser: Provides profilePictureUrl
+ * - useBookSearch: Fetches search results for the navbar search bar
+ * - NavButton: Reusable navigation button
+ * - SearchBar, SearchResult: Search UI components
+ * - Icon: Fallback profile avatar
  */
 
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { useUser } from "../../hooks/user/useUser.js";
+import { useBookSearch } from "../../hooks/useBookSearch.js";
 import { NavButton } from "./NavButton";
+import SearchResult from "../search/SearchResult.jsx";
 import Icon from "../generic/Icon.jsx";
+import SearchBar from "../search/SearchBar.jsx";
 
 const NAV_ITEMS = [
   { id: "discover", label: "Discover", path: "/" },
@@ -29,11 +40,12 @@ const NAV_ITEMS = [
 /**
  * Navbar
  *
- * Renders the main navigation bar, including:
+ * Renders the main navigation bar including:
  * - Brand link
  * - Core navigation items
- * - Authentication buttons (Login/Register)
- * - Profile button when authenticated
+ * - Desktop search bar with quick results
+ * - Login/Register buttons when unauthenticated
+ * - Profile button with avatar when authenticated
  *
  * @returns {JSX.Element}
  */
@@ -41,9 +53,13 @@ export function Navbar() {
   const { isAuthenticated, user } = useAuth();
   const { profilePictureUrl } = useUser();
 
+  const [navQuery, setNavQuery] = useState("");
+  const { results } = useBookSearch(navQuery, "all");
+  const topResults = results.slice(0, 5);
+
   return (
     <nav className="sticky top-0 z-50 bg-nav-bar-bg backdrop-brightness-0 border-b border-nav-bar-border">
-      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-6">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
         {/* Brand */}
         <NavLink to="/" className="flex items-center gap-2 shrink-0 group">
@@ -59,6 +75,29 @@ export function Navbar() {
               {item.label}
             </NavButton>
           ))}
+        </div>
+
+        {/* Desktop Search Bar */}
+        <div className="relative w-1/3 hidden md:block">
+          <SearchBar
+            className="mb-1"
+            query={navQuery}
+            setQuery={setNavQuery}
+          />
+
+          {navQuery && topResults.length > 0 && (
+            <div className="absolute mt-2 w-full rounded-md bg-[#111] border border-[#222]">
+              {topResults.map((book) => (
+                <SearchResult key={book.id} book={book} />
+              ))}
+
+              <button
+                className="w-full text-left px-3 py-2 text-xs text-tertiary border-t border-[#222] hover:bg-[#1a1a1a]"
+              >
+                View more results
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Auth Buttons */}
@@ -89,17 +128,7 @@ export function Navbar() {
             rounded="rounded-full"
             className="flex flex-row items-center gap-2 pl-2 pr-3 py-1.5 border shrink-0"
           >
-            {/**
-             * Profile Picture Rendering
-             *
-             * Displays either:
-             * - A default icon when no profile picture is available.
-             * - The user's profile picture when profilePictureUrl is present.
-             *
-             * profilePictureUrl is provided by useUser() and updates whenever:
-             * - The user changes their profile picture.
-             * - The page reloads and the provider refetches the image.
-             */}
+            {/* Profile Picture Rendering */}
             {!profilePictureUrl && (
               <Icon className="text-secondary/60">
                 account_circle
