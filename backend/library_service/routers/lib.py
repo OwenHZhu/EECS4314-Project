@@ -91,7 +91,9 @@ def update_entry(entry: LibraryEntryUpdate, user_id: str = Depends(get_current_u
         book_id = entry.book_id,
         status = entry.status,
         is_favourite = entry.is_favourite,
-        rating = entry.rating
+        rating = entry.rating,
+        start_date=entry.start_date,
+        end_date=entry.end_date
     )
     if not result["success"]:
         raise HTTPException(status_code=404, detail=result["message"])
