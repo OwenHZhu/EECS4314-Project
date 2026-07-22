@@ -3,11 +3,13 @@
 This service manages discussion threads, replies, likes, and user activity for BookAtlas.
 
 ## Overview
+
 - FastAPI app exposing discussion forum endpoints.
 - Uses Supabase (Postgres) via `shared.db.supabase` for persistence.
 - Runs as a separate microservice on port 8004 (development).
 
 ## Key Endpoints (prefixed with `/api/v1`)
+
 - `GET /health` — service health check
 - `GET /forum/threads` — list threads (optional `book_id` query)
 - `POST /forum/threads` — create a thread
@@ -21,6 +23,7 @@ This service manages discussion threads, replies, likes, and user activity for B
 Request and response models are defined in `schemas/discussion_forum.py`.
 
 ## Database Tables (used)
+
 - `thread_forum` — threads
 - `replies` — replies to threads
 - `thread_tags` — many-to-many thread tags
@@ -28,6 +31,7 @@ Request and response models are defined in `schemas/discussion_forum.py`.
 - `reply_likes` — reply likes
 
 ## Running (development)
+
 1. Activate project virtualenv.
 
 ```powershell
@@ -44,6 +48,7 @@ python discussion_service.py
 This starts uvicorn on `0.0.0.0:8004` with reload enabled.
 
 ## Notes
+
 - The router currently expects `user_id` in request bodies for some endpoints; consider switching to JWT-based `Depends` authentication (see `utils.jwt`) for production.
 - CORS origins are configured from `shared.constants.ORIGINS`.
 - See `services/discussion_service.py` for business logic and `routers/forum.py` for route definitions.

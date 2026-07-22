@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers.forum import router as forum_router
+from discussion_service.routers.forum import router as forum_router
 from shared.constants import ORIGINS
 
 app = FastAPI(
