@@ -45,6 +45,7 @@ Environment variables required (.env):
 """
 
 import os
+import io
 import secrets
 from pathlib import Path, PurePosixPath
 
@@ -181,7 +182,7 @@ async def upload_profile_picture(file: UploadFile) -> str:
 
     databricks_connection.client.files.upload(
         file_path,
-        image_bytes,
+        io.BytesIO(image_bytes),
         overwrite=False,
     )
 
