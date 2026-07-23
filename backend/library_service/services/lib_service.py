@@ -35,6 +35,11 @@ def add_or_update_library_entry(entry: LibraryEntryCreate, user_id: str) -> dict
             "rating" : entry.rating,
             "updated_at" : now
         }
+        if entry.start_date is not None:
+            update_data["start_date"] = entry.start_date.isoformat()
+        if entry.end_date is not None:
+            update_data["end_date"] = entry.end_date.isoformat()
+        
         res = (supabase.table("library").update(update_data).eq("user_id", user_id).eq("book_id", entry.book_id).execute())
         if not res.data:
             return {"success" : False, "message" : "Failed to update library", "data" : None}
@@ -47,12 +52,14 @@ def add_or_update_library_entry(entry: LibraryEntryCreate, user_id: str) -> dict
         "is_favourite" : entry.is_favourite,
         "rating" : entry.rating,
         "added_at" : now,
-        "updated_at" : now
+        "updated_at" : now,
+        "start_date" : (entry.start_date.isoformat() if entry.start_date is not None else None),
+        "end_date" : (entry.end_date.isoformat() if entry.end_date is not None else None)
     }
     res = (supabase.table("library").insert(insert_data).execute())
     if not res.data:
         return {"success" : False, "message" : "Failed to add book to library", "data" : None}
-    return{"success" : True, "message" : "Book added to library successfully", "data" : res.data[0]}
+    return {"success" : True, "message" : "Book added to library successfully", "data" : res.data[0]}
 
 def get_user_library(user_id: str) -> dict:
     """ 
@@ -77,13 +84,9 @@ def get_user_library(user_id: str) -> dict:
     )
     return {"success" : True, "message" : "Library retrieved successfully", "data" : res.data}
 
-def update_library(
-    user_id: str,
-    book_id: str,
-    status: Optional[ReadingStatus] = None,
-    is_favourite: Optional[bool] = None,
-    rating: Optional[int] = None
-) -> dict:
+def update_library(user_id: str, book_id: str, status: Optional[ReadingStatus] = None, 
+                   is_favourite: Optional[bool] = None, rating: Optional[int] = None,
+                   start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> dict:
     """ 
     Update a user's library entry for a specific book. 
     
@@ -99,6 +102,8 @@ def update_library(
         status: Optional new reading status. 
         is_favourite: Optional favourite flag.
         rating: Optional new rating from 1 to 5. 
+        start_date: Optional date and time when the user started reading.
+        end_date: Optional date and time when the user finished reading.
         
     Returns: 
         Success: { "success": True, "message": str, "data": updated_library_entry } 
@@ -114,6 +119,13 @@ def update_library(
         if rating < 1 or rating > 5:
             return {"success" : False, "message" : "Rating must be between 1 and 5", "data" : None}
         update_data["rating"] = rating
+    if start_date is not None:
+        update_data["start_date"] = start_date.isoformat()
+    if end_date is not None:
+        update_data["end_date"] = end_date.isoformat()
+
+    if len(update_data) == 1:
+        return {"success": False, "message": "No update data provided", "data": None}
     
     res = (supabase.table("library").update(update_data).eq("user_id", user_id).eq("book_id", book_id).execute())
     if not res.data:

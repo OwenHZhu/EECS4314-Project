@@ -7,20 +7,13 @@
  * - Profile picture
  *
  * Dependencies:
- * - useAuth: Provides authenticated user
- * - useUser: Provides update() method
- * - validateUsername: Client-side username validation
- * - ProfilePictureModal: Profile picture editing modal
- * - EditProfileHeader: Page header
- * - GenericButton, Icon, ErrorList: Reusable UI components
- *
- * State:
- * - username: Controlled username input
- * - bio: Controlled bio input
- * - messages: Validation or update feedback messages
- * - editPicture: Controls visibility of the picture-edit modal
+ * - useAuth: Provides authenticated user data.
+ * - useUser: Provides updateProfile(), updateProfilePicture(), and profilePictureUrl.
+ * - validateUsername: Client-side username validation.
+ * - ProfilePictureModal: Modal for uploading a new profile picture.
+ * - EditProfileHeader: Page header UI.
+ * - GenericButton, Icon, ErrorList: Reusable UI components.
  */
-
 import { useState } from "react";
 import { useAuth } from "../../hooks/auth/useAuth.js";
 import { useUser } from "../../hooks/user/useUser.js";
@@ -42,24 +35,32 @@ export default function EditProfilePage() {
     const [messages, setMessages] = useState([]);
 
     const { user } = useAuth();
-    const { update } = useUser();
+    const { updateProfile, profilePictureUrl } = useUser();
 
     const [username, setUsername] = useState(user.username);
     const [bio, setBio] = useState(user.bio ? user.bio : "");
     const [editPicture, setEditPicture] = useState(false);
 
     /**
+     * handleSave()
+     *
      * Validates and submits updated profile details.
      *
      * Steps:
+     * - Check if the fields are actually different to avoid unnecessary API calls
      * - Validate username using validateUsername()
      * - Submit update request
      * - Revert fields on failure
      * - Display backend response message
      *
+     * @async
      * @returns {Promise<void>}
      */
     async function handleSave() {
+        if (username === user.username && bio === user.bio) {
+            setMessages(["No changes detected."]);
+            return; 
+        }
         const validationErrors = validateUsername(username);
 
         if (validationErrors.length >= 1) {
@@ -69,7 +70,7 @@ export default function EditProfilePage() {
             return;
         }
 
-        const res = await update(username, bio, "");
+        const res = await updateProfile(username, bio);
 
         if (!res.success) {
             setUsername(user.username);
@@ -80,6 +81,8 @@ export default function EditProfilePage() {
     }
 
     /**
+     * handlePicture()
+     *
      * Toggles the profile picture editing modal.
      *
      * @returns {void}
@@ -96,17 +99,43 @@ export default function EditProfilePage() {
 
             {/* Profile picture modal */}
             {editPicture && (
-                <ProfilePictureModal setEditPicture={setEditPicture} />
+                <ProfilePictureModal
+                    setEditPicture={setEditPicture}
+                    setMessages={setMessages}
+                />
             )}
 
             {/* Username and profile picture */}
-            <div className="flex flex-row items-center ml-5">
-                <Icon
-                    onClick={handlePicture}
-                    className="text-6xl md:text-7xl text-[#482828]"
-                >
-                    account_circle
-                </Icon>
+            <div className="flex flex-row items-center ml-5 mt-2">
+
+                {/**
+                 * Profile Picture Rendering
+                 *
+                 * Displays either:
+                 * - A default icon when no profile picture is available.
+                 * - The user's profile picture when profilePictureUrl is present.
+                 *
+                 * profilePictureUrl is provided by useUser() and updates whenever:
+                 * - The user changes their profile picture.
+                 * - The page reloads and the provider refetches the image.
+                 */}
+                {(!profilePictureUrl) && (
+                    <Icon
+                        onClick={handlePicture}
+                        className="text-6xl md:text-7xl text-[#482828]"
+                    >
+                        account_circle
+                    </Icon>
+                )}
+
+                {profilePictureUrl && (
+                    <img
+                        onClick={handlePicture}
+                        src={profilePictureUrl}
+                        alt={`${user.username}'s profile picture`}
+                        className="rounded-full w-12 h-12 md:w-14 md:h-14 mr-2"
+                    />
+                )}
 
                 <input
                     value={username}
