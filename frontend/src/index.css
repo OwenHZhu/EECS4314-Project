@@ -1,34 +1,19 @@
-/* 
-./index.css 
-
- * Importing the Inter font family from Google Fonts.
- * Used as the primary typeface across the application.
+/**
+ * Global stylesheet: font import, Tailwind layers, base overrides, and custom utilities.
  */
+
+/* Import Inter font */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 
-/* 
- * Tailwind CSS base styles: includes resets and foundational defaults.
- */
+/* Tailwind layers */
 @tailwind base;
-
-/* 
- * Tailwind CSS component classes: custom reusable UI components.
- */
 @tailwind components;
-
-/* 
- * Tailwind CSS utility classes: atomic classes for styling.
- */
 @tailwind utilities;
 
-/* 
- * Base layer overrides: applies global styling rules and resets.
- * Tailwind's @layer allows extending or customizing the base layer.
- */
+/* Base overrides */
 @layer base {
-  /* 
-   * Apply border-box sizing to all elements and pseudo-elements.
-   * Ensures padding and borders are included in width/height calculations.
+  /**
+   * Border-box sizing for all elements.
    */
   *,
   *::before,
@@ -36,12 +21,8 @@
     box-sizing: border-box;
   }
 
-  /* 
-   * Global body styles:
-   * - Removes default margin
-   * - Sets dark background and light text color
-   * - Applies Inter font with fallbacks
-   * - Enables smoother font rendering on WebKit browsers
+  /**
+   * Global body styles.
    */
   body {
     margin: 0;
@@ -50,4 +31,31 @@
     font-family: "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+}
+
+/**
+ * Custom scrollbar (applies to elements using `custom-scrollbar`).
+ */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #6b645a;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #8a8176;
+}
+
+/* Firefox scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #6b645a #2a2a2a;
 }

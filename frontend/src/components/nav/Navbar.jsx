@@ -1,58 +1,65 @@
 /**
- * ./components/nav/Navbar.jsx
+ * Navbar.jsx
  *
- * The main navigation bar for the BookAtlas application. It provides
- * quick access to core sections such as Discover, Library, Wishlist,
- * Favourites, and Forums, and displays authentication-related actions
- * (Login, Register, Profile) based on the user's auth state.
+ * Main navigation bar for BookAtlas. Provides quick access to core sections:
+ * - Discover
+ * - My Library
+ * - Forums
+ * - Search
+ *
+ * Also displays authentication actions (Login/Register) or the user's profile
+ * when authenticated. Includes a desktop search bar with quick results.
  *
  * Dependencies:
- * - NavLink (react-router-dom): Used for navigation and active-route styling.
- * - useAuth: Custom authentication hook providing `isAuthenticated` and `user`,
- *   enabling the navbar to show either auth buttons or the user's profile button.
- * - NavButton: Reusable navigation button component that applies default
- *   styling for standard nav items while allowing custom styling overrides
- *   for Login, Register, and Profile buttons.
- *
- * NAV_ITEMS Structure:
- * Each item includes:
- *   - id: Unique identifier
- *   - label: Text displayed in the navbar
- *   - path: Route to navigate to
- *   - auth: Currently unused; all nav items are displayed regardless of
- *           authentication status, but the field remains available for
- *           future conditional rendering if needed.
- *
- * Behaviour:
- * - All main navigation items are always displayed.
- * - When unauthenticated, Login and Register buttons are shown.
- * - When authenticated, a Profile button is shown, displaying the user's
- *   initial and username.
- *
- * Notes:
- * - The navbar is sticky and remains at the top of the viewport.
- * - Horizontal scrolling is enabled for nav items on smaller screens.
- * - NavButton provides consistent styling for nav items while allowing
- *   unique styling for authentication-related buttons via `className`.
+ * - NavLink: Routing + active styling
+ * - useAuth: Provides isAuthenticated and user
+ * - useUser: Provides profilePictureUrl
+ * - useBookSearch: Fetches search results for the navbar search bar
+ * - NavButton: Reusable navigation button
+ * - SearchBar, SearchResult: Search UI components
+ * - Icon: Fallback profile avatar
  */
+
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../context/auth/useAuth";
+import { useAuth } from "../../hooks/auth/useAuth";
+import { useUser } from "../../hooks/user/useUser.js";
+import { useBookSearch } from "../../hooks/useBookSearch.js";
 import { NavButton } from "./NavButton";
+import SearchResult from "../search/SearchResult.jsx";
+import Icon from "../generic/Icon.jsx";
+import SearchBar from "../search/SearchBar.jsx";
 
 const NAV_ITEMS = [
-  { id: "discover", label: "Discover", path: "/", auth: "any" },
-  { id: "library", label: "My Library", path: "/library", auth: "user" },
-  { id: "wishlist", label: "Wishlist", path: "/wishlist", auth: "user" },
-  { id: "favourites", label: "Favourites", path: "/favourites", auth: "user" },
-  { id: "forums", label: "Forums", path: "/forums", auth: "any" },
+  { id: "discover", label: "Discover", path: "/" },
+  { id: "library", label: "My Library", path: "/library" },
+  { id: "forums", label: "Forums", path: "/forums" },
+  { id: "search", label: "Search", path: "/search" },
 ];
 
+/**
+ * Navbar
+ *
+ * Renders the main navigation bar including:
+ * - Brand link
+ * - Core navigation items
+ * - Desktop search bar with quick results
+ * - Login/Register buttons when unauthenticated
+ * - Profile button with avatar when authenticated
+ *
+ * @returns {JSX.Element}
+ */
 export function Navbar() {
   const { isAuthenticated, user } = useAuth();
+  const { profilePictureUrl } = useUser();
+
+  const [navQuery, setNavQuery] = useState("");
+  const { results } = useBookSearch(navQuery, "all");
+  const topResults = results.slice(0, 5);
 
   return (
     <nav className="sticky top-0 z-50 bg-nav-bar-bg backdrop-brightness-0 border-b border-nav-bar-border">
-      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-6">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
         {/* Brand */}
         <NavLink to="/" className="flex items-center gap-2 shrink-0 group">
@@ -70,6 +77,29 @@ export function Navbar() {
           ))}
         </div>
 
+        {/* Desktop Search Bar */}
+        <div className="relative w-1/3 hidden md:block">
+          <SearchBar
+            className="mb-1"
+            query={navQuery}
+            setQuery={setNavQuery}
+          />
+
+          {navQuery && topResults.length > 0 && (
+            <div className="absolute mt-2 w-full rounded-md bg-[#111] border border-[#222]">
+              {topResults.map((book) => (
+                <SearchResult key={book.id} book={book} />
+              ))}
+
+              <button
+                className="w-full text-left px-3 py-2 text-xs text-tertiary border-t border-[#222] hover:bg-[#1a1a1a]"
+              >
+                View more results
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Auth Buttons */}
         {!isAuthenticated && (
           <>
@@ -81,7 +111,6 @@ export function Navbar() {
               Login
             </NavButton>
 
-
             <NavButton
               to="/register"
               rounded="rounded-full"
@@ -89,7 +118,6 @@ export function Navbar() {
             >
               Register
             </NavButton>
-
           </>
         )}
 
@@ -98,14 +126,25 @@ export function Navbar() {
           <NavButton
             to="/profile"
             rounded="rounded-full"
-            className="flex items-center gap-2 pl-2 pr-3 py-1.5 border shrink-0"
+            className="flex flex-row items-center gap-2 pl-2 pr-3 py-1.5 border shrink-0"
           >
-            <div className="w-6 h-6 rounded-full bg-[#2d2845] flex items-center justify-center text-xs font-semibold text-[#b8b0ff]">
-              {user.username[0]}
-            </div>
+            {/* Profile Picture Rendering */}
+            {!profilePictureUrl && (
+              <Icon className="text-secondary/60">
+                account_circle
+              </Icon>
+            )}
+
+            {profilePictureUrl && (
+              <img
+                src={profilePictureUrl}
+                alt={`${user.username}'s profile picture`}
+                className="rounded-full w-6 h-6"
+              />
+            )}
+
             <span className="text-xs text-tertiary">{user.username}</span>
           </NavButton>
-
         )}
       </div>
     </nav>

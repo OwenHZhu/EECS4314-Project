@@ -44,15 +44,15 @@ TODO:
 import os
 import time
 import requests
-from database.db import supabase
+from shared.db import supabase
 from dotenv import load_dotenv
 
 load_dotenv()
 
 GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes"
-API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY2")
+API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY")
 
-START_OFFSET = 21072
+START_OFFSET = 29116
 
 def fetch_description_google(title: str, author: str) -> str | None | bool:
     """

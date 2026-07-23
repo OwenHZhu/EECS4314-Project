@@ -1,37 +1,32 @@
 /**
- * ./pages/profile/ProfilePage.jsx
+ * ProfilePage.jsx
  *
  * The user's profile screen. Displays:
- * - User identity (username, email, join date, bio)
- * - Reading statistics (books read, currently reading, total tracked, avg rating)
- * - Reading breakdown by status (reading, read, want, dropped)
+ * - Identity information (username, email, join date, bio)
+ * - Reading statistics and breakdown
  * - Favourite books
  * - Logout modal
  *
  * Dependencies:
- * - BOOKS, STATUS_LABELS, STATUS_COLORS: Mock data for books and status styling.
- * - LIBRARY, FAVOURITES_IDS: Mock user library + favourites.
  * - useAuth: Provides user data and logout().
+ * - useUser: Provides profilePictureUrl for rendering the user's profile picture.
  * - useNavigate: Redirects user after logout or when editing profile.
- * - date-fns/format: Formats the user's join date.
- * - GenericModal: Reusable confirmation modal for logout.
- * - GenericButton: Reusable button.
- *
- * Behaviour:
- * - Clicking the logout icon opens a confirmation modal.
- * - Confirming logout clears auth state and redirects to /login.
- * - Derived values (readCount, avgRating, favourites, etc.) are computed from mock data.
- * - UI is fully responsive and uses TailwindCSS for styling.
+ * - BOOKS, STATUS_LABELS, STATUS_COLORS: Mock data for book and status display.
+ * - LIBRARY, FAVOURITES_IDS: Mock user library + favourites.
+ * - format (date-fns): Formats join date.
+ * - GenericModal, GenericButton, Icon: Reusable UI components.
  */
 
 import { BOOKS, STATUS_LABELS, STATUS_COLORS } from "../../data/mockBook";
 import { LIBRARY, FAVOURITES_IDS } from "../../data/mockUser";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/auth/useAuth";
+import { useAuth } from "../../hooks/auth/useAuth";
+import { useUser } from "../../hooks/user/useUser.js";
 import { format } from "date-fns";
 import GenericModal from "../../components/generic/GenericModal";
 import GenericButton from "../../components/generic/GenericButton";
+import Icon from "../../components/generic/Icon.jsx";
 
 /**
  * StatCard
@@ -40,6 +35,7 @@ import GenericButton from "../../components/generic/GenericButton";
  *
  * @param {number|string} value - The statistic value.
  * @param {string} label - Description of the statistic.
+ * @returns {JSX.Element}
  */
 function StatCard({ value, label }) {
   return (
@@ -58,6 +54,7 @@ function StatCard({ value, label }) {
  * @param {Object} colors - Background, text, and border colors.
  * @param {number} count - Number of books with this status.
  * @param {string} s - Status key ("reading", "read", "want", "dropped").
+ * @returns {JSX.Element}
  */
 function StatusItem({ colors, count, s }) {
   return (
@@ -85,30 +82,57 @@ function StatusItem({ colors, count, s }) {
   );
 }
 
+/**
+ * ProfilePage
+ *
+ * Renders the user's profile screen, including identity info,
+ * reading statistics, favourites, and logout functionality.
+ *
+ * @returns {JSX.Element}
+ */
 export function ProfilePage() {
   const navigate = useNavigate();
   const [showLogout, setShowLogout] = useState(false);
   const { user, logout } = useAuth();
+  const { profilePictureUrl } = useUser();
 
-  /** Close the logout confirmation modal */
+  /**
+   * closeModal()
+   *
+   * Closes the logout confirmation modal.
+   *
+   * @returns {void}
+   */
   function closeModal() {
     setShowLogout(false);
   }
 
-  /** Handle confirmed logout: clear auth and redirect */
+  /**
+   * handleLogout()
+   *
+   * Clears authentication state and redirects the user to /login.
+   *
+   * @returns {void}
+   */
   function handleLogout() {
     logout();
     navigate("/login");
   }
 
-  /** Open the logout confirmation modal */
+  /**
+   * openModal()
+   *
+   * Opens the logout confirmation modal.
+   *
+   * @returns {void}
+   */
   function openModal() {
     setShowLogout(true);
   }
 
   /**
-   * Derived values from mock data
-   * These compute reading stats and favourites for display.
+   * Derived values from mock data.
+   * Computes reading stats and favourite books for display.
    */
   const favourites = FAVOURITES_IDS
     .map((id) => BOOKS.find((b) => b.id === id))
@@ -130,39 +154,73 @@ export function ProfilePage() {
 
       {/* Logout confirmation modal */}
       {showLogout && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <GenericModal
-            title="Logout?"
-            cancelLabel="Cancel"
-            confirmLabel="Logout"
-            onConfirm={handleLogout}
-            onCancel={closeModal}
-          />
-        </div>
+        <GenericModal
+          title="Logout?"
+          cancelLabel="Cancel"
+          confirmLabel="Logout"
+          onConfirm={handleLogout}
+          onCancel={closeModal}
+        />
       )}
 
       {/* User identity section */}
-      <div className="flex items-start gap-5 mb-6 md:mb-10 pb-2">
-        <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#2d2845] flex items-center justify-center text-2xl font-semibold text-[#b8b0ff] shrink-0">
-          {user.username[0]}
-        </div>
+      <div className="flex flex-row items-center gap-5 mb-6 md:mb-10">
+
+        {/**
+         * Profile Picture Rendering
+         *
+         * Displays either:
+         * - A default icon when no profile picture is available.
+         * - The user's profile picture when profilePictureUrl is present.
+         *
+         * profilePictureUrl is provided by useUser() and updates whenever:
+         * - The user changes their profile picture.
+         * - The page reloads and the provider refetches the image.
+         */}
+        {
+          (!profilePictureUrl) && (
+            <Icon
+              className="text-secondary text-6xl cursor-default"
+            >
+              account_circle
+            </Icon>
+          )
+        }
+
+        {profilePictureUrl && (
+          <img
+            src={profilePictureUrl}
+            alt={`${user.username}'s profile picture`}
+            className="rounded-full w-12 h-12 md:w-16 md:h-16"
+          />
+        )}
 
         <div>
-          <div className="flex flex-row pt-2 md:pt-3">
-            <h1 className="text-lg md:text-2xl font-semibold text-primary leading-tight">
+          <div className="flex flex-row items-center mt-3">
+            <h1 className="text-lg md:text-2xl font-semibold text-primary">
               {user.username}
             </h1>
 
             {/* Logout icon */}
-            <img
+            <span
               onClick={openModal}
-              src="../../src/assets/logout-icon.png"
               alt="Logout icon"
-              className="w-4 h-4 md:w-6 md:h-6 cursor-pointer mt-1 ml-1 md:ml-2"
-            />
+              className="
+                material-symbols-outlined cursor-pointer 
+                ml-1 text-xl md:text-2xl
+                [font-variation-settingss:'opsz'_20]
+                sm:[font-variation-settings:'opsz'_20]
+                md:[font-variation-settings:'opsz'_24]
+                lg:[font-variation-settings:'opsz'_32]
+              "
+              style={{
+                color: "#774949"
+              }}>
+              logout
+            </span>
           </div>
 
-          <p className="text-xs text-caption mt-1">
+          <p className="text-xs text-caption">
             {user.email} · joined {format(new Date(user.created_at), "MMMM dd, yyyy")}
           </p>
 

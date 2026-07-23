@@ -18,7 +18,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import RegisterPage from "../../pages/auth/RegisterPage.jsx"
+import RegisterPage from "../../pages/register/RegisterPage.jsx"
 import "@testing-library/jest-dom/vitest";
 
 // Mock functions allow tests to observe registration and navigation behaviour
@@ -43,7 +43,7 @@ vi.mock("react-router-dom", () => ({
  * Individual tests control whether registration succeeds or fails, allowing
  * RegisterPage to be tested independently from the backend.
  */
-vi.mock("../../context/auth/useAuth", () => ({
+vi.mock("../../hooks/auth/useAuth.js", () => ({
   useAuth: () => ({
     register: mockRegister,
   }),
@@ -233,7 +233,7 @@ describe("RegisterPage", () => {
     );
 
     expect(
-      screen.getByText("Invalid email.")
+      screen.getByText("Please enter a valid email address.")
     ).toBeInTheDocument();
 
     expect(mockRegister).not.toHaveBeenCalled();
