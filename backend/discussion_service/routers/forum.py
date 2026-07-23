@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from discussion_service.schemas.discussion_forum import (
 	LikeStatus,
 	ReplyCreate,
+	ReplyUpdate,
 	Tag,
 	ThreadCreate,
 	ThreadPost,
@@ -13,6 +14,8 @@ from discussion_service.schemas.discussion_forum import (
 from discussion_service.services.discussion_service import (
 	create_reply,
 	create_thread,
+	delete_reply,
+	delete_thread,
 	get_thread,
 	get_user_activity,
 	list_replies,
@@ -21,6 +24,7 @@ from discussion_service.services.discussion_service import (
 	list_threads,
 	toggle_reply_like,
 	toggle_thread_like,
+	update_reply,
 	update_thread,
 )
 from auth_service.utils.jwt import get_current_user_id
@@ -104,6 +108,19 @@ def update_forum_thread(
 	return result["data"]
 
 
+@router.delete("/threads/{thread_id}")
+def delete_forum_thread(thread_id: str, user_id: str = Depends(get_current_user_id)):
+	"""
+	Deletes a thread. Only the original author may delete — enforced in
+	services/discussion_service.delete_thread(). Deleting the thread
+	cascades at the DB level to remove its replies, tag links, and likes.
+	"""
+	result = delete_thread(thread_id, user_id)
+	if not result["success"]:
+		raise HTTPException(status_code=_status_for(result["message"]), detail=result["message"])
+	return {"message": result["message"]}
+
+
 @router.post("/threads/{thread_id}/replies", response_model=ThreadReply)
 def create_forum_reply(
 	thread_id: str,
@@ -115,6 +132,41 @@ def create_forum_reply(
 	if not result["success"]:
 		raise HTTPException(status_code=_status_for(result["message"]), detail=result["message"])
 	return result["data"]
+
+
+@router.patch("/threads/{thread_id}/replies/{reply_id}", response_model=ThreadReply)
+def update_forum_reply(
+	thread_id: str,
+	reply_id: str,
+	payload: ReplyUpdate,
+	user_id: str = Depends(get_current_user_id),
+):
+	"""
+	Edits a reply's content. Only the original author may edit —
+	enforced in services/discussion_service.update_reply().
+
+	thread_id in the path isn't used by the service lookup itself
+	(reply_id alone identifies the row) — it's kept for REST nesting
+	consistency with the other /threads/{thread_id}/replies routes.
+	"""
+	result = update_reply(reply_id, user_id, payload)
+	if not result["success"]:
+		raise HTTPException(status_code=_status_for(result["message"]), detail=result["message"])
+	return result["data"]
+
+
+@router.delete("/threads/{thread_id}/replies/{reply_id}")
+def delete_forum_reply(thread_id: str, reply_id: str, user_id: str = Depends(get_current_user_id)):
+	"""
+	Deletes a reply. Only the original author may delete — enforced in
+	services/discussion_service.delete_reply(). Child replies nested
+	under this one are NOT deleted — they become top-level replies on
+	the thread (parent_reply_id is ON DELETE SET NULL at the DB level).
+	"""
+	result = delete_reply(reply_id, user_id)
+	if not result["success"]:
+		raise HTTPException(status_code=_status_for(result["message"]), detail=result["message"])
+	return {"message": result["message"]}
 
 
 @router.get("/threads/{thread_id}/replies")

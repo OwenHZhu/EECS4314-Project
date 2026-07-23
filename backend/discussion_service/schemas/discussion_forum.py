@@ -41,6 +41,39 @@ Note on user_id (auth):
     and passed into services/discussion_service.create_thread /
     create_reply from the verified token — never trust a user_id sent in
     a request body for a write.
+
+Note on tags (CHANGED — was tag_ids, now tags by name):
+    Earlier versions of ThreadCreate took tag_ids: list[str], meaning the
+    frontend had to already know a tag's UUID before it could attach it —
+    which only works if tags are pre-created and the user picks from a
+    list. The actual UI (a free-text "add tags" input where an unrecognized
+    tag gets created on the spot) doesn't work that way: the user types a
+    tag *name*, not an ID.
+
+    So ThreadCreate.tags is now list[str] of tag *names*. The service
+    layer (create_thread) is responsible for resolving each name to a
+    tags.id — creating a new row in "tags" if the name doesn't exist yet —
+    before linking via thread_tags. This also means the old "invalid
+    tag_id → 400" failure mode from the tag_ids design mostly goes away:
+    since names are get-or-created rather than looked up, there's no
+    "this ID doesn't exist" case anymore, just normal name validation
+    (min/max length, etc.).
+
+    On the read side, ThreadPost.tags is list[Tag] (full objects: id +
+    name), not just tag_ids — the frontend needs the tag's name to render
+    a pill ("Tag 1" with an x to remove), not just its ID, so returning
+    full Tag objects avoids a second round-trip to GET /forum/tags to
+    resolve names. This is the split flagged in the previous TODO
+    (create-request shape vs. read-response shape can differ).
+
+Note on has_spoilers (NEW):
+    thread_forum now has a has_spoilers boolean column (not null, default
+    false). The frontend must let the user flag a post as containing
+    spoilers before submitting; the API defaults to False rather than
+    requiring the field, so existing/simple clients that don't send it
+    don't break, but the UI should make selecting it deliberate — a post
+    that's actually about spoilers left unflagged defeats the point of
+    having the column at all.
 """
 
 from datetime import datetime, timezone
@@ -103,6 +136,7 @@ class ThreadReply(BaseModel):
     content: str = Field(min_length=1, max_length=1000)
     parent_reply_id: Optional[str] = Field(default=None, description="ID of the reply this is nested under, if any — None for a top-level reply on the thread")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Reply creation time")
+    updated_at: Optional[datetime] = Field(default=None, description="Last update time — set by update_reply(); None until the reply is first edited")
 
 
 class ThreadCreate(BaseModel):
@@ -147,6 +181,24 @@ class ReplyCreate(BaseModel):
 
     content: str = Field(min_length=1)
     parent_reply_id: Optional[str] = Field(default=None, description="Reply to nest this under, if any")
+
+
+class ReplyUpdate(BaseModel):
+    """
+    Input schema for PATCH /forum/threads/{thread_id}/replies/{reply_id}.
+
+    Only content is editable — parent_reply_id is intentionally NOT
+    included here. Letting a reply be re-parented after the fact would
+    let someone rewrite the shape of an existing conversation thread,
+    which is a different (and much riskier) operation than fixing a typo.
+    If re-nesting is ever a real need, it deserves its own explicit
+    endpoint with its own review, not a side effect of an edit form.
+
+    Ownership (only the original author can edit) is enforced in
+    services/discussion_service.update_reply(), not here.
+    """
+
+    content: str = Field(min_length=1, max_length=1000)
 
 
 class LikeStatus(BaseModel):

@@ -51,6 +51,7 @@ from discussion_service.schemas.discussion_forum import (
 	ThreadUpdate,
 	ThreadReply,
 	ReplyCreate,
+	ReplyUpdate,
 	UserActivityResponse,
 	LikeStatus,
 )
@@ -117,6 +118,7 @@ def build_reply(record: ReplyRecord) -> ThreadReply:
 		content=str(record["content"]),
 		parent_reply_id=str(record["parent_reply_id"]) if record.get("parent_reply_id") is not None else None,
 		created_at=parse_datetime(record["created_at"]),
+		updated_at=parse_datetime(record["updated_at"]) if record.get("updated_at") else None,
 	)
 
 
@@ -334,6 +336,47 @@ def update_thread(thread_id: str, user_id: str, updates: ThreadUpdate) -> dict:
 	}
 
 
+def delete_thread(thread_id: str, user_id: str) -> dict:
+	"""
+	Permanently deletes a thread.
+
+	Only the thread's original author may delete it — same ownership
+	check as update_thread(). Deleting the thread_forum row cascades at
+	the DB level to remove its replies, thread_tags links, and
+	thread_likes automatically (all defined ON DELETE CASCADE against
+	thread_forum.id), so nothing extra needs to happen here to clean
+	those up.
+
+	Args:
+		thread_id: The thread to delete.
+		user_id: The authenticated user attempting the deletion.
+
+	Returns:
+		Success: { success: True, message: str, data: None }
+		Failure: { success: False, message: str, data: None }
+	"""
+	current = (
+		supabase.table(DISCUSSION_THREADS_TABLE)
+		.select("user_id")
+		.eq("id", thread_id)
+		.limit(1)
+		.execute()
+	)
+
+	if not current.data:
+		return {"success": False, "message": "Thread not found", "data": None}
+
+	if str(current.data[0]["user_id"]) != str(user_id):
+		return {"success": False, "message": "Only the thread author can delete this thread", "data": None}
+
+	res = supabase.table(DISCUSSION_THREADS_TABLE).delete().eq("id", thread_id).execute()
+
+	if not res.data:
+		return {"success": False, "message": "Failed to delete thread", "data": None}
+
+	return {"success": True, "message": "Thread deleted successfully", "data": None}
+
+
 def create_reply(thread_id: str, user_id: str, reply: ReplyCreate) -> dict:
 	"""
 	Creates a new reply to a discussion thread.
@@ -366,6 +409,96 @@ def create_reply(thread_id: str, user_id: str, reply: ReplyCreate) -> dict:
 		return {"success": False, "message": "Failed to create reply", "data": None}
 
 	return {"success": True, "message": "Reply created successfully", "data": build_reply(cast(ReplyRecord, res.data[0]))}
+
+
+def update_reply(reply_id: str, user_id: str, updates: ReplyUpdate) -> dict:
+	"""
+	Updates a reply's content, and sets updated_at.
+
+	Only the reply's original author may edit it — user_id must match
+	the reply's user_id; the caller (router) is responsible for
+	resolving user_id from a verified token before calling this.
+	parent_reply_id is intentionally not editable here — see
+	ReplyUpdate's docstring in schemas/discussion_forum.py for why.
+
+	Args:
+		reply_id: The reply to update.
+		user_id: The authenticated user attempting the edit.
+		updates: Validated ReplyUpdate schema (content).
+
+	Returns:
+		Success: { success: True, message: str, data: ThreadReply }
+		Failure: { success: False, message: str, data: None }
+	"""
+	current = (
+		supabase.table(DISCUSSION_REPLIES_TABLE)
+		.select("*")
+		.eq("id", reply_id)
+		.limit(1)
+		.execute()
+	)
+
+	if not current.data:
+		return {"success": False, "message": "Reply not found", "data": None}
+
+	current_record = cast(ReplyRecord, current.data[0])
+
+	if str(current_record["user_id"]) != str(user_id):
+		return {"success": False, "message": "Only the reply author can edit this reply", "data": None}
+
+	changes = {
+		"content": updates.content,
+		"updated_at": datetime.now(timezone.utc).isoformat(),
+	}
+
+	res = supabase.table(DISCUSSION_REPLIES_TABLE).update(changes).eq("id", reply_id).execute()
+
+	if not res.data:
+		return {"success": False, "message": "Failed to update reply", "data": None}
+
+	return {"success": True, "message": "Reply updated successfully", "data": build_reply(cast(ReplyRecord, res.data[0]))}
+
+
+def delete_reply(reply_id: str, user_id: str) -> dict:
+	"""
+	Permanently deletes a reply.
+
+	Only the reply's original author may delete it — same ownership
+	check as update_reply(). Deleting a reply that has child replies
+	nested under it does NOT delete those children — parent_reply_id has
+	ON DELETE SET NULL, so its children become top-level replies on the
+	thread instead of disappearing (see the replies table definition —
+	this was a deliberate choice to avoid silently wiping out a whole
+	reply subtree when only the parent is removed).
+
+	Args:
+		reply_id: The reply to delete.
+		user_id: The authenticated user attempting the deletion.
+
+	Returns:
+		Success: { success: True, message: str, data: None }
+		Failure: { success: False, message: str, data: None }
+	"""
+	current = (
+		supabase.table(DISCUSSION_REPLIES_TABLE)
+		.select("user_id")
+		.eq("id", reply_id)
+		.limit(1)
+		.execute()
+	)
+
+	if not current.data:
+		return {"success": False, "message": "Reply not found", "data": None}
+
+	if str(current.data[0]["user_id"]) != str(user_id):
+		return {"success": False, "message": "Only the reply author can delete this reply", "data": None}
+
+	res = supabase.table(DISCUSSION_REPLIES_TABLE).delete().eq("id", reply_id).execute()
+
+	if not res.data:
+		return {"success": False, "message": "Failed to delete reply", "data": None}
+
+	return {"success": True, "message": "Reply deleted successfully", "data": None}
 
 
 def list_replies(thread_id: str) -> dict:
@@ -539,7 +672,7 @@ def count_thread_likes(thread_id: str) -> int:
 	"""Returns the number of likes for a specific thread."""
 	res = (
 		supabase.table(DISCUSSION_THREAD_LIKES_TABLE)
-		.select("user_id", count="exact")
+		.select("id", count="exact")
 		.eq("thread_id", thread_id)
 		.execute()
 	)
@@ -604,7 +737,7 @@ def count_reply_likes(reply_id: str) -> int:
 	"""Returns the number of likes for a specific reply."""
 	res = (
 		supabase.table(DISCUSSION_REPLY_LIKES_TABLE)
-		.select("user_id", count="exact")
+		.select("id", count="exact")
 		.eq("reply_id", reply_id)
 		.execute()
 	)

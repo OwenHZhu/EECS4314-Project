@@ -32,6 +32,7 @@ class ReplyRecord(TypedDict, total=False):
 	parent_reply_id: Optional[str]
 	content: str
 	created_at: str
+	updated_at: Optional[str]
 
 
 class TagRecord(TypedDict, total=False):
