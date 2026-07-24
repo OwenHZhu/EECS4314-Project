@@ -13,6 +13,7 @@ import { DiscoverPage } from "./pages/DiscoverPage";
 import LibraryPage from "./pages/library/LibraryPage";
 import ForumsPage from "./pages/forum/ForumsPage";
 import PostPage from "./pages/forum/PostPage";
+import CreatePostPage from "./pages/forum/CreatePostPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import { SearchPage } from "./pages/SearchPage";
 import LoginPage from "./pages/login/LoginPage";
@@ -62,6 +63,15 @@ export default function App() {
 
             {/* Public route: Individual posts */}
             <Route path="/forums/:threadId" element={<PostPage />} />
+
+            {/* Protected route: Create posts */}
+            <Route path="/forums/create/:bookId"
+              element={
+                <ProtectedRoute>
+                  <CreatePostPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Protected route: Edit Profile */}
             <Route path="/profile/edit"

@@ -24,15 +24,35 @@
 
 import discussionClient from "./discussionClient";
 
-export async function getThreads() {
-    try {
-        const res = await discussionClient.get("forum/threads");
+export async function postThread(token, title, content, book_id, has_spoilers, tags) {
+        try {
+        const res = await discussionClient.post(`forum/threads`, 
+            { title, content, book_id, has_spoilers, tags }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
         return {
             success: true,
             data: res.data
-        }
+        };
+    } catch (err) {
+        console.log(err.response);
     }
-    catch (err) {
+}
+
+export async function getThreads(book_id) {
+    try {
+        const res = await discussionClient.get(`forum/threads`, {
+            params: { book_id }
+        });
+
+        return {
+            success: true,
+            data: res.data
+        };
+    } catch (err) {
         console.log(err.response);
     }
 }
