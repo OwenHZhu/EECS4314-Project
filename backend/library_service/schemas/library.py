@@ -1,4 +1,4 @@
-""""
+"""
 schemas/library.py
 
 TODO: User Library schemas 
@@ -51,6 +51,14 @@ class LibraryEntryCreate(BaseModel):
         le=5,
         description="Optional user rating from 1 to 5"
     )
+    start_date: Optional[datetime] = Field(
+        default=None,
+        description="Date and time when the user started reading the book"
+    )
+    end_date: Optional[datetime] = Field(
+        default=None,
+        description="Date and time when the user finished reading the book"
+    )
 
 
 class LibraryEntryUpdate(BaseModel):
@@ -80,6 +88,14 @@ class LibraryEntryUpdate(BaseModel):
         le=5,
         description="Updated rating from 1 to 5"
     )
+    start_date: Optional[datetime] = Field(
+        default=None,
+        description="Date and time when the user started reading the book"
+    )
+    end_date: Optional[datetime] = Field(
+        default=None,
+        description="Date and time when the user finished reading the book"
+    )
 
 
 class LibraryEntry(BaseModel):
@@ -103,5 +119,13 @@ class LibraryEntry(BaseModel):
     )
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
+    )
+    start_date: Optional[datetime] = Field(
+            default=None,
+            description="Date and time when the user started reading the book"
+    )
+    end_date: Optional[datetime] = Field(
+            default=None,
+            description="Date and time when the user finished reading the book"
     )
 

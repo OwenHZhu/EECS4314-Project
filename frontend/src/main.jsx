@@ -14,6 +14,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import AuthProvider from './context/auth/AuthProvider.jsx'
+import UserProvider from './context/user/UserProvider.jsx'
 import LibraryProvider from './context/library/LibraryProvider.jsx'
 
 /*
@@ -26,9 +27,11 @@ import LibraryProvider from './context/library/LibraryProvider.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <LibraryProvider>
-        <App />
-      </LibraryProvider>
+      <UserProvider>
+        <LibraryProvider>
+          <App />
+        </LibraryProvider>
+      </UserProvider>
     </AuthProvider>
   </StrictMode>,
 )

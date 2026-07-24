@@ -155,7 +155,6 @@ class UserUpdate(BaseModel):
 
     username: Optional[str] = Field(default=None, min_length=5, max_length=12)
     bio: Optional[str] = Field(default=None, max_length=150)
-    profile_picture: Optional[str] = Field(default=None)
 
 
 class UserUpdatePassword(BaseModel):

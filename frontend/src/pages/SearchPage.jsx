@@ -1,51 +1,45 @@
 /**
- * ./pages/SearchPage.jsx
+ * SearchPage.jsx
  *
- * A dedicated search interface for exploring the book catalog. This page
- * provides:
- *
- * 1. **Search functionality**
- *    - Users can search by title, author, or genre.
- *    - Search input updates `query` state.
- *    - Results are fetched via `useBookSearch`, which performs debounced,
- *      client-side filtering.
- *
- * 2. **Genre filtering**
- *    - Uses `GENRES` and `GENRE_LABELS` to render selectable genre chips.
- *    - Clicking a chip updates the `genre` state.
- *    - Search results update automatically based on both query + genre.
- *
- * 3. **Result display**
- *    - Shows a loading indicator while search is processing.
- *    - Displays the number of results or a “no results” message.
- *    - Renders results using the `BookCard` component in a responsive grid.
+ * Dedicated search interface for exploring the book catalog.
+ * Supports:
+ * - Text search (title, author, genre)
+ * - Genre filtering via selectable chips
+ * - Responsive result grid with BookCard components
  *
  * Dependencies:
- * - `useBookSearch`: Custom hook for debounced search + filtering.
- * - `BookCard`: Component for rendering individual book tiles.
- * - `GENRES`, `GENRE_LABELS`: Mock data for genre filtering UI.
+ * - useBookSearch: Debounced search + filtering
+ * - BookCard: Renders individual book tiles
+ * - SearchBar: Search input component
+ * - GENRES, GENRE_LABELS: Genre filter options
  *
  * State:
- * - `query`: The current search text.
- * - `genre`: The selected genre filter.
- *
- * Behaviour:
- * - No navigation or backend calls.
+ * - query: Current search text
+ * - genre: Selected genre filter ("all" by default)
  */
 
 import { useState } from "react";
 import { useBookSearch } from "../hooks/useBookSearch";
+<<<<<<< HEAD
 import { BookCard } from "../components/books/BookCard";
+=======
+import { BookCard } from "../components/BookCard";
+import SearchBar from "../components/search/SearchBar";
+>>>>>>> fb9b9cba3cb6fd2649eb18f5215f2cc2a26f08e6
 import { GENRES, GENRE_LABELS } from "../data/mockBook";
 
+/**
+ * SearchPage
+ *
+ * Renders the search interface with text search, genre filters,
+ * loading indicator, and responsive results grid.
+ *
+ * @returns {JSX.Element}
+ */
 export function SearchPage() {
-  // Search text input
   const [query, setQuery] = useState("");
-
-  // Selected genre filter ("all" by default)
   const [genre, setGenre] = useState("all");
 
-  // Debounced search results and loading state
   const { results, loading } = useBookSearch(query, genre);
 
   return (
@@ -64,32 +58,10 @@ export function SearchPage() {
         </header>
 
         {/* Search bar */}
-        <div className="relative mb-4">
-          {/* Search icon */}
-          <svg
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#444] pointer-events-none"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
-
-          {/* Search input */}
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title, author, or genre…"
-            className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#f0f0f0] placeholder-[#444] outline-none focus:border-[#7c6af7] focus:ring-2 focus:ring-[#7c6af7]/20 transition-all"
-          />
-        </div>
+        <SearchBar
+          query={query}
+          setQuery={setQuery}
+        />
 
         {/* Genre chips */}
         <div className="flex gap-2 flex-wrap mb-6">

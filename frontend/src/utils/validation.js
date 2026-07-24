@@ -45,7 +45,18 @@ const USERNAME_REGEX = /^[A-Za-z0-9_]+$/;
  * @returns {boolean} True if the email is valid, otherwise false.
  */
 export function validateEmail(email) {
-    return EMAIL_REGEX.test(email);
+    const errors = [];
+
+    if (!email) {
+        errors.push("Please enter your email.");
+        return errors;
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+        errors.push("Please enter a valid email address.");
+    }
+
+    return errors;
 }
 
 /**
@@ -64,6 +75,11 @@ export function validateEmail(email) {
  */
 export function validatePassword(password) {
     const errors = [];
+
+    if (!password) {
+        errors.push("Please enter your password.");
+        return errors;
+    }
 
     if (!PW_LENGTH_REGEX.test(password)) {
         errors.push("Password must be at least 12 characters long.");
@@ -96,6 +112,11 @@ export function validatePassword(password) {
  */
 export function validateUsername(username) {
     const errors = [];
+
+    if (!username) {
+        errors.push("Please enter your username.");
+        return errors;
+    }
 
     if (!USERNAME_LENGTH_REGEX.test(username)) {
         errors.push("Username should be 5 to 12 characters long.");
