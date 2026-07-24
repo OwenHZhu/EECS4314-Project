@@ -34,25 +34,8 @@ export function useRegisterForm() {
     const [errors, setErrors] = useState([]);
 
     /**
-     * validateRequired()
-     * Performs required-field checks using current form state.
-     *
-     * @returns {string[]} Missing-field error messages.
-     */
-    function validateRequired() {
-        const missing = [];
-
-        if (!username.trim()) missing.push("Please enter your username.");
-        if (!email.trim()) missing.push("Please enter your email.");
-        if (!password.trim()) missing.push("Please enter your password.");
-
-        return missing;
-    }
-
-    /**
      * validateFormat()
-     * Performs format/strength validation using current form state.
-     * Runs only after required fields are present.
+     * Performs required field and format/strength validation using current form state.
      *
      * @returns {string[]} Format/strength validation errors.
      */
@@ -60,15 +43,22 @@ export function useRegisterForm() {
         const formatErrors = [];
 
         // Username rules
-        formatErrors.push(...validateUsername(username));
-
-        // Email format
-        if (!validateEmail(email)) {
-            formatErrors.push("Invalid email.");
+        const usernameErrors = validateUsername(username);
+        if (usernameErrors.length > 0) {
+            formatErrors.push(...usernameErrors);
         }
 
-        // Password strength rules
-        formatErrors.push(...validatePassword(password));
+        // Email rules
+        const emailErrors = validateEmail(email);
+        if (emailErrors.length > 0) {
+            formatErrors.push(...emailErrors);
+        }
+
+        // Password rules
+        const passwordErrors = validatePassword(password);
+        if (passwordErrors.length > 0) {
+            formatErrors.push(...passwordErrors);
+        }
 
         return formatErrors;
     }
@@ -76,22 +66,13 @@ export function useRegisterForm() {
     /**
      * handleSubmit()
      * Runs:
-     * 1. Required-field validation
-     * 2. Format validation
+     * 1. Required-field and format validation
      * 3. Registration request
      * 4. Navigation + cleanup on success
      *
      * @returns {Promise<void>}
      */
     async function handleSubmit() {
-        // Stage 1: Required fields
-        const requiredErrors = validateRequired();
-        if (requiredErrors.length > 0) {
-            setErrors(requiredErrors);
-            return;
-        }
-
-        // Stage 2: Format rules
         const formatErrors = validateFormat();
         if (formatErrors.length > 0) {
             setErrors(formatErrors);

@@ -39,6 +39,8 @@ const variants = {
     secondary: "bg-generic-button-secondary-fill hover:bg-generic-button-secondary-fill-hover",
 
     ghost: "bg-transparent border-2 border-generic-button-ghost-border hover:border-generic-button-ghost-border-hover hover:bg-generic-button-ghost-fill-hover",
+  
+    bookAction: "bg-[#E51D27] hover:bg-[#B91620]",
 
     spoilers: "bg-generic-button-spoilers-fill border border-generic-button-spoilers-border text-generic-button-spoilers-text \
     hover:bg-generic-button-spoilers-fill/70 hover:border-generic-button-spoilers-border/70 hover:text-generic-button-spoilers-text/70",

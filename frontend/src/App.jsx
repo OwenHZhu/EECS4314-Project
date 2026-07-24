@@ -11,16 +11,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/nav/Navbar";
 import { DiscoverPage } from "./pages/DiscoverPage";
 import LibraryPage from "./pages/library/LibraryPage";
-import { WishlistPage } from "./pages/WishlistPage";
-import { FavouritesPage } from "./pages/FavouritesPage";
-import ForumsPage from "./pages/forum/ForumsPage";
-import PostPage from "./pages/forum/PostPage";
+import { ForumsPage } from "./pages/ForumsPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
+import { SearchPage } from "./pages/SearchPage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import EditProfilePage from "./pages/profile/EditProfilePage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import BookPage from "./pages/books/BookPage";
 
 /**
  * The root application component.
@@ -44,30 +43,17 @@ export default function App() {
             {/* Public route: Discover page */}
             <Route path="/" element={<DiscoverPage />} />
 
+            {/* Public route: Individual book page */}
+            <Route path="/books/:bookId" element={<BookPage />} />
+            {/* Public route: Search page */}
+            <Route path="/search" element={<SearchPage />} />
+
             {/* Protected route: Library */}
             <Route path="/library"
               element={
                 <ProtectedRoute>
                   <LibraryPage />
                 </ProtectedRoute>}
-            />
-
-            {/* Protected route: Wishlist */}
-            <Route path="/wishlist"
-              element={
-                <ProtectedRoute>
-                  <WishlistPage />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Protected route: Favourites */}
-            <Route path="/favourites"
-              element={
-                <ProtectedRoute>
-                  <FavouritesPage />
-                </ProtectedRoute>
-              }
             />
 
             {/* Public route: Forums */}

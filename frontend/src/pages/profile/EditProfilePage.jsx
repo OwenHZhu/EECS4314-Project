@@ -7,21 +7,16 @@
  * - Profile picture
  *
  * Dependencies:
- * - useAuth: Provides authenticated user + update() method
- * - validateUsername: Client-side username validation
- * - ProfilePictureModal: Profile picture editing modal
- * - EditProfileHeader: Page header
- * - GenericButton, Icon, ErrorList: Reusable UI components
- *
- * State:
- * - username: Controlled username input
- * - bio: Controlled bio input
- * - messages: Validation or update feedback messages
- * - editPicture: Controls visibility of the picture-edit modal
+ * - useAuth: Provides authenticated user data.
+ * - useUser: Provides updateProfile(), updateProfilePicture(), and profilePictureUrl.
+ * - validateUsername: Client-side username validation.
+ * - ProfilePictureModal: Modal for uploading a new profile picture.
+ * - EditProfileHeader: Page header UI.
+ * - GenericButton, Icon, ErrorList: Reusable UI components.
  */
-
 import { useState } from "react";
 import { useAuth } from "../../hooks/auth/useAuth.js";
+import { useUser } from "../../hooks/user/useUser.js";
 import { validateUsername } from "../../utils/validation.js";
 import ProfilePictureModal from "./components/ProfilePictureModal.jsx";
 import EditProfileHeader from "./components/EditProfileHeader.jsx";
@@ -29,20 +24,21 @@ import GenericButton from "../../components/generic/GenericButton.jsx";
 import Icon from "../../components/generic/Icon.jsx";
 import ErrorList from "../../components/generic/ErrorList.jsx";
 
+/**
+ * EditProfilePage
+ *
+ * Renders the profile editing interface and handles validation + updates.
+ *
+ * @returns {JSX.Element}
+ */
 export default function EditProfilePage() {
-    // For displaying error messages 
     const [messages, setMessages] = useState([]);
 
-    // Get user state and update function from AuthProvider
-    const { user, update } = useAuth();
+    const { user } = useAuth();
+    const { updateProfile, profilePictureUrl } = useUser();
 
-    // Controlled input for username
     const [username, setUsername] = useState(user.username);
-
-    // Controlled input for bio
     const [bio, setBio] = useState(user.bio ? user.bio : "");
-
-    // Controls visibility of the profile picture modal
     const [editPicture, setEditPicture] = useState(false);
 
     /**
@@ -50,19 +46,23 @@ export default function EditProfilePage() {
      *
      * Validates and submits updated profile details.
      *
-     * Validation:
-     * - Uses validateUsername() to check username rules.
+     * Steps:
+     * - Check if the fields are actually different to avoid unnecessary API calls
+     * - Validate username using validateUsername()
+     * - Submit update request
+     * - Revert fields on failure
+     * - Display backend response message
      *
-     * Update:
-     * - Calls update(username, bio, profile_picture)
-     * - Displays backend message regardless of success/failure
-     *
+     * @async
      * @returns {Promise<void>}
      */
     async function handleSave() {
+        if (username === user.username && bio === user.bio) {
+            setMessages(["No changes detected."]);
+            return; 
+        }
         const validationErrors = validateUsername(username);
 
-        // Username validation failed
         if (validationErrors.length >= 1) {
             setMessages([validationErrors]);
             setUsername(user.username);
@@ -70,18 +70,14 @@ export default function EditProfilePage() {
             return;
         }
 
-        // Submit update request
-        const res = await update(username, bio, "");
+        const res = await updateProfile(username, bio);
 
-        // If update failed, revert fields to previous values
         if (!res.success) {
             setUsername(user.username);
             setBio(user.bio);
         }
 
-        // Display backend response message
         setMessages([res.message]);
-        return;
     }
 
     /**
@@ -92,7 +88,7 @@ export default function EditProfilePage() {
      * @returns {void}
      */
     function handlePicture() {
-        setEditPicture(prev => !prev)
+        setEditPicture(prev => !prev);
     }
 
     return (
@@ -103,17 +99,43 @@ export default function EditProfilePage() {
 
             {/* Profile picture modal */}
             {editPicture && (
-                <ProfilePictureModal setEditPicture={setEditPicture} />
+                <ProfilePictureModal
+                    setEditPicture={setEditPicture}
+                    setMessages={setMessages}
+                />
             )}
 
-            {/* Username + profile picture */}
-            <div className="flex flex-row items-center ml-5">
-                <Icon
-                    onClick={handlePicture}
-                    className="text-6xl md:text-7xl text-[#482828]"
-                >
-                    account_circle
-                </Icon>
+            {/* Username and profile picture */}
+            <div className="flex flex-row items-center ml-5 mt-2">
+
+                {/**
+                 * Profile Picture Rendering
+                 *
+                 * Displays either:
+                 * - A default icon when no profile picture is available.
+                 * - The user's profile picture when profilePictureUrl is present.
+                 *
+                 * profilePictureUrl is provided by useUser() and updates whenever:
+                 * - The user changes their profile picture.
+                 * - The page reloads and the provider refetches the image.
+                 */}
+                {(!profilePictureUrl) && (
+                    <Icon
+                        onClick={handlePicture}
+                        className="text-6xl md:text-7xl text-[#482828]"
+                    >
+                        account_circle
+                    </Icon>
+                )}
+
+                {profilePictureUrl && (
+                    <img
+                        onClick={handlePicture}
+                        src={profilePictureUrl}
+                        alt={`${user.username}'s profile picture`}
+                        className="rounded-full w-12 h-12 md:w-14 md:h-14 mr-2"
+                    />
+                )}
 
                 <input
                     value={username}
@@ -148,7 +170,6 @@ export default function EditProfilePage() {
                     className="bg-transparent resize-none text-xs md:text-sm border-secondary border-2 focus:ring-0 focus:outline-none rounded-md w-full h-32 md:w-2/3 sm:h-24 p-4"
                 />
 
-                {/* Character counter */}
                 <p className="text-xs w-fit">
                     {`${bio.length} / 150`}
                 </p>
