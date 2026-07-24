@@ -32,7 +32,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { getBooks } from "../api/books/bookService";
+import { getBooks } from "../../api/books/bookService";
 
 const SEARCH_DEBOUNCE_MS = 250;
 const BOOK_SEARCH_LIMIT = 50;

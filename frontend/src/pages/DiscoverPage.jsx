@@ -36,7 +36,7 @@
  */
 
 import { useState } from "react";
-import { useBookSearch } from "../hooks/useBookSearch";
+import { useBookSearch } from "../hooks/books/useBookSearch";
 import { BookCard } from "../components/books/BookCard";
 import { GENRES, GENRE_LABELS } from "../data/mockBook";
 import BookDetailsModal from "../components/books/BookDetailsModal";
