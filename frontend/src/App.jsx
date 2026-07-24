@@ -11,7 +11,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/nav/Navbar";
 import { DiscoverPage } from "./pages/DiscoverPage";
 import LibraryPage from "./pages/library/LibraryPage";
-import { ForumsPage } from "./pages/ForumsPage";
+import ForumsPage from "./pages/forum/ForumsPage";
+import PostPage from "./pages/forum/PostPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import { SearchPage } from "./pages/SearchPage";
 import LoginPage from "./pages/login/LoginPage";
@@ -60,7 +61,7 @@ export default function App() {
             <Route path="/forums" element={<ForumsPage />} />
 
             {/* Public route: Individual posts */}
-            <Route path="/forums/post" element={<PostPage />} />
+            <Route path="/forums/:threadId" element={<PostPage />} />
 
             {/* Protected route: Edit Profile */}
             <Route path="/profile/edit"
