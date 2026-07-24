@@ -52,7 +52,7 @@ export default function BookStatusDropdown({
     return (
       <GenericButton
         type="button"
-        variant="primary"
+        variant="bookAction"
         onClick={onAuthRequired}
         className="
           flex min-w-[105px]
@@ -74,7 +74,7 @@ export default function BookStatusDropdown({
   const trigger = (
     <GenericButton
       type="button"
-      variant="primary"
+      variant="bookAction"
       className="
       flex min-w-[105px] items-center justify-center gap-2
       bg-book-action px-4 py-2 text-[11px]
