@@ -74,15 +74,13 @@ export default function BookStatusDropdown({
   const trigger = (
     <GenericButton
       type="button"
-      variant={status ? "secondary" : "primary"}
+      variant="primary"
       className="
-        flex min-w-[105px]
-        items-center justify-center
-        gap-2
-        px-4 py-2
-        text-[11px]
-      "
-    >
+      flex min-w-[105px] items-center justify-center gap-2
+      bg-book-action px-4 py-2 text-[11px]
+     hover:bg-book-action-hover
+   "
+  >
       <span className="truncate">
         {getStatusLabel(status)}
       </span>

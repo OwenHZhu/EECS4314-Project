@@ -43,7 +43,7 @@ export function BookCard({ book, onClick }) {
       {/* Cover image */}
       <div
         className="
-          h-[125px]
+          h-[150px]
           w-full
           overflow-hidden
           rounded-b-[22px]
@@ -58,9 +58,10 @@ export function BookCard({ book, onClick }) {
               h-full
               w-full
               object-cover
+              object-top
               transition-transform
               duration-300
-              group-hover:scale-105
+              group-hover:scale-[1.02]
             "
           />
         ) : (

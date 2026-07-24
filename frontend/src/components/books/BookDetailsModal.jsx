@@ -66,6 +66,23 @@ export default function BookDetailsModal({
   const { average, totalRatings } = getRatingStats(book);
 
   /**
+   * Keeps the modal's local UI state synced with the user's saved library entry.
+   *
+   * This is needed because the modal receives saved favourite/status/rating
+   * values from DiscoverPage. After refresh, those values may arrive from the
+   * Library Service after the modal component has already mounted.
+   */
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setIsFavourite(initialFavourite);
+    setStatus(initialStatus);
+    setUserRating(initialRating);
+  }, [isOpen, book?.id, initialFavourite, initialStatus, initialRating]);
+
+  /**
    * Uses the book cover as the background with a dark overlay so text remains
    * readable. If no cover image is available, a dark fallback gradient is used.
    */
@@ -124,9 +141,13 @@ export default function BookDetailsModal({
 
   const description = book.description || "";
   const shortDescription = getShortDescription(description);
-  const hasLongDescription = description.length > MAX_DESCRIPTION_LENGTH;
 
   function handleFavouriteToggle() {
+    if (!isAuthenticated) {
+      onAuthRequired?.();
+      return;
+    }
+
     const nextFavouriteState = !isFavourite;
 
     setIsFavourite(nextFavouriteState);
@@ -134,11 +155,21 @@ export default function BookDetailsModal({
   }
 
   function handleStatusChange(nextStatus) {
+    if (!isAuthenticated) {
+      onAuthRequired?.();
+      return;
+    }
+
     setStatus(nextStatus);
     onStatusChange?.(nextStatus, book);
   }
 
   function handleRatingChange(nextRating) {
+    if (!isAuthenticated) {
+      onAuthRequired?.();
+      return;
+    }
+
     setUserRating(nextRating);
     onRatingChange?.(nextRating, book);
   }
@@ -213,14 +244,15 @@ export default function BookDetailsModal({
                 "
               >
                 <Icon
+                  filled={isFavourite}
                   className={
-                    isFavourite
-                      ? "text-book-favourite"
-                      : "text-tertiary"
-                  }
-                >
-                  {isFavourite ? "favorite" : "favorite_border"}
-                </Icon>
+                  isFavourite
+                  ? "text-book-favourite"
+                  : "text-tertiary"
+                }
+              >
+              favorite
+        </Icon>
               </button>
 
               <button
@@ -264,21 +296,19 @@ export default function BookDetailsModal({
               {shortDescription}
             </p>
 
-            
-              <button
-                type="button"
-                onClick={() => onViewMore?.(book)}
-                className="
-                  mt-3
-                  text-[10px]
-                  text-input
-                  transition-colors
-                  hover:text-primary
-                "
-              >
-                View More
-              </button>
-            
+            <button
+              type="button"
+              onClick={() => onViewMore?.(book)}
+              className="
+                mt-3
+                text-[10px]
+                text-input
+                transition-colors
+                hover:text-primary
+              "
+            >
+              View More
+            </button>
           </div>
 
           {/* Bottom actions: library status and personal rating */}

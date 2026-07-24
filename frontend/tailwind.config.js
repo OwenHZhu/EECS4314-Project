@@ -81,6 +81,8 @@ export default {
         'book-rating-empty': '#766F5D',
         'book-favourite': '#DC264A',
         'book-status-read': '#10B981',
+        "book-action": "#E51D27",
+        "book-action-hover": "#B91620",
       }
     },
   },

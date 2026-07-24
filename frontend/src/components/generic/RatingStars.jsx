@@ -46,7 +46,7 @@ export default function RatingStars({
   sizeClassName = "text-lg",
   className = "",
   activeClassName = "text-book-rating",
-  inactiveClassName = "text-book-rating-empty",
+  inactiveClassName = "text-tertiary",
   ariaLabel = "Book rating",
 }) {
   const [hoveredValue, setHoveredValue] = useState(0);
@@ -69,15 +69,16 @@ export default function RatingStars({
           return (
             <Icon
               key={starValue}
+              filled={isActive}
               className={cn(
-                sizeClassName,
-                "cursor-default select-none",
-                isActive ? activeClassName : inactiveClassName
+              sizeClassName,
+              "cursor-default select-none",
+              isActive ? activeClassName : inactiveClassName
               )}
               aria-hidden="true"
             >
-              {isActive ? "star" : "star_border"}
-            </Icon>
+            star
+        </Icon>
           );
         }
 
@@ -102,14 +103,15 @@ export default function RatingStars({
             "
           >
             <Icon
-              className={cn(
-                sizeClassName,
-                isActive ? activeClassName : inactiveClassName
-              )}
+            filled={isActive}
+            className={cn(
+            sizeClassName,
+            isActive ? activeClassName : inactiveClassName,
+          )}
               aria-hidden="true"
-            >
-              {isActive ? "star" : "star_border"}
-            </Icon>
+          >
+            star
+        </Icon>
           </button>
         );
       })}
