@@ -20,12 +20,8 @@
 
 import { useState } from "react";
 import { useBookSearch } from "../hooks/useBookSearch";
-<<<<<<< HEAD
-import { BookCard } from "../components/books/BookCard";
-=======
 import { BookCard } from "../components/BookCard";
 import SearchBar from "../components/search/SearchBar";
->>>>>>> fb9b9cba3cb6fd2649eb18f5215f2cc2a26f08e6
 import { GENRES, GENRE_LABELS } from "../data/mockBook";
 
 /**

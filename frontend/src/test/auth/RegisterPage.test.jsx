@@ -18,11 +18,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-<<<<<<< HEAD
-import RegisterPage from "../../pages/register/RegisterPage.jsx";
-=======
 import RegisterPage from "../../pages/register/RegisterPage.jsx"
->>>>>>> fb9b9cba3cb6fd2649eb18f5215f2cc2a26f08e6
 import "@testing-library/jest-dom/vitest";
 
 // Mock functions allow tests to observe registration and navigation behaviour
