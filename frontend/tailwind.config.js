@@ -28,13 +28,29 @@ export default {
         // Generic Button colours
         'generic-button-text': '#F9EDCC',
         'generic-button-text-hover': '#C6C1B3',
+
         'generic-button-primary-fill': '#8A3033',
-        'generic-button-secondary-fill': '#697672',
         'generic-button-primary-fill-hover': '#6A282A',
+
+        'generic-button-secondary-fill': '#697672',
         'generic-button-secondary-fill-hover': '#5A6260',
+
         'generic-button-ghost-border': '#5A4B4B',
         'generic-button-ghost-border-hover': '#7E7272',
         'generic-button-ghost-fill-hover': '#302D2D',
+
+        'generic-button-spoilers-fill': '#350E0E',
+        'generic-button-spoilers-border': '#E51D27',
+        'generic-button-spoilers-text': '#F9CACC',
+
+        'generic-button-questions-fill': '#1E3C36',
+        'generic-button-questions-border': '#22C9A8',
+        'generic-button-questions-text': '#CFE8ED',
+
+
+        'generic-button-theories-fill': '#103019',
+        'generic-button-theories-border': '#2CD532',
+        'generic-button-theories-text': '#CCEED6',
 
         // Login & registration page colours
         'login-button': '#8A3033',

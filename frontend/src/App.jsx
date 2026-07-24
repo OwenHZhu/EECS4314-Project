@@ -59,6 +59,9 @@ export default function App() {
             {/* Public route: Forums */}
             <Route path="/forums" element={<ForumsPage />} />
 
+            {/* Public route: Individual posts */}
+            <Route path="/forums/post" element={<PostPage />} />
+
             {/* Protected route: Edit Profile */}
             <Route path="/profile/edit"
               element={
