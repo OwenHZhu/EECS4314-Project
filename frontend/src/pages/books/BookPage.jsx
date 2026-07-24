@@ -192,6 +192,7 @@ export default function BookPage() {
     }
 
     setUserRating(nextRating);
+    setReadingStatus("read");
 
     await saveLibraryChange({
       nextRating,
