@@ -37,6 +37,7 @@ const variants = {
     primary: "bg-generic-button-primary-fill hover:bg-generic-button-primary-fill-hover",
     secondary: "bg-generic-button-secondary-fill hover:bg-generic-button-secondary-fill-hover",
     ghost: "bg-transparent border-2 border-generic-button-ghost-border hover:border-generic-button-ghost-border-hover hover:bg-generic-button-ghost-fill-hover",
+    bookAction: "bg-[#E51D27] hover:bg-[#B91620]",
 };
 
 export default function GenericButton({

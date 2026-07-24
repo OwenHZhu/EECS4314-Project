@@ -1,25 +1,45 @@
 /**
  * Dropdown.jsx
  *
- * Simple dropdown component that toggles visibility of a menu or panel.
+ * Reusable dropdown component that toggles visibility of a menu or panel.
  *
  * Props:
- * @param {boolean} openSettings - Whether the dropdown content is currently visible.
- * @param {function} setOpenSettings - State setter used to toggle dropdown visibility.
- * @param {ReactNode} trigger - Element that opens/closes the dropdown when clicked.
- * @param {ReactNode} children - Dropdown content rendered when openSettings is true.
+ * @param {boolean} openSettings
+ *   Whether the dropdown content is currently visible.
  *
- * Behavior:
+ * @param {Function} setOpenSettings
+ *   State setter used to toggle dropdown visibility.
+ *
+ * @param {ReactNode} trigger
+ *   Element that opens/closes the dropdown when clicked.
+ *
+ * @param {ReactNode} children
+ *   Dropdown content rendered when openSettings is true.
+ *
+ * @param {string} wrapperClassName
+ *   Optional classes for positioning the dropdown wrapper.
+ *
+ * @param {string} menuClassName
+ *   Optional classes for styling the dropdown menu.
+ *
+ * Behaviour:
  * - Clicking the trigger toggles openSettings.
- * - When openSettings is true, children are displayed in a positioned dropdown panel.
- *
- * Dependencies:
- * - None (utility-free, aside from React itself).
+ * - When openSettings is true, children are displayed in a positioned menu.
+ * - Default styling is preserved for existing profile dropdown usage.
  */
 
-export default function Dropdown({ openSettings, setOpenSettings, trigger, children }) {
+import { cn } from "../../utils/utils";
+
+export default function Dropdown({
+  openSettings,
+  setOpenSettings,
+  trigger,
+  children,
+  wrapperClassName = "",
+  menuClassName = "",
+}) {
   return (
-    <div className="relative inline-block">
+    <div className={cn("relative inline-block", wrapperClassName)}>
       {/* Trigger element */}
       <div onClick={() => setOpenSettings(!openSettings)}>
         {trigger}
@@ -28,8 +48,19 @@ export default function Dropdown({ openSettings, setOpenSettings, trigger, child
       {/* Dropdown content */}
       {openSettings && (
         <div
-          className="absolute right-0 left-5 mt-2 w-fit h-fit bg-[#1A2523] 
-          shadow-lg rounded-md p-4 z-50 border-2 border-[#00FFCC]"
+          className={cn(
+            `
+              absolute right-0 left-5 mt-2
+              h-fit w-fit
+              rounded-md
+              border-2 border-[#00FFCC]
+              bg-[#1A2523]
+              p-4
+              shadow-lg
+              z-50
+            `,
+            menuClassName
+          )}
         >
           {children}
         </div>

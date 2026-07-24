@@ -19,6 +19,7 @@ import RegisterPage from "./pages/register/RegisterPage";
 import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import EditProfilePage from "./pages/profile/EditProfilePage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import BookPage from "./pages/books/BookPage";
 
 /**
  * The root application component.
@@ -42,6 +43,8 @@ export default function App() {
             {/* Public route: Discover page */}
             <Route path="/" element={<DiscoverPage />} />
 
+            {/* Public route: Individual book page */}
+            <Route path="/books/:bookId" element={<BookPage />} />
             {/* Public route: Search page */}
             <Route path="/search" element={<SearchPage />} />
 

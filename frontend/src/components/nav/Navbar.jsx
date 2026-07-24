@@ -24,7 +24,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { useUser } from "../../hooks/user/useUser.js";
-import { useBookSearch } from "../../hooks/useBookSearch.js";
+import { useBookSearch } from "../../hooks/books/useBookSearch.js";
 import { NavButton } from "./NavButton";
 import SearchResult from "../search/SearchResult.jsx";
 import Icon from "../generic/Icon.jsx";
