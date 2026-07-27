@@ -19,8 +19,8 @@
  */
 
 import { useState } from "react";
-import { useBookSearch } from "../hooks/useBookSearch";
-import { BookCard } from "../components/BookCard";
+import { useBookSearch } from "../hooks/books/useBookSearch";
+import { BookCard } from "../components/books/BookCard";
 import SearchBar from "../components/search/SearchBar";
 import { GENRES, GENRE_LABELS } from "../data/mockBook";
 
@@ -36,7 +36,7 @@ export function SearchPage() {
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("all");
 
-  const { results, loading } = useBookSearch(query, genre);
+  const { results, loading, error } = useBookSearch(query, genre);
 
   return (
     <div className="min-h-screen bg-[#0f0f0f]">
@@ -75,6 +75,12 @@ export function SearchPage() {
             </button>
           ))}
         </div>
+
+        {error && (
+        <div className="mb-4 rounded-lg border border-secondary bg-error-bg px-4 py-3 text-sm text-error-text">
+          {error}
+        </div>
+        )}
 
         {/* Status message */}
         <p className="text-xs text-[#444] mb-5">

@@ -16,7 +16,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import LoginPage from "../../pages/login/LoginPage"
+import LoginPage from "../../pages/login/LoginPage.jsx"
 import "@testing-library/jest-dom/vitest";
 
 // Mock functions allow each test to verify authentication and navigation calls
