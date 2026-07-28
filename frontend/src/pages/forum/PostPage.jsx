@@ -1,31 +1,75 @@
+/**
+ * PostPage.jsx
+ *
+ * Full thread view page. Handles:
+ * - Loading thread and book metadata
+ * - Spoiler‑controlled content display
+ * - Editing thread title/content/spoiler flag (owner only)
+ * - Deleting a thread with confirmation modal
+ * - Rendering comments + nested replies
+ *
+ * Dependencies:
+ * - useAuth: Provides authenticated user + token
+ * - getThreadById / updateThread / deleteThread: Thread CRUD operations
+ * - getBookById: Fetches book metadata
+ * - PostHeader: Book and thread header section
+ * - PostContent: Thread body and edit/delete controls
+ * - CommentSection: Reply tree and reply creation
+ * - GenericModal: Confirmation modal for deletion
+ */
+
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuth.js";
-import { format } from "date-fns";
-import { getThreadById } from "../../api/discussion/discussionService.js";
+import {
+    getThreadById,
+    updateThread,
+    deleteThread
+} from "../../api/discussion/discussionService.js";
 import { getBookById } from "../../api/books/bookService.js";
-import Icon from "../../components/generic/Icon.jsx";
-import GenericButton from "../../components/generic/GenericButton.jsx";
-import CommentSection from "./components/CommentSection.jsx";
+
+import GenericModal from "../../components/generic/GenericModal.jsx";
+import CommentSection from "./components/comments/CommentSection.jsx";
+import PostHeader from "./components/posts/PostHeader.jsx";
+import PostContent from "./components/posts/PostContent.jsx";
 
 export default function PostPage() {
-    const { user } = useAuth();
+    const navigate = useNavigate();
+    const { user, token } = useAuth();
     const { threadId } = useParams();
+
     const [thread, setThread] = useState(null);
     const [book, setBook] = useState(null);
+
     const [showSpoilers, setShowSpoilers] = useState(false);
 
+    // Editing state
+    const [isEditing, setIsEditing] = useState(false);
+    const [editTitle, setEditTitle] = useState("");
+       const [editContent, setEditContent] = useState("");
+    const [editSpoilers, setEditSpoilers] = useState(false);
 
-    // Load thread
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    /**
+     * Load thread metadata.
+     */
     useEffect(() => {
         async function loadThread() {
             const threadRes = await getThreadById(threadId);
             setThread(threadRes.data);
+
+            // Pre-fill editing fields
+            setEditTitle(threadRes.data.title);
+            setEditContent(threadRes.data.content);
+            setEditSpoilers(threadRes.data.has_spoilers);
         }
         loadThread();
     }, [threadId]);
 
-    // Load book once thread is ready
+    /**
+     * Load book metadata once thread is available.
+     */
     useEffect(() => {
         if (!thread) return;
 
@@ -37,6 +81,29 @@ export default function PostPage() {
         loadBook();
     }, [thread]);
 
+    /**
+     * Save edited thread content.
+     */
+    async function handleSaveEdit() {
+        const res = await updateThread(
+            token,
+            threadId,
+            editTitle,
+            editContent,
+            editSpoilers
+        );
+
+        setThread(res.data);
+        setIsEditing(false);
+    }
+
+    /**
+     * Delete thread and redirect.
+     */
+    async function handleDelete() {
+        await deleteThread(token, threadId);
+        navigate("/forums");
+    }
 
     if (!thread || !book) {
         return (
@@ -48,78 +115,58 @@ export default function PostPage() {
 
     return (
         <div className="max-w-4xl mx-auto px-6 py-12">
-            <title>{book.title} | {thread.author}</title>
-
             <p className="text-sm text-[#7E7272] mb-2">COMMUNITY</p>
 
-            {/* Post Information */}
-            <div className="flex flex-row">
-                <img
-                    className="w-28 h-auto rounded-lg mr-3"
-                    src={book.cover_image}
-                    alt={`Book cover for ${book.title}`}
-                />
+            <PostHeader
+                book={book}
+                thread={thread}
+                user={user}
+                showSpoilers={showSpoilers}
+                setShowSpoilers={setShowSpoilers}
+            />
 
-                <div className="m-3">
-                    <p className="text-sm text-[#7E7272]">
-                        {book.title} | {book.author}
-                    </p>
-
-                    <h2 className="mt-2 text-2xl text-[#C6C1B3] font-bold">
-                        {thread.title}
-                    </h2>
-
-                    <h4 className="text-sm text-[#7E7272]">by {thread.author}</h4>
-                    <p className="text-sm mt-1 text-[#7E7272]/80">
-                        {format(thread.created_at, "MMMM dd, yyy")}
-                    </p>
+            {/* Tags */}
+            {thread.tags && thread.tags.length > 0 && (
+                <div className="mt-5 flex flex-wrap gap-2">
+                    {thread.tags.map(tag => (
+                        <span
+                            key={tag.id}
+                            className="px-3 py-1 rounded-full text-xs bg-[#2A4A45] text-[#C6C1B3] border border-[#3A4A45]"
+                        >
+                            {tag.name}
+                        </span>
+                    ))}
                 </div>
-            </div>
-
-            {/* Spoilers warning */}
-            {thread.has_spoilers && user.id !== thread.user_id && (
-                <GenericButton
-                    variant="spoilers"
-                    className="py-2 px-3 mt-5"
-                    onClick={() => setShowSpoilers(prev => !prev)}
-                >
-                    {showSpoilers ? "Hide Spoilers" : "Reveal Spoilers"}
-                </GenericButton>
             )}
 
-
-            {/* Post Content */}
-            <div className="relative bg-[#170E0F/65] border border-[#727C7E] w-full h-fit rounded-lg mt-5">
-                <p
-                    className={`text-[#C6C1B3] p-5 ${thread.has_spoilers && user.id !== thread.user_id && !showSpoilers ? "blur-sm" : ""
-                        }`}
-                >
-                    {thread.content}
-                </p>
-
-                <div className="m-3 flex gap-3">
-                    <div className="rounded-full text-xs py-2 px-3 bg-transparent border-2 border-generic-button-ghost-border">
-                        X Comments
-                    </div>
-
-                    <div className="rounded-full text-xs py-2 px-3 bg-transparent border-2 border-generic-button-ghost-border">
-                        X Likes
-                    </div>
-                </div>
-
-
-                {/* Edit/Delete icons for post owner */}
-                {user.id === thread.user_id && (
-                    <div className="absolute bottom-3 right-3 bg-transparent backdrop-blur-sm 
-                    border border-[#727C7E] rounded-full px-3 py-1 flex gap-3 items-center">
-                        <Icon className="text-[#3A2A2A] text-sm">edit</Icon>
-                        <Icon className="text-[#3A2A2A] text-sm">delete</Icon>
-                    </div>
-                )}
-            </div>
+            <PostContent
+                thread={thread}
+                user={user}
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
+                editTitle={editTitle}
+                editContent={editContent}
+                editSpoilers={editSpoilers}
+                setEditTitle={setEditTitle}
+                setEditContent={setEditContent}
+                setEditSpoilers={setEditSpoilers}
+                onSaveEdit={handleSaveEdit}
+                onDelete={() => setShowDeleteModal(true)}
+                showSpoilers={showSpoilers}
+            />
 
             <CommentSection thread={thread} />
 
+            {showDeleteModal && (
+                <GenericModal
+                    title="Delete Discussion?"
+                    message={true}
+                    confirmLabel="Delete"
+                    cancelLabel="Cancel"
+                    onConfirm={handleDelete}
+                    onCancel={() => setShowDeleteModal(false)}
+                />
+            )}
         </div>
     );
 }

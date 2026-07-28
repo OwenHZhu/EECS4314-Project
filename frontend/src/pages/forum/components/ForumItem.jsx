@@ -1,29 +1,20 @@
 /**
- * ./pages/forum/ForumItem.jsx
+ * ForumItem.jsx
  *
- * A reusable UI block for displaying a forum thread preview.
- * Built for compact layouts, subtle borders, and clean typography.
+ * Displays a single thread preview inside the forum list. Shows:
+ * - Book title (fetched dynamically)
+ * - Thread title + author
+ * - Posted date
+ * - Up to three tags
  *
- * @param {Object} props
- * @param {Object} props.thread - Thread metadata.
- * @param {string|number} props.thread.id - Unique thread identifier.
- * @param {string} props.thread.title - Title of the thread.
- * @param {string} props.thread.author - Author of the thread.
- * @param {number} props.thread.replies - Number of replies.
- * @param {number} props.thread.likes - Number of views.
- * @param {string} props.thread.datePosted - Last active timestamp.
+ * Clicking the item navigates to the thread detail page.
  *
- * @param {Object} [props.book] - Optional book associated with the thread.
- * @param {string} props.book.title - Book title.
- * @param {string} props.book.spineColor - Color used for the indicator dot.
+ * Props:
+ * @param {object} thread - Thread metadata (id, title, author, book_id, tags, datePosted)
  *
- * @param {Object} props.cat - Category styling preset.
- * @param {string} props.cat.label - Category label text.
- * @param {string} props.cat.bg - Background color for the badge.
- * @param {string} props.cat.text - Text color for the badge.
- * @param {string} props.cat.border - Border color for the badge.
- *
- * @returns {JSX.Element} A styled discussion preview card.
+ * Dependencies:
+ * - getBookById: Fetches book metadata for the thread
+ * - Link: Navigation to thread detail page
  */
 
 import { useState, useEffect } from "react";
@@ -33,6 +24,9 @@ import { getBookById } from "../../../api/books/bookService";
 export default function ForumItem({ thread }) {
     const [book, setBook] = useState(null);
 
+    /**
+     * Load book metadata for the thread.
+     */
     useEffect(() => {
         async function loadBook() {
             const res = await getBookById(thread.book_id);
@@ -49,54 +43,48 @@ export default function ForumItem({ thread }) {
         );
     }
 
+    const topTags = thread.tags?.slice(0, 3) || [];
+
     return (
         <Link to={`/forums/${thread.id}`}>
             <div
-                className="bg-[#141414] border border-[#1e1e1e] rounded-xl px-4 py-3.5 hover:border-[#2a2a2a] transition-colors cursor-pointer flex items-center gap-4"
+                className="bg-[#171615] border border-[#1E3C36] rounded-xl px-4 py-3.5
+                hover:border-[#7a2635] transition-colors cursor-pointer
+                flex items-center gap-4"
             >
-
-                {/* Thread content */}
+                {/* Left: Book and thread info */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-
-                        {/* Book title */}
-                        {book && (
-                            <span className="text-[11px] text-[#444] shrink-0">
-                                {book.title}
-                            </span>
-                        )}
+                        <span className="text-[11px] text-[#d7cfcf] shrink-0">
+                            {book.title}
+                        </span>
                     </div>
 
-                    {/* Thread title */}
-                    <p className="text-[13px] text-[#ccc] truncate">{thread.title}</p>
+                    <p className="text-[13px] text-[#f3eeeb] truncate">
+                        {thread.title}
+                    </p>
 
-                    {/* Thread author */}
-                    <p className="text-[11px] text-[#3a3a3a] mt-0.5">by {thread.author}</p>
+                    <p className="text-[11px] text-[#c4a3a3] mt-0.5">
+                        by {thread.author}
+                    </p>
                 </div>
 
-                {/* Thread stats */}
+                {/* Right: Date and tags */}
                 <div className="flex flex-col items-end shrink-0 text-right gap-2">
+                    <p className="text-[11px] text-[#b07a7a]">
+                        {thread.datePosted}
+                    </p>
 
-                    {/* Date */}
-                    <p className="text-[11px] text-[#333]">{thread.datePosted}</p>
-
-                    {/* Replies and Likes row */}
-                    <div className="flex gap-5">
-                        <div className="flex flex-col text-center">
-                            <p className="text-[13px] font-medium text-[#888]">
-                                X
-                            </p>
-                            <p className="text-[10px] text-[#333]">replies</p>
-                        </div>
-
-                        <div className="flex flex-col text-center">
-                            <p className="text-[13px] font-medium text-[#888]">
-                                X
-                            </p>
-                            <p className="text-[10px] text-[#333]">likes</p>
-                        </div>
+                    <div className="flex flex-col items-end gap-1">
+                        {topTags.map(tag => (
+                            <span
+                                key={tag.id}
+                                className="text-[10px] px-2 py-1 rounded-lg border border-secondary text-tertiary hover:text-primary transition"
+                            >
+                                {tag.name}
+                            </span>
+                        ))}
                     </div>
-
                 </div>
             </div>
         </Link>

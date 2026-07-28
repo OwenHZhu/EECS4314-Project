@@ -1,9 +1,29 @@
+/**
+ * CreatePostPage.jsx
+ *
+ * Page for creating a new discussion thread for a specific book.
+ * Handles:
+ * - Loading book metadata
+ * - Title/content/spoiler inputs
+ * - Tag selection
+ * - Form validation and submission
+ * - Redirecting to the newly created thread
+ *
+ * Dependencies:
+ * - useAuth: Provides JWT token for authenticated requests
+ * - getBookById: Fetches book metadata
+ * - postThread: Creates a new discussion thread
+ * - TagSelector: Tag selection UI
+ * - GenericButton: Styled button component
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuth.js";
 import { getBookById } from "../../api/books/bookService.js";
 import { postThread } from "../../api/discussion/discussionService.js";
 import GenericButton from "../../components/generic/GenericButton.jsx";
+import TagSelector from "./components/posts/TagSelector.jsx";
 
 export default function CreatePostPage() {
     const navigate = useNavigate();
@@ -19,7 +39,11 @@ export default function CreatePostPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Load book info
+    const [selectedTags, setSelectedTags] = useState([]);
+
+    /**
+     * Load book metadata for the page header.
+     */
     useEffect(() => {
         async function loadBook() {
             try {
@@ -32,6 +56,11 @@ export default function CreatePostPage() {
         loadBook();
     }, [bookId]);
 
+    /**
+     * Submit the new thread.
+     *
+     * @param {Event} e
+     */
     async function handleSubmit(e) {
         e.preventDefault();
         setError("");
@@ -50,7 +79,7 @@ export default function CreatePostPage() {
                 content,
                 bookId,
                 hasSpoilers,
-                [] // tags (empty for now)
+                selectedTags.map(t => t.name)
             );
 
             navigate(`/forums/${res.data.id}`);
@@ -94,6 +123,12 @@ export default function CreatePostPage() {
                     <p className="text-xs text-[#7E7272]/80">{book.author}</p>
                 </div>
             </div>
+
+            {/* Tag Selector */}
+            <TagSelector
+                selectedTags={selectedTags}
+                setSelectedTags={setSelectedTags}
+            />
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="mt-8 space-y-6">
