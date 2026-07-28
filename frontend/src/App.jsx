@@ -15,6 +15,7 @@ import ForumsPage from "./pages/forum/ForumsPage";
 import PostPage from "./pages/forum/PostPage";
 import CreatePostPage from "./pages/forum/CreatePostPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
+import UserPostsPage from "./pages/profile/UserPostsPage";
 import { SearchPage } from "./pages/SearchPage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
@@ -47,6 +48,7 @@ export default function App() {
 
             {/* Public route: Individual book page */}
             <Route path="/books/:bookId" element={<BookPage />} />
+
             {/* Public route: Search page */}
             <Route path="/search" element={<SearchPage />} />
 
@@ -63,6 +65,9 @@ export default function App() {
 
             {/* Public route: Individual posts */}
             <Route path="/forums/:threadId" element={<PostPage />} />
+
+            {/* Public route: User's posts */}
+            <Route path="/profile/posts" element={<UserPostsPage />} />
 
             {/* Protected route: Create posts */}
             <Route path="/forums/create/:bookId"
