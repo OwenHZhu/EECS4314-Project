@@ -26,6 +26,7 @@ from discussion_service.services.discussion_service import (
 	toggle_thread_like,
 	update_reply,
 	update_thread,
+	list_popular_threads,
 )
 from auth_service.utils.jwt import get_current_user_id
 
@@ -78,6 +79,16 @@ def read_forum_threads(book_id: str | None = Query(default=None)):
 	omitted entirely.
 	"""
 	result = list_threads(book_id=book_id)
+	return result["data"]
+
+@router.get("/threads/popular", response_model=list[ThreadPost])
+def read_popular_threads(limit: int = Query(default=10, ge=1, le=100)):
+	"""
+	Public read — no auth required. Returns the most popular threads
+	across all books, sorted by number of likes. The `limit` query
+	parameter controls how many threads to return (default 10, max 100).
+	"""
+	result = list_popular_threads(limit=limit)
 	return result["data"]
 
 
@@ -209,3 +220,4 @@ def like_forum_reply(reply_id: str, user_id: str = Depends(get_current_user_id))
 	"""Same as like_forum_thread — user_id comes from the verified token."""
 	result = toggle_reply_like(user_id, reply_id)
 	return result["data"]
+

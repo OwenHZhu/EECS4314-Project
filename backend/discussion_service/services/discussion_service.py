@@ -376,6 +376,53 @@ def delete_thread(thread_id: str, user_id: str) -> dict:
 
 	return {"success": True, "message": "Thread deleted successfully", "data": None}
 
+def list_popular_threads(limit: int = 10) -> dict:
+	"""
+	Lists the most popular discussion threads using both like count and
+	recent activity so newer threads get a boost without ignoring
+	existing popularity.
+
+	Args:
+		limit: The maximum number of threads to return.
+
+	Returns:
+		{ success: True, message: str, data: list[ThreadPost] }
+	"""
+	res = (
+		supabase.table(DISCUSSION_THREADS_TABLE)
+		.select(f"*, {DISCUSSION_THREAD_LIKES_TABLE}(thread_id, user_id)")
+		.execute()
+	)
+
+	if not res.data:
+		return {"success": True, "message": "No popular threads found", "data": []}
+
+	thread_records = cast(list[ThreadRecord], res.data)
+	now = datetime.now(timezone.utc)
+	scored_threads: list[tuple[float, ThreadRecord]] = []
+
+	for thread in thread_records:
+		likes = thread.get("DISCUSSION_THREAD_LIKES_TABLE") or []
+		like_count = len(likes) if isinstance(likes, list) else 0
+		activity_timestamp = thread.get("updated_at") or thread.get("created_at")
+		activity_dt = parse_datetime(activity_timestamp) if activity_timestamp else now
+		age_days = max(0.0, (now - activity_dt).total_seconds() / 86400)
+		recency_boost = max(0.0, 30.0 - age_days) * 2.0
+		score = (like_count * 10.0) + recency_boost
+		scored_threads.append((score, thread))
+
+	scored_threads.sort(key=lambda item: item[0], reverse=True)
+	ranked_threads = [thread for _, thread in scored_threads[:limit]]
+	thread_ids = [str(item["id"]) for item in ranked_threads if item.get("id") is not None]
+	tags_by_thread = get_thread_tags(thread_ids)
+
+	data = [
+		build_thread(thread, tags=[build_tag(r) for r in tags_by_thread.get(str(thread["id"]), [])])
+		for thread in ranked_threads
+	]
+
+	return {"success": True, "message": "Popular threads fetched successfully", "data": data}
+
 
 def create_reply(thread_id: str, user_id: str, reply: ReplyCreate) -> dict:
 	"""
