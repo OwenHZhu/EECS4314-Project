@@ -16,7 +16,7 @@ import PostPage from "./pages/forum/PostPage";
 import CreatePostPage from "./pages/forum/CreatePostPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import UserPostsPage from "./pages/profile/UserPostsPage";
-import { SearchPage } from "./pages/SearchPage";
+import { SearchPage } from "./pages/search/SearchPage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
