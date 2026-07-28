@@ -1,16 +1,19 @@
 // utils/profileStats.js
 
 export function computeProfileStats(library, threads) {
-  const finished = library.filter(e => e.status === "read").length;
-  const reading = library.filter(e => e.status === "reading").length;
+  const safeLibrary = Array.isArray(library) ? library : [];
+  const safeThreads = Array.isArray(threads) ? threads : [];
 
-  const rated = library.filter(e => typeof e.rating === "number");
+  const finished = safeLibrary.filter(e => e.status === "read").length;
+  const reading = safeLibrary.filter(e => e.status === "reading").length;
+
+  const rated = safeLibrary.filter(e => typeof e.rating === "number");
   const avgRating =
     rated.length > 0
       ? (rated.reduce((sum, e) => sum + e.rating, 0) / rated.length).toFixed(1)
       : "0.0";
 
-  const postCount = threads.length;
+  const postCount = safeThreads.length;
 
   return [
     { label: "Books Finished", value: finished },

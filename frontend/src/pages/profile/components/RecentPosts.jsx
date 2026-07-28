@@ -28,15 +28,17 @@ export default function RecentPosts() {
       try {
         const res = await getUserActivity(user.id);
 
-        if (res?.success) {
+        if (res?.success && Array.isArray(res.data?.threads)) {
           const sorted = [...res.data.threads].sort(
             (a, b) => new Date(b.created_at) - new Date(a.created_at)
           );
-
           setThreads(sorted);
+        } else {
+          setThreads([]);
         }
       } catch (err) {
         console.log("Failed to load user posts:", err);
+        setThreads([]);
       } finally {
         setLoading(false);
       }
@@ -45,46 +47,53 @@ export default function RecentPosts() {
     loadPosts();
   }, [user.id]);
 
+  const hasPosts = threads.length > 0;
+
   return (
     <div
-      className="
+      className={`
         bg-[#111] border border-[#1e1e1e] rounded-xl p-4
-        h-[400px] overflow-y-auto custom-scrollbar
-      "
+        overflow-y-auto custom-scrollbar
+        ${hasPosts ? "h-[400px]" : "h-auto"}
+      `}
     >
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-primary">
           Recent Posts
         </h2>
 
-        <Link
-          to="/profile/posts"
-          className="text-xs text-[#b07a7a] hover:text-primary transition-colors"
-        >
-          View more
-        </Link>
+        {hasPosts && (
+          <Link
+            to="/profile/posts"
+            className="text-xs text-[#b07a7a] hover:text-primary transition-colors"
+          >
+            View more
+          </Link>
+        )}
       </div>
 
       {loading && (
         <p className="text-xs text-[#777]">Loading posts...</p>
       )}
 
-      {!loading && threads.length === 0 && (
+      {!loading && !hasPosts && (
         <p className="text-xs text-[#777]">No posts yet.</p>
       )}
 
-      <div className="flex flex-col gap-3">
-        {threads.map((thread) => (
-          <ForumItem
-            key={thread.id}
-            thread={{
-              ...thread,
-              author: user.username,
-              datePosted: new Date(thread.created_at).toLocaleDateString(),
-            }}
-          />
-        ))}
-      </div>
+      {hasPosts && (
+        <div className="flex flex-col gap-3">
+          {threads.map((thread) => (
+            <ForumItem
+              key={thread.id}
+              thread={{
+                ...thread,
+                author: user.username,
+                datePosted: new Date(thread.created_at).toLocaleDateString(),
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
