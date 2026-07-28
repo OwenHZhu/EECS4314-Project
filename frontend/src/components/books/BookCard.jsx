@@ -1,24 +1,18 @@
-/**
- * ./components/books/BookCard.jsx
- *
- * Displays a clickable book card for the Discover page.
- *
- * The component is presentational. It receives book data and an optional
- * click handler from its parent. The parent decides whether clicking the card
- * opens a modal, navigates to a page, or performs another action.
- */
+// components/books/BookCard.jsx
 
 import Icon from "../generic/Icon";
 import RatingStars from "../generic/RatingStars";
-import { GENRE_LABELS } from "../../data/mockBook";
 
 export function BookCard({ book, onClick }) {
+
   const genreLabel = Array.isArray(book.genre)
     ? book.genre[0]
-    : GENRE_LABELS[book.genre] || book.genre;
+    : book.genre || "Unknown";
 
   const ratingAverage =
-    book.library_stats?.ratings?.average ?? book.rating ?? 0;
+    book.library_stats?.ratings?.average ??
+    book.rating ??
+    0;
 
   return (
     <button
@@ -100,6 +94,7 @@ export function BookCard({ book, onClick }) {
             </p>
           </div>
 
+          {/* Icons */}
           <div className="flex shrink-0 items-center gap-0.5 pt-0.5">
             <Icon className="text-[17px] text-book-favourite">
               favorite_border
@@ -115,6 +110,7 @@ export function BookCard({ book, onClick }) {
           </div>
         </div>
 
+        {/* Rating */}
         <div className="mt-2 flex items-center gap-1">
           <RatingStars
             value={ratingAverage}
@@ -127,6 +123,7 @@ export function BookCard({ book, onClick }) {
           </span>
         </div>
 
+        {/* Genre */}
         {genreLabel && (
           <span
             className="

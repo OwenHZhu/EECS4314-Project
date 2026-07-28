@@ -29,8 +29,8 @@ import { useNavigate } from "react-router-dom";
 
 import Dropdown from "../../../components/generic/Dropdown.jsx";
 import Icon from "../../../components/generic/Icon.jsx";
-import DeleteAccountModal from "./DeleteAccountModal.jsx";
-import DiscardChangesModal from "./DiscardChangesModal.jsx"
+import DeleteAccountModal from "./modals/DeleteAccountModal.jsx";
+import DiscardChangesModal from "./modals/DiscardChangesModal.jsx"
 
 export default function EditProfileHeader() {
     const navigate = useNavigate();

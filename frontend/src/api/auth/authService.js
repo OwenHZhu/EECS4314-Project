@@ -19,6 +19,7 @@
  * Profile Picture Endpoints:
  * - PUT    users/profile-picture          
  * - GET    users/profile-picture/:filename 
+ * - GET    users/:userId
  */
 
 import authClient from "./authClient.js";
@@ -120,4 +121,14 @@ export function changePassword(current_password, new_password) {
  */
 export function deleteAccount() {
     return authClient.delete("auth/me");
+}
+
+export async function getUser(userId) {
+    try {
+        const res = await authClient.get(`users/${userId}`);
+        return { success: true, data: res.data };
+    }
+    catch (err) {
+        console.log(err.response);
+    }
 }

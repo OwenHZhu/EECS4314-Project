@@ -14,8 +14,8 @@
  */
 
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../hooks/auth/useAuth";
-import GenericModal from "../../../components/generic/GenericModal";
+import { useAuth } from "../../../../hooks/auth/useAuth";
+import GenericModal from "../../../../components/generic/GenericModal";
 
 export default function DeleteAccountModal({ setShowDelete }) {
     const navigate = useNavigate(); 

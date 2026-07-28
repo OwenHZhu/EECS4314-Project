@@ -2,33 +2,49 @@
  * SearchResult.jsx
  *
  * Renders a single search result item for the navbar or search page.
- * Displays book title, author, genre, and a placeholder cover.
+ * Displays book title, author, a single genre, and the book's cover image.
+ * Clicking the result navigates to the individual book page.
  *
  * Props:
- * @param {object} book - Book data containing title, author, and genre.
+ * @param {object} book - Book data containing id, title, author, cover_image, and genre array.
  *
  * Dependencies:
- * - None (pure presentational component)
+ * - Link: Enables navigation to the book page
  */
 
- /**
-  * SearchResult
-  *
-  * Displays a compact book result row with cover placeholder,
-  * title/author text, and genre label.
-  *
-  * @param {object} props
-  * @param {object} props.book - Book object with title, author, and genre.
-  * @returns {JSX.Element}
-  */
-export default function SearchResult({ book }) {
-  return (
-    <div className="flex items-center justify-between px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer">
+import { Link } from "react-router-dom";
 
+/**
+ * SearchResult
+ *
+ * Displays a compact book result row with cover image,
+ * title/author text, and a single genre label. The entire row is clickable
+ * and navigates to `/books/:bookId`.
+ *
+ * @param {object} props
+ * @param {object} props.book - Book object with id, title, author, cover_image, and genre array.
+ * @returns {JSX.Element}
+ */
+export default function SearchResult({ book }) {
+  // Only display the first genre to avoid overcrowding
+  const primaryGenre =
+    Array.isArray(book.genre) && book.genre.length > 0
+      ? book.genre[0]
+      : "Unknown";
+
+  return (
+    <Link
+      to={`/books/${book.id}`}
+      className="flex items-center justify-between px-3 py-2 hover:bg-[#1a1a1a] cursor-pointer"
+    >
       {/* Left: Cover + title/author */}
       <div className="flex items-center gap-3">
-        {/* Placeholder cover */}
-        <div className="w-8 h-12 bg-[#2a2a2a] rounded-sm" />
+        {/* Cover image */}
+        <img
+          src={book.cover_image}
+          alt={`${book.title} cover`}
+          className="w-8 h-12 object-cover rounded-sm"
+        />
 
         {/* Title + author */}
         <div className="flex flex-col">
@@ -43,8 +59,8 @@ export default function SearchResult({ book }) {
 
       {/* Right: Genre */}
       <span className="text-[10px] text-tertiary uppercase tracking-wide">
-        {book.genre}
+        {primaryGenre}
       </span>
-    </div>
+    </Link>
   );
 }
