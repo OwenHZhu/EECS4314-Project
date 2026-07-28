@@ -17,7 +17,6 @@
  * - CommentSection: Reply tree and reply creation
  * - GenericModal: Confirmation modal for deletion
  */
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuth.js";
@@ -27,6 +26,7 @@ import {
     deleteThread
 } from "../../api/discussion/discussionService.js";
 import { getBookById } from "../../api/books/bookService.js";
+import { getUser } from "../../api/auth/authService.js";
 
 import GenericModal from "../../components/generic/GenericModal.jsx";
 import CommentSection from "./components/comments/CommentSection.jsx";
@@ -40,13 +40,14 @@ export default function PostPage() {
 
     const [thread, setThread] = useState(null);
     const [book, setBook] = useState(null);
+    const [author, setAuthor] = useState(null);
 
     const [showSpoilers, setShowSpoilers] = useState(false);
 
     // Editing state
     const [isEditing, setIsEditing] = useState(false);
     const [editTitle, setEditTitle] = useState("");
-       const [editContent, setEditContent] = useState("");
+    const [editContent, setEditContent] = useState("");
     const [editSpoilers, setEditSpoilers] = useState(false);
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -82,6 +83,22 @@ export default function PostPage() {
     }, [thread]);
 
     /**
+     * Load thread author once thread is available.
+     */
+    useEffect(() => {
+        if (!thread) return;
+
+        async function loadAuthor() {
+            const res = await getUser(thread.user_id);
+            if (res?.success) {
+                setAuthor(res.data);
+            }
+        }
+
+        loadAuthor();
+    }, [thread]);
+
+    /**
      * Save edited thread content.
      */
     async function handleSaveEdit() {
@@ -105,7 +122,7 @@ export default function PostPage() {
         navigate("/forums");
     }
 
-    if (!thread || !book) {
+    if (!thread || !book || !author) {
         return (
             <div className="max-w-4xl mx-auto px-6 py-12">
                 <p className="text-center text-[#888]">Loading post...</p>
@@ -120,6 +137,7 @@ export default function PostPage() {
             <PostHeader
                 book={book}
                 thread={thread}
+                author={author}
                 user={user}
                 showSpoilers={showSpoilers}
                 setShowSpoilers={setShowSpoilers}

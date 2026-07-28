@@ -1,32 +1,12 @@
-/**
- * ForumItem.jsx
- *
- * Displays a single thread preview inside the forum list. Shows:
- * - Book title (fetched dynamically)
- * - Thread title + author
- * - Posted date
- * - Up to three tags
- *
- * Clicking the item navigates to the thread detail page.
- *
- * Props:
- * @param {object} thread - Thread metadata (id, title, author, book_id, tags, datePosted)
- *
- * Dependencies:
- * - getBookById: Fetches book metadata for the thread
- * - Link: Navigation to thread detail page
- */
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getBookById } from "../../../api/books/bookService";
+import { getUser } from "../../../api/auth/authService";
 
 export default function ForumItem({ thread }) {
     const [book, setBook] = useState(null);
+    const [author, setAuthor] = useState(null);
 
-    /**
-     * Load book metadata for the thread.
-     */
     useEffect(() => {
         async function loadBook() {
             const res = await getBookById(thread.book_id);
@@ -35,10 +15,20 @@ export default function ForumItem({ thread }) {
         loadBook();
     }, [thread.book_id]);
 
-    if (!book) {
+    useEffect(() => {
+        async function loadAuthor() {
+            const res = await getUser(thread.user_id);
+            if (res?.success) {
+                setAuthor(res.data);
+            }
+        }
+        loadAuthor();
+    }, [thread.user_id]);
+
+    if (!book || !author) {
         return (
             <div className="text-xs p-4 border rounded text-[#444]">
-                Loading book info...
+                Loading thread info...
             </div>
         );
     }
@@ -47,12 +37,10 @@ export default function ForumItem({ thread }) {
 
     return (
         <Link to={`/forums/${thread.id}`}>
-            <div
-                className="bg-[#171615] border border-[#1E3C36] rounded-xl px-4 py-3.5
+            <div className="bg-[#171615] border border-[#1E3C36] rounded-xl px-4 py-3.5
                 hover:border-[#7a2635] transition-colors cursor-pointer
                 flex items-center gap-4"
             >
-                {/* Left: Book and thread info */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="text-[11px] text-[#d7cfcf] shrink-0">
@@ -65,11 +53,10 @@ export default function ForumItem({ thread }) {
                     </p>
 
                     <p className="text-[11px] text-[#c4a3a3] mt-0.5">
-                        by {thread.author}
+                        by {author.username}
                     </p>
                 </div>
 
-                {/* Right: Date and tags */}
                 <div className="flex flex-col items-end shrink-0 text-right gap-2">
                     <p className="text-[11px] text-[#b07a7a]">
                         {thread.datePosted}

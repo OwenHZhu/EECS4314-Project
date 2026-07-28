@@ -1,24 +1,3 @@
-/**
- * CommentSection.jsx
- *
- * Handles all reply-related functionality for a discussion thread, including:
- * - Fetching nested replies
- * - Creating new top-level replies
- * - Creating child replies (threaded)
- * - Editing existing replies
- * - Deleting replies with confirmation modal
- *
- * Props:
- * @param {object} thread - The active discussion thread (id, title, etc.)
- *
- * Dependencies:
- * - useAuth: Provides authenticated user + token
- * - discussionService: Reply CRUD operations (getReplies, postReply, updateReply, deleteReply)
- * - ReplyList: Renders nested replies recursively
- * - ReplyInput: Controlled input for new replies
- * - DeleteReplyModal: Confirmation modal for deleting replies
- */
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../../hooks/auth/useAuth.js";
@@ -29,39 +8,69 @@ import {
     deleteReply
 } from "../../../../api/discussion/discussionService.js";
 
+import { getUser } from "../../../../api/auth/authService.js";
+
 import ReplyList from "../replies/ReplyList.jsx";
 import ReplyInput from "../replies/ReplyInput.jsx";
 import DeleteReplyModal from "../modal/DeleteReplyModal.jsx";
 
-/**
- * CommentSection
- *
- * Manages reply loading, creation, editing, deletion, and nested threading.
- *
- * @param {object} props
- * @param {object} props.thread
- * @returns {JSX.Element}
- */
 export default function CommentSection({ thread }) {
     const { user, token } = useAuth();
 
-    // Loaded replies
     const [replies, setReplies] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // New top-level reply
     const [newReply, setNewReply] = useState("");
-
-    // Child reply (nested)
     const [childReply, setChildReply] = useState("");
     const [activeParentId, setActiveParentId] = useState(null);
 
-    // Editing state
     const [editingReplyId, setEditingReplyId] = useState(null);
     const [editingContent, setEditingContent] = useState("");
 
-    // Delete confirmation modal
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    // Cache user lookups to avoid duplicate requests
+    const [userCache, setUserCache] = useState({});
+
+    /**
+     * Resolve user_id → user object
+     */
+    async function resolveUser(userId) {
+        if (userCache[userId]) return userCache[userId];
+
+        const res = await getUser(userId);
+        if (res?.success) {
+            const updatedCache = { ...userCache, [userId]: res.data };
+            setUserCache(updatedCache);
+            return res.data;
+        }
+
+        return null;
+    }
+
+    /**
+     * Recursively attach user objects to replies
+     */
+    async function attachUsersToReplies(list) {
+        const resolved = [];
+
+        for (const reply of list) {
+            const author = await resolveUser(reply.user_id);
+
+            const newReply = {
+                ...reply,
+                user: author
+            };
+
+            if (reply.children && reply.children.length > 0) {
+                newReply.children = await attachUsersToReplies(reply.children);
+            }
+
+            resolved.push(newReply);
+        }
+
+        return resolved;
+    }
 
     /**
      * Load all replies for the thread (nested structure).
@@ -70,20 +79,22 @@ export default function CommentSection({ thread }) {
         async function loadReplies() {
             try {
                 const res = await getReplies(thread.id, true);
-                setReplies(res.data);
+                const rawReplies = res.data || [];
+
+                const resolvedReplies = await attachUsersToReplies(rawReplies);
+                setReplies(resolvedReplies);
             } catch (err) {
                 console.error("Failed to load replies:", err);
             } finally {
                 setLoading(false);
             }
         }
+
         loadReplies();
     }, [thread.id]);
 
     /**
      * Submit a new top-level reply.
-     *
-     * @param {Event} e
      */
     async function handleSubmit(e) {
         e.preventDefault();
@@ -91,7 +102,13 @@ export default function CommentSection({ thread }) {
 
         try {
             const res = await postReply(token, thread.id, newReply, null);
-            setReplies(prev => [...prev, res.data]);
+            const author = await resolveUser(res.data.user_id);
+
+            setReplies(prev => [
+                ...prev,
+                { ...res.data, user: author, children: [] }
+            ]);
+
             setNewReply("");
         } catch (err) {
             console.error("Failed to create reply:", err);
@@ -100,8 +117,6 @@ export default function CommentSection({ thread }) {
 
     /**
      * Submit a nested (child) reply.
-     *
-     * @param {Event} e
      */
     async function handleChildSubmit(e) {
         e.preventDefault();
@@ -109,9 +124,9 @@ export default function CommentSection({ thread }) {
 
         try {
             const res = await postReply(token, thread.id, childReply, activeParentId);
-            const newReplyObj = res.data;
+            const author = await resolveUser(res.data.user_id);
+            const newReplyObj = { ...res.data, user: author, children: [] };
 
-            // Insert reply into nested tree
             function insertReply(list) {
                 return list.map(r => {
                     if (r.id === activeParentId) {
@@ -135,39 +150,23 @@ export default function CommentSection({ thread }) {
         }
     }
 
-    /**
-     * Activate child reply input for a specific parent.
-     *
-     * @param {string} parentId
-     */
     function handleReplyClick(parentId) {
         if (!user) return;
         setActiveParentId(parentId);
         setChildReply("");
     }
 
-    /**
-     * Begin editing an existing reply.
-     *
-     * @param {object} reply
-     */
     function onEditReply(reply) {
         setEditingReplyId(reply.id);
         setEditingContent(reply.content);
     }
 
-    /**
-     * Save edited reply content.
-     *
-     * @param {Event} e
-     */
     async function onSaveEditReply(e) {
         e.preventDefault();
 
         try {
             await updateReply(token, thread.id, editingReplyId, editingContent);
 
-            // Update nested tree
             function updateTree(list) {
                 return list.map(r => {
                     if (r.id === editingReplyId) {
@@ -187,19 +186,11 @@ export default function CommentSection({ thread }) {
         }
     }
 
-    /**
-     * Trigger delete confirmation modal.
-     *
-     * @param {object} reply
-     */
     function onDeleteReply(reply) {
         setEditingReplyId(reply.id);
         setShowDeleteModal(true);
     }
 
-    /**
-     * Confirm deletion and remove reply from nested tree.
-     */
     async function confirmDeleteReply() {
         try {
             await deleteReply(token, thread.id, editingReplyId);
@@ -227,8 +218,6 @@ export default function CommentSection({ thread }) {
 
     return (
         <div className="mt-10">
-
-            {/* Top-level reply input OR login prompt */}
             {user ? (
                 <ReplyInput
                     value={newReply}
@@ -249,7 +238,6 @@ export default function CommentSection({ thread }) {
                 </div>
             )}
 
-            {/* Replies list */}
             <div className="mt-6">
                 <ReplyList
                     replies={replies}
@@ -267,7 +255,6 @@ export default function CommentSection({ thread }) {
                 />
             </div>
 
-            {/* Delete confirmation modal */}
             {showDeleteModal && (
                 <DeleteReplyModal
                     onConfirm={confirmDeleteReply}

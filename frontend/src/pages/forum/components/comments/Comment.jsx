@@ -24,16 +24,10 @@
  * - Icon: Generic icon component for avatars and action icons.
  */
 
+import { useState, useEffect } from "react";
 import Icon from "../../../../components/generic/Icon.jsx";
+import { getProfilePictureUrl } from "../../../../utils/getProfilePictureUrl.js";
 
-/**
- * Comment
- *
- * Displays a threaded comment with user info, content, and action buttons.
- * Supports inline editing and nested indentation based on `depth`.
- *
- * @returns {JSX.Element}
- */
 export default function Comment({
     user,
     created_at,
@@ -48,6 +42,22 @@ export default function Comment({
     setEditingContent,
     onSaveEdit
 }) {
+    const [profilePictureUrl, setProfilePictureUrl] = useState(null);
+
+    useEffect(() => {
+        async function loadPic() {
+            if (!user?.profile_picture) {
+                setProfilePictureUrl(null);
+                return;
+            }
+
+            const url = await getProfilePictureUrl(user.profile_picture);
+            setProfilePictureUrl(url);
+        }
+
+        loadPic();
+    }, [user?.profile_picture]);
+
     return (
         <div
             className="mb-6"
@@ -55,7 +65,15 @@ export default function Comment({
         >
             {/* User information */}
             <div className="flex flex-row items-center">
-                <Icon className="text-[#923F3F] text-4xl">account_circle</Icon>
+                {profilePictureUrl ? (
+                    <img
+                        src={profilePictureUrl}
+                        alt={`${user?.username}'s profile`}
+                        className="w-10 h-10 rounded-full object-cover"
+                    />
+                ) : (
+                    <Icon className="text-[#923F3F] text-4xl">account_circle</Icon>
+                )}
 
                 <div className="ml-2 mt-1">
                     <h4 className="text-sm text-[#998888]">

@@ -32,13 +32,13 @@ import { format } from "date-fns";
 export default function PostHeader({
     book,
     thread,
+    author,
     user,
     showSpoilers,
     setShowSpoilers
 }) {
     return (
         <div className="flex flex-row">
-            {/* Book cover */}
             <img
                 className="w-28 h-auto rounded-lg mr-3"
                 src={book.cover_image}
@@ -46,27 +46,22 @@ export default function PostHeader({
             />
 
             <div className="m-3">
-                {/* Book title + author */}
                 <p className="text-sm text-[#7E7272]">
                     {book.title} | {book.author}
                 </p>
 
-                {/* Thread title */}
                 <h2 className="mt-2 text-2xl text-[#C6C1B3] font-bold">
                     {thread.title}
                 </h2>
 
-                {/* Thread author */}
                 <h4 className="text-sm text-[#7E7272]">
-                    by {thread.author}
+                    by {author?.username}
                 </h4>
 
-                {/* Thread creation date */}
                 <p className="text-sm mt-1 text-[#7E7272]/80">
                     {format(thread.created_at, "MMMM dd, yyy")}
                 </p>
 
-                {/* Spoilers warning button */}
                 {thread.has_spoilers &&
                     user &&
                     user.id !== thread.user_id && (
