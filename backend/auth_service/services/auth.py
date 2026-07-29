@@ -43,7 +43,7 @@ from shared.db import supabase
 from auth_service.utils.security import hash_password, verify_password
 from auth_service.utils.jwt import create_token, blacklist_token
 from auth_service.utils.profile_pics import delete_profile_picture, replace_profile_picture
-from auth_service.schemas.user import UserRegister, UserLogin, UserAccount, UserUpdate, UserUpdatePassword
+from auth_service.schemas.user import UserRegister, UserLogin, UserAccount, UserUpdate, UserUpdatePassword, PublicUser
 from auth_service.utils.profile_pics import validate_image, delete_profile_picture
 from auth_service.utils.record import UserRecord
 
@@ -202,6 +202,33 @@ def get_me(user_id: str) -> dict:
             profile_picture=user.get("profile_picture"),
             created_at=datetime.fromisoformat(user["created_at"])
         )
+    }
+    
+def get_user_by_id(user_id: str) -> dict:
+    """
+    Fetch a public user profile by ID.
+
+    """
+
+    res = supabase.table("users").select("*").eq("id", user_id).limit(1).execute()
+
+    if not res.data:
+        return {"success": False, "message": "User not found", "data": None}
+
+    user = cast(list[UserRecord], res.data)[0]
+
+    public_user = PublicUser(
+        id=user["id"],
+        username=user["username"],
+        bio=user.get("bio") or "",
+        profile_picture=user.get("profile_picture"),
+        created_at=datetime.fromisoformat(user["created_at"])
+    )
+
+    return {
+        "success": True,
+        "message": "User fetched successfully",
+        "data": public_user
     }
 
 

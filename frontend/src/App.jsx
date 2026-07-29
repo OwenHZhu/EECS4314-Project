@@ -11,14 +11,18 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/nav/Navbar";
 import { DiscoverPage } from "./pages/DiscoverPage";
 import LibraryPage from "./pages/library/LibraryPage";
-import { ForumsPage } from "./pages/ForumsPage";
+import ForumsPage from "./pages/forum/ForumsPage";
+import PostPage from "./pages/forum/PostPage";
+import CreatePostPage from "./pages/forum/CreatePostPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
-import { SearchPage } from "./pages/SearchPage";
+import UserPostsPage from "./pages/profile/UserPostsPage";
+import { SearchPage } from "./pages/search/SearchPage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import EditProfilePage from "./pages/profile/EditProfilePage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import BookPage from "./pages/books/BookPage";
 
 /**
  * The root application component.
@@ -42,6 +46,9 @@ export default function App() {
             {/* Public route: Discover page */}
             <Route path="/" element={<DiscoverPage />} />
 
+            {/* Public route: Individual book page */}
+            <Route path="/books/:bookId" element={<BookPage />} />
+
             {/* Public route: Search page */}
             <Route path="/search" element={<SearchPage />} />
 
@@ -55,6 +62,21 @@ export default function App() {
 
             {/* Public route: Forums */}
             <Route path="/forums" element={<ForumsPage />} />
+
+            {/* Public route: Individual posts */}
+            <Route path="/forums/:threadId" element={<PostPage />} />
+
+            {/* Public route: User's posts */}
+            <Route path="/profile/posts" element={<UserPostsPage />} />
+
+            {/* Protected route: Create posts */}
+            <Route path="/forums/create/:bookId"
+              element={
+                <ProtectedRoute>
+                  <CreatePostPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Protected route: Edit Profile */}
             <Route path="/profile/edit"

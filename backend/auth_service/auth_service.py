@@ -29,6 +29,7 @@ from auth_service.routers.register import router as register_router
 from auth_service.routers.login import router as login_router
 from auth_service.routers.account import router as account_router
 from auth_service.routers.profile_picture import router as profile_picture_router
+from auth_service.routers.users import router as users_router
 from shared.constants import ORIGINS
 
 app = FastAPI(
@@ -50,6 +51,7 @@ app.include_router(register_router, prefix="/api/v1")
 app.include_router(login_router, prefix="/api/v1")
 app.include_router(account_router, prefix="/api/v1")
 app.include_router(profile_picture_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])

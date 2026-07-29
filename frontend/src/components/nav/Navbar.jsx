@@ -21,10 +21,11 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { useUser } from "../../hooks/user/useUser.js";
-import { useBookSearch } from "../../hooks/useBookSearch.js";
+import { useBookSearch } from "../../hooks/books/useBookSearch.js";
 import { NavButton } from "./NavButton";
 import SearchResult from "../search/SearchResult.jsx";
 import Icon from "../generic/Icon.jsx";
@@ -50,6 +51,7 @@ const NAV_ITEMS = [
  * @returns {JSX.Element}
  */
 export function Navbar() {
+  const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const { profilePictureUrl } = useUser();
 
@@ -90,8 +92,8 @@ export function Navbar() {
               {topResults.map((book) => (
                 <SearchResult key={book.id} book={book} />
               ))}
-
               <button
+                onClick={() => navigate(`/search?query=${encodeURIComponent(navQuery)}`)}
                 className="w-full text-left px-3 py-2 text-xs text-tertiary border-t border-[#222] hover:bg-[#1a1a1a]"
               >
                 View more results

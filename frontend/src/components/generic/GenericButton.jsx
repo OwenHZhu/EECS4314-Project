@@ -11,7 +11,7 @@
  *
  * @param {string} variant
  *   Determines the visual style of the button. Must match one of the keys
- *   in the `variants` object (e.g., "primary", "secondary", "ghost").
+ *   in the `variants` object (e.g., "primary", "secondary", "ghost", "spoilers", "questions", "theories").
  *   Defaults to "primary".
  * *
  * @param {string} className
@@ -35,8 +35,21 @@ import { cn } from "../../utils/utils";
 
 const variants = {
     primary: "bg-generic-button-primary-fill hover:bg-generic-button-primary-fill-hover",
+
     secondary: "bg-generic-button-secondary-fill hover:bg-generic-button-secondary-fill-hover",
+
     ghost: "bg-transparent border-2 border-generic-button-ghost-border hover:border-generic-button-ghost-border-hover hover:bg-generic-button-ghost-fill-hover",
+  
+    bookAction: "bg-[#E51D27] hover:bg-[#B91620]",
+
+    spoilers: "bg-generic-button-spoilers-fill border border-generic-button-spoilers-border text-generic-button-spoilers-text \
+    hover:bg-generic-button-spoilers-fill/70 hover:border-generic-button-spoilers-border/70 hover:text-generic-button-spoilers-text/70",
+
+    questions: "bg-generic-button-questions-fill border border-generic-button-questions-border text-generic-button-questions-text \
+    hover:bg-generic-button-questions-fill/70 hover:border-generic-button-questions-border/70 hover:text-generic-button-questions-text/70",
+
+    theories: "bg-generic-button-theories-fill border border-generic-button-theories-border text-generic-button-theories-text \
+    hover:bg-generic-button-theories-fill/70 hover:border-generic-button-theories-border/70 hover:text-generic-button-theories-text/70"
 };
 
 export default function GenericButton({
@@ -49,7 +62,7 @@ export default function GenericButton({
         <button
             {...props}
             className={cn(
-                "text-generic-button-text hover:text-generic-button-text-hover text-xs md:text-sm rounded-full font-medium transition-colors",
+                "text-generic-button-text hover:text-generic-button-text-hover text-xs rounded-full font-medium transition-colors",
                 variants[variant],
                 className
             )}

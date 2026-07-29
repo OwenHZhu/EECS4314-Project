@@ -38,7 +38,7 @@ export default function GenericModal({
                 {message && (
                     <div className="flex flex-col items-center mb-3">
                         <p className="text-xs text-[#839497]">This action cannot be undone.</p>
-                        <p className="text-xs text-[#839497]">All personal data will be permanently deleted.</p>
+                        <p className="text-xs text-[#839497]">Data will be permanently deleted.</p>
                     </div>
                 )}
 

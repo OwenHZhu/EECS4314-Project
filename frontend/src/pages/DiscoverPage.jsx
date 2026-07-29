@@ -1,44 +1,30 @@
 /**
- * ./pages/DiscoverPage.jsx
+ * DiscoverPage.jsx
  *
- * The main book discovery screen. Allows users to:
+ * The main catalog browsing screen for BookAtlas. Users can search the catalog,
+ * filter by genre, and explore results in a responsive grid. Search queries are
+ * handled through `useBookSearch`, which provides debounced backend results,
+ * while genre filtering is applied client‑side.
  *
- * 1. **Search the catalog**
- *    - Text search across title, author, and genre.
- *    - Debounced search handled by `useBookSearch`.
+ * Selecting a book opens the details modal, where authenticated users can
+ * favourite, rate, or update their reading status. Library interactions are
+ * powered by `useLibrary`, which creates or updates entries as needed.
  *
- * 2. **Filter by genre**
- *    - Uses GENRES and GENRE_LABELS to render filter buttons.
- *    - Selecting a genre updates the search results instantly.
- *
- * 3. **Browse results**
- *    - Displays a responsive grid of BookCard components.
- *    - Shows a loading indicator while search is processing.
- *    - Shows a “no results” message when nothing matches.
- *
- * Dependencies:
- * - `useBookSearch`: Custom hook providing debounced search and filtering.
- * - `BookCard`: Component for rendering individual book tiles.
- * - `GENRES`, `GENRE_LABELS`: Mock data for genre filtering UI.
- *
- * State:
- * - `query`: The current search text.
- * - `genre`: The selected genre filter.
- *
- * Behaviour:
- * - Typing in the search bar updates `query`.
- * - Clicking a genre button updates `genre`.
- * - Search results update automatically based on both values.
- * - Loading state is shown while the debounced search runs.
- *
- * Notes:
- * - No backend calls — all search/filtering is client-side.
+ * State overview:
+ * - `query`: current search text
+ * - `genre`: active genre filter
+ * - `selectedBook`: book opened in the details modal
+ * 
  */
 
 import { useState } from "react";
-import { useBookSearch } from "../hooks/useBookSearch";
-import { BookCard } from "../components/BookCard";
-import { GENRES, GENRE_LABELS } from "../data/mockBook";
+import { useNavigate } from "react-router-dom";
+import { useBookSearch } from "../hooks/books/useBookSearch";
+import { BookCard } from "../components/books/BookCard";
+import { GENRES, GENRE_LABELS } from "../data/genres";
+import BookDetailsModal from "../components/books/BookDetailsModal";
+import { useAuth } from "../hooks/auth/useAuth";
+import { useLibrary } from "../hooks/library/useLibrary";
 
 export function DiscoverPage() {
   // Search text input
@@ -48,11 +34,82 @@ export function DiscoverPage() {
   const [genre, setGenre] = useState("all");
 
   // Debounced search results + loading state
-  const { results, loading } = useBookSearch(query, genre);
+  const { results, loading, error } = useBookSearch(query, genre);
+
+  // Book currently selected for the details modal
+  const [selectedBook, setSelectedBook] = useState(null);
+
+  // Allows redirecting to login or a book detail route when needed
+  const navigate = useNavigate();
+
+  // Accesses the current authentication state
+  const { isAuthenticated } = useAuth();
+
+  // Library Service state/actions for user-specific book interactions
+  const {
+    library,
+    addLibraryEntry,
+    updateLibraryEntry,
+  } = useLibrary();
+
+  // Current user's saved library entry for the selected modal book
+  const selectedLibraryEntry =
+    selectedBook && Array.isArray(library)
+      ? library.find((entry) => entry.book_id === selectedBook.id)
+      : null;
+
+  /**
+   * Saves a user-specific library change from the modal.
+   *
+   * If the selected book is already in the user's library, the existing entry
+   * is updated. Otherwise, a new library entry is created. When the user clicks
+   * favourite or rating before selecting a status, "wishlist" is used as the
+   * default status so the Library Service can create the entry.
+   *
+   * @param {object} book - Book being updated.
+   * @param {object} changes - Library fields to update.
+   */
+  async function saveLibraryChange(
+    book,
+    {
+      nextStatus = selectedLibraryEntry?.status ?? null,
+      nextFavourite = Boolean(selectedLibraryEntry?.is_favourite),
+      nextRating = selectedLibraryEntry?.rating ?? 0,
+    },
+  ) {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    if (!book) {
+      return;
+    }
+
+    const statusToSave = nextStatus || "wishlist";
+    const ratingToSave = nextRating || null;
+
+    if (selectedLibraryEntry) {
+      await updateLibraryEntry(
+        book.id,
+        statusToSave,
+        nextFavourite,
+        ratingToSave,
+      );
+    } else {
+      await addLibraryEntry(
+        book.id,
+        statusToSave,
+        nextFavourite,
+        ratingToSave,
+      );
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <title>Discover Books | BookAtlas</title>
+
       {/* Header / Hero section */}
       <div className="mb-12">
         <p className="text-[11px] tracking-[0.2em] uppercase text-[#444] mb-3">
@@ -62,7 +119,7 @@ export function DiscoverPage() {
         <h1 className="text-[56px] font-semibold leading-[1.05] tracking-tight text-[#f0f0f0] mb-4">
           Map your
           <br />
-          <span className="text-[#7c6af7]">reading world.</span>
+          <span className="text-secondary">reading world.</span>
         </h1>
 
         <p className="text-[15px] text-[#555] max-w-md leading-relaxed">
@@ -133,6 +190,12 @@ export function DiscoverPage() {
         ))}
       </div>
 
+      {error && (
+        <div className="mb-4 rounded-lg border border-secondary bg-error-bg px-4 py-3 text-sm text-error-text">
+          {error}
+        </div>
+      )}
+
       {/* Search result summary */}
       <p className="text-[11px] text-[#333] mb-5">
         {loading
@@ -149,12 +212,48 @@ export function DiscoverPage() {
         </div>
       ) : (
         /* Results grid */
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {results.map((book) => (
-            <BookCard key={book.id} book={book} />
+            <div key={book.id} className="flex justify-center">
+              <BookCard
+                book={book}
+                onClick={() => setSelectedBook(book)}
+              />
+            </div>
           ))}
         </div>
       )}
+
+      <BookDetailsModal
+        book={selectedBook}
+        isOpen={Boolean(selectedBook)}
+        isAuthenticated={isAuthenticated}
+        initialFavourite={Boolean(selectedLibraryEntry?.is_favourite)}
+        initialStatus={selectedLibraryEntry?.status ?? null}
+        initialRating={selectedLibraryEntry?.rating ?? 0}
+        onClose={() => setSelectedBook(null)}
+        onAuthRequired={() => {
+          navigate("/login");
+        }}
+        onViewMore={(book) => {
+          navigate(`/books/${book.id}`);
+        }}
+        onFavouriteChange={async (nextFavourite, book) => {
+          await saveLibraryChange(book, {
+            nextFavourite,
+          });
+        }}
+        onStatusChange={async (nextStatus, book) => {
+          await saveLibraryChange(book, {
+            nextStatus,
+          });
+        }}
+        onRatingChange={async (nextRating, book) => {
+          await saveLibraryChange(book, {
+            nextRating,
+          });
+        }}
+      />
     </div>
   );
 }
