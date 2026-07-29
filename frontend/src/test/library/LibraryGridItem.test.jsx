@@ -11,6 +11,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import "@testing-library/jest-dom/vitest";
 
 import LibraryGridItem from "../../pages/library/components/entries/LibraryGridItem.jsx";
@@ -100,6 +101,24 @@ const libraryEntry = {
   },
 };
 
+/**
+ * Renders LibraryGridItem inside a router because the component tree
+ * contains React Router Link components.
+ */
+function renderLibraryGridItem({
+  entry = libraryEntry,
+  variant = "finished",
+} = {}) {
+  return render(
+    <MemoryRouter>
+      <LibraryGridItem
+        libraryEntry={entry}
+        variant={variant}
+      />
+    </MemoryRouter>
+  );
+}
+
 describe("LibraryGridItem", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -111,14 +130,21 @@ describe("LibraryGridItem", () => {
    * Verifies that the main book information is displayed.
    */
   it("renders the book title, author, and cover image", () => {
-    render(<LibraryGridItem libraryEntry={libraryEntry} variant="finished" />);
+    renderLibraryGridItem({
+      variant: "finished",
+    });
 
     expect(screen.getByText("Dune")).toBeInTheDocument();
     expect(screen.getByText("Frank Herbert")).toBeInTheDocument();
 
-    const cover = screen.getByRole("img", { name: "Cover image for Dune" });
+    const cover = screen.getByRole("img", {
+      name: "Cover image for Dune",
+    });
 
-    expect(cover).toHaveAttribute("src", "https://example.com/dune.jpg");
+    expect(cover).toHaveAttribute(
+      "src",
+      "https://example.com/dune.jpg"
+    );
   });
 
   /**
@@ -127,10 +153,16 @@ describe("LibraryGridItem", () => {
   it("renders a title placeholder when the cover image is missing", () => {
     const entryWithoutCover = {
       ...libraryEntry,
-      book: { ...libraryEntry.book, cover_image: null },
+      book: {
+        ...libraryEntry.book,
+        cover_image: null,
+      },
     };
 
-    render(<LibraryGridItem libraryEntry={entryWithoutCover} variant="finished" />);
+    renderLibraryGridItem({
+      entry: entryWithoutCover,
+      variant: "finished",
+    });
 
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(screen.getAllByText("Dune")).toHaveLength(2);
@@ -140,42 +172,75 @@ describe("LibraryGridItem", () => {
    * Verifies that LibraryGridItem requests the correct date text.
    */
   it("displays the variant-specific date text", () => {
-    render(<LibraryGridItem libraryEntry={libraryEntry} variant="finished" />);
+    renderLibraryGridItem({
+      variant: "finished",
+    });
 
-    expect(mocks.getDateText).toHaveBeenCalledWith(libraryEntry, "finished");
-    expect(screen.getByText("Finished on July 10, 2026")).toBeInTheDocument();
+    expect(mocks.getDateText).toHaveBeenCalledWith(
+      libraryEntry,
+      "finished"
+    );
+
+    expect(
+      screen.getByText("Finished on July 10, 2026")
+    ).toBeInTheDocument();
   });
 
   /**
    * A two-star rating should use two active and three inactive star colours.
    */
   it("displays the correct active and inactive rating stars", () => {
-    render(<LibraryGridItem libraryEntry={libraryEntry} variant="finished" />);
+    renderLibraryGridItem({
+      variant: "finished",
+    });
 
     const rating = screen.getByLabelText("2 out of 5 stars");
     const stars = within(rating).getAllByText("star");
 
     expect(stars).toHaveLength(5);
-    expect(stars.filter((star) => star.classList.contains("text-yellow-400"))).toHaveLength(2);
-    expect(stars.filter((star) => star.classList.contains("text-gray-400"))).toHaveLength(3);
+
+    expect(
+      stars.filter((star) =>
+        star.classList.contains("text-yellow-400")
+      )
+    ).toHaveLength(2);
+
+    expect(
+      stars.filter((star) =>
+        star.classList.contains("text-gray-400")
+      )
+    ).toHaveLength(3);
   });
 
   /**
    * Entries without a rating should expose a clear accessible label.
    */
   it("labels an unrated entry as Not rated", () => {
-    render(<LibraryGridItem libraryEntry={{ ...libraryEntry, rating: null }} variant="finished" />);
+    renderLibraryGridItem({
+      entry: {
+        ...libraryEntry,
+        rating: null,
+      },
+      variant: "finished",
+    });
 
-    expect(screen.getByLabelText("Not rated")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Not rated")
+    ).toBeInTheDocument();
   });
 
   /**
    * Favourite entries display a visible favourite marker.
    */
   it("shows the favourite marker for a favourite entry", () => {
-    render(<LibraryGridItem libraryEntry={libraryEntry} variant="finished" />);
+    renderLibraryGridItem({
+      variant: "finished",
+    });
 
-    expect(screen.getByTitle("Favourite")).toBeInTheDocument();
+    expect(
+      screen.getByTitle("Favourite")
+    ).toBeInTheDocument();
+
     expect(screen.getByText("favorite")).toBeInTheDocument();
   });
 
@@ -185,12 +250,27 @@ describe("LibraryGridItem", () => {
   it("opens the edit modal when Edit is clicked", async () => {
     const user = userEvent.setup();
 
-    render(<LibraryGridItem libraryEntry={libraryEntry} variant="finished" />);
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    renderLibraryGridItem({
+      variant: "finished",
+    });
 
-    expect(screen.getByRole("dialog", { name: "Edit grid library entry" })).toBeInTheDocument();
-    expect(screen.getByText("Edit modal book: Dune")).toBeInTheDocument();
-    expect(screen.getByText("Edit modal variant: finished")).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "Edit" })
+    );
+
+    expect(
+      screen.getByRole("dialog", {
+        name: "Edit grid library entry",
+      })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Edit modal book: Dune")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Edit modal variant: finished")
+    ).toBeInTheDocument();
   });
 
   /**
@@ -199,21 +279,46 @@ describe("LibraryGridItem", () => {
   it("opens the delete modal when Delete is clicked", async () => {
     const user = userEvent.setup();
 
-    render(<LibraryGridItem libraryEntry={libraryEntry} variant="finished" />);
-    await user.click(screen.getByRole("button", { name: "Delete Dune from library" }));
+    renderLibraryGridItem({
+      variant: "finished",
+    });
 
-    expect(screen.getByRole("dialog", { name: "Delete grid library entry" })).toBeInTheDocument();
-    expect(screen.getByText("Delete modal book: Dune")).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", {
+        name: "Delete Dune from library",
+      })
+    );
+
+    expect(
+      screen.getByRole("dialog", {
+        name: "Delete grid library entry",
+      })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Delete modal book: Dune")
+    ).toBeInTheDocument();
   });
 
   /**
    * Favourite view uses Unfavourite instead of Edit.
    */
   it("shows Unfavourite instead of Edit for the favourite variant", () => {
-    render(<LibraryGridItem libraryEntry={libraryEntry} variant="favourite" />);
+    renderLibraryGridItem({
+      variant: "favourite",
+    });
 
-    expect(screen.getByRole("button", { name: "Unfavourite" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Unfavourite",
+      })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByRole("button", {
+        name: "Edit",
+      })
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -222,9 +327,21 @@ describe("LibraryGridItem", () => {
   it("removes the entry from favourites when Unfavourite is clicked", async () => {
     const user = userEvent.setup();
 
-    render(<LibraryGridItem libraryEntry={libraryEntry} variant="favourite" />);
-    await user.click(screen.getByRole("button", { name: "Unfavourite" }));
+    renderLibraryGridItem({
+      variant: "favourite",
+    });
 
-    expect(mocks.doAction).toHaveBeenCalledWith(libraryEntry, "favourite", false, null);
+    await user.click(
+      screen.getByRole("button", {
+        name: "Unfavourite",
+      })
+    );
+
+    expect(mocks.doAction).toHaveBeenCalledWith(
+      libraryEntry,
+      "favourite",
+      false,
+      null
+    );
   });
 });
