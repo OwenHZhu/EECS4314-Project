@@ -67,7 +67,7 @@ export default function App() {
             <Route path="/forums/:threadId" element={<PostPage />} />
 
             {/* Public route: User's posts */}
-            <Route path="/profile/posts" element={<UserPostsPage />} />
+            <Route path="/users/:userId/posts" element={<UserPostsPage />} />
 
             {/* Protected route: Create posts */}
             <Route path="/forums/create/:bookId"

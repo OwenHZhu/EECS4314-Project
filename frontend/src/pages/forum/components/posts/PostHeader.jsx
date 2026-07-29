@@ -17,7 +17,7 @@
  * - GenericButton: Spoiler toggle button
  * - date-fns/format: Formats thread creation date
  */
-
+import { Link } from "react-router-dom";
 import GenericButton from "../../../../components/generic/GenericButton";
 import { format } from "date-fns";
 
@@ -55,7 +55,13 @@ export default function PostHeader({
                 </h2>
 
                 <h4 className="text-sm text-[#7E7272]">
-                    by {author?.username}
+                    by{" "}
+                    <Link
+                        to={`/users/${author?.id}/posts`}
+                        className="text-primary hover:underline"
+                    >
+                        {author?.username}
+                    </Link>
                 </h4>
 
                 <p className="text-sm mt-1 text-[#7E7272]/80">
