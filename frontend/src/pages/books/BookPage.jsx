@@ -23,7 +23,6 @@ import BookStatusDropdown from "../../components/books/BookStatusDropdown";
 import BookForumSection from "./components/BookForumSection";
 import RatingStars from "../../components/generic/RatingStars";
 import Icon from "../../components/generic/Icon";
-import GenericButton from "../../components/generic/GenericButton";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { useLibrary } from "../../hooks/library/useLibrary";
 
@@ -32,8 +31,10 @@ function getRatings(book) {
 }
 
 function getDistributionCount(distribution, star) {
-  return Number(distribution?.[String(star)] ?? distribution?.[star] ?? 0);
+  const entry = distribution?.[star];
+  return typeof entry?.count === "number" ? entry.count : 0;
 }
+
 
 export default function BookPage() {
   const { bookId } = useParams();
@@ -218,7 +219,6 @@ export default function BookPage() {
       </div>
     );
   }
-
   const ratings = getRatings(book);
   const averageRating = ratings?.average ?? 0;
   const totalRatings = ratings?.total_ratings ?? 0;
@@ -226,11 +226,19 @@ export default function BookPage() {
   const wishlistCount = book.library_stats?.wishlist_count ?? 0;
   const readingCount = book.library_stats?.reading_count ?? 0;
 
+  // Safe helpers
+  function getDistributionCount(dist, star) {
+    return dist?.[star]?.count ?? 0;
+  }
+
+  function getDistributionPercentage(dist, star) {
+    return dist?.[star]?.percentage ?? null;
+  }
+
+  // Fallback max count (only used if percentage is missing)
   const maxDistributionCount = Math.max(
     1,
-    ...[1, 2, 3, 4, 5].map((star) =>
-      getDistributionCount(distribution, star),
-    ),
+    ...[1, 2, 3, 4, 5].map((star) => getDistributionCount(distribution, star))
   );
 
   return (
@@ -311,12 +319,9 @@ export default function BookPage() {
               }
               className="text-book-favourite transition-transform hover:scale-110 focus:outline-none"
             >
-              <Icon
-              filled={isFavourite}
-              className="text-2xl"
-            >
-          favorite
-        </Icon>
+              <Icon filled={isFavourite} className="text-2xl">
+                favorite
+              </Icon>
             </button>
           </div>
 
@@ -432,7 +437,12 @@ export default function BookPage() {
         <div className="mt-4 max-w-xl space-y-2">
           {[5, 4, 3, 2, 1].map((star) => {
             const count = getDistributionCount(distribution, star);
-            const widthPercentage = (count / maxDistributionCount) * 100;
+
+            const percentage = getDistributionPercentage(distribution, star);
+            const widthPercentage =
+              percentage !== null
+                ? percentage
+                : (count / maxDistributionCount) * 100;
 
             return (
               <div
@@ -457,9 +467,7 @@ export default function BookPage() {
 
       {/* Discussion preview section */}
       <section className="mt-8">
-
         <BookForumSection bookId={bookId} />
-        
       </section>
     </div>
   );
