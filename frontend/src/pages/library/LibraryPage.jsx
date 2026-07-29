@@ -17,6 +17,7 @@ import { useLibrary } from "../../hooks/library/useLibrary";
 import LibraryTab from "./components/entries/LibraryTab";
 import FilterButton from "./components/ui/FilterButton";
 import Icon from "../../components/generic/Icon";
+import CollectionSection from "./components/collections/CollectionSection";
 
 /**
  * Filter options controlling which category of books is shown.
@@ -94,6 +95,8 @@ export default function LibraryPage() {
                 variant={selected.variant}
                 className="mt-6"
             />
+
+            <CollectionSection className="mt-10" />
         </div>
     );
 }

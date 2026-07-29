@@ -11,7 +11,10 @@
 
 import { cn } from "../../../../utils/utils";
 import { useState } from "react";
+import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import { useLibraryActions } from "../../../../hooks/library/useLibraryActions";
+import AddToCollectionModal from "../collections/AddToCollectionModal";
 import DeleteEntryModal from "../modals/DeleteEntryModal";
 import EditEntryModal from "../modals/EditEntryModal";
 import GenericButton from "../../../../components/generic/GenericButton";
@@ -46,6 +49,7 @@ export default function LibraryItem({
     /** Controls visibility of delete and edit modals */
     const [deleteModal, setDeleteModal] = useState(false);
     const [editModal, setEditModal] = useState(false);
+    const [collectionModal, setCollectionModal] = useState(false);
 
     return (
         <div
@@ -72,18 +76,24 @@ export default function LibraryItem({
                 />
             )}
 
+            {collectionModal && createPortal(<AddToCollectionModal libraryEntry={libraryEntry} setCollectionModal={setCollectionModal} />, document.body)}
+
             {/* Left: cover, title, author, edit button */}
             <div className="flex flex-row space-x-3 flex-1">
-                <img
-                    src={libraryEntry.book.cover_image}
-                    alt={`Cover image for ${libraryEntry.book.title}`}
-                    className="w-16 h-24 object-cover rounded-md"
-                />
+                <Link to={`/books/${libraryEntry.book_id}`} target="_blank" rel="noopener noreferrer" aria-label={`View details for ${libraryEntry.book.title}`} className="shrink-0 rounded-md transition hover:opacity-80">
+                    <img
+                        src={libraryEntry.book.cover_image}
+                        alt={`Cover image for ${libraryEntry.book.title}`}
+                        className="w-16 h-24 object-cover rounded-md"
+                    />
+                </Link>
 
                 <div className="flex flex-col w-1/2">
-                    <h3 className="text-sm text-[#F9EDCC] font-semibold break-words text-wrap">
-                        {libraryEntry.book.title}
-                    </h3>
+                    <Link to={`/books/${libraryEntry.book_id}`} target="_blank" rel="noopener noreferrer" className="max-w-fit">
+                        <h3 className="text-sm text-[#F9EDCC] font-semibold break-words text-wrap transition hover:text-white hover:underline">
+                            {libraryEntry.book.title}
+                        </h3>
+                    </Link>
 
                     <p className="text-xs text-[#BFB8AD] font-medium">
                         {libraryEntry.book.author}
@@ -110,6 +120,15 @@ export default function LibraryItem({
                             Unfavourite
                         </GenericButton>
                     )}
+
+                    <GenericButton
+                        type="button"
+                        onClick={() => setCollectionModal(true)}
+                        variant="ghost"
+                        className="max-w-fit py-1 px-4 mt-2 text-xs md:text-xs"
+                    >
+                        Collections
+                    </GenericButton>
                 </div>
             </div>
 

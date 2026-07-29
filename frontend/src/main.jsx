@@ -16,6 +16,7 @@ import App from './App.jsx'
 import AuthProvider from './context/auth/AuthProvider.jsx'
 import UserProvider from './context/user/UserProvider.jsx'
 import LibraryProvider from './context/library/LibraryProvider.jsx'
+import CollectionProvider from './context/collection/CollectionProvider.jsx'
 
 /*
  * Mount the React application:
@@ -29,7 +30,9 @@ createRoot(document.getElementById('root')).render(
     <AuthProvider>
       <UserProvider>
         <LibraryProvider>
-          <App />
+          <CollectionProvider>
+            <App />
+          </CollectionProvider>
         </LibraryProvider>
       </UserProvider>
     </AuthProvider>
