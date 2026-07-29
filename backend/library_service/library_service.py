@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from library_service.routers.lib import router as library_router
+from library_service.routers.collections import router as collection_router
 from shared.constants import ORIGINS
 
 app = FastAPI(
@@ -19,6 +20,7 @@ app.add_middleware(
 )
 
 app.include_router(library_router, prefix="/api/v1")
+app.include_router(collection_router, prefix="/api/v1")
 
 @app.get("/health", tags=["Health"])
 def health_check():
