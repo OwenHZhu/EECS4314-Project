@@ -37,36 +37,69 @@ export default function ForumItem({ thread }) {
 
     return (
         <Link to={`/forums/${thread.id}`}>
-            <div className="bg-[#171615] border border-[#1E3C36] rounded-xl px-4 py-3.5
-                hover:border-[#7a2635] transition-colors cursor-pointer
-                flex items-center gap-4"
+            <div
+                className="
+        relative group flex items-center gap-4 px-5 py-4 rounded-xl
+        bg-[#141312] border border-[#2a2a2a]
+        hover:border-[#7a2635]
+        hover:shadow-[0_0_20px_rgba(122,38,53,0.15)]
+        transition-all cursor-pointer overflow-hidden
+    "
             >
+                {/* Grain overlay */}
+                <div className="absolute inset-0 opacity-[0.08] bg-[url('/grain.png')] bg-repeat pointer-events-none"></div>
+
+                {/* Book cover with ribbon */}
+                <div className="relative">
+                    <div className="absolute top-0 left-2 w-1.5 h-4 bg-[#7a2635] rounded-b-sm opacity-80"></div>
+                    <img
+                        src={book.cover_image}
+                        alt={book.title}
+                        className="w-14 h-20 object-cover rounded-md shadow-[0_0_6px_rgba(0,0,0,0.4)] border border-[#1e1e1e]"
+                    />
+                </div>
+
+                {/* Divider */}
+                <div className="w-[1px] h-14 bg-[#2a2a2a] group-hover:bg-[#7a2635] transition-colors"></div>
+
+                {/* Main content */}
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[11px] text-[#d7cfcf] shrink-0 max-w-fit">
-                            {book.title}
-                        </span>
-                    </div>
+                    <p className="text-[11px] text-[#c7c2b8] mb-1">{book.title}</p>
 
-                    <p className="text-[13px] text-[#f3eeeb] truncate">
+                    <h3 className="text-[15px] text-[#f3eeeb] font-medium group-hover:text-[#e8d9c5] transition-colors truncate">
                         {thread.title}
-                    </p>
+                    </h3>
 
-                    <p className="text-[11px] text-[#c4a3a3] mt-0.5">
-                        by {author.username}
+                    <p className="text-[11px] text-[#a89292] mt-1">
+                        by{" "}
+                        <Link
+                            to={`/users/${author.id}/posts`}
+                            className="hover:text-primary transition-colors"
+                        >
+                            {author.username}
+                        </Link>
                     </p>
                 </div>
 
+                {/* Right side */}
                 <div className="flex flex-col items-end shrink-0 text-right gap-2">
                     <p className="text-[11px] text-[#b07a7a]">
-                        {thread.datePosted}
+                        {new Date(thread.created_at).toLocaleDateString()}
                     </p>
 
                     <div className="flex flex-col items-end gap-1">
                         {topTags.map(tag => (
                             <span
                                 key={tag.id}
-                                className="text-[10px] px-2 py-1 rounded-lg border border-secondary text-tertiary hover:text-primary transition"
+                                className="
+                        text-[10px] px-2 py-1 rounded-md
+                        border border-[#3a2f2f]
+                        text-[#cbb7a7]
+                        bg-[#1a1817]
+                        shadow-[0_0_4px_rgba(0,0,0,0.3)]
+                        group-hover:border-[#7a2635]
+                        transition-all
+                    "
                             >
                                 {tag.name}
                             </span>
@@ -74,6 +107,9 @@ export default function ForumItem({ thread }) {
                     </div>
                 </div>
             </div>
+
         </Link>
+
+
     );
 }
