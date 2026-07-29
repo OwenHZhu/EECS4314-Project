@@ -1,180 +1,150 @@
 /**
- * ./context/auth/AuthProvider.jsx
+ * AuthProvider.jsx
  *
- * The main authentication provider for the application. This component wraps
- * the React tree and exposes authentication-related state and functions through
- * the AuthContext. It manages login, logout, registration, token persistence,
- * session restoration, and redirect messages.
+ * Provides authentication state and actions across the application.
+ * Stores user, token, and library data in localStorage and syncs the
+ * Authorization header for authenticated API requests.
+ *
+ * Props:
+ * @param {React.ReactNode} children - Components that rely on authentication context.
  *
  * Dependencies:
- * - axios: Used for all HTTP requests to the backend authentication API.
- * - useState, useEffect, useCallback (React): Manage local state, side effects,
- *   and callback functions.
- * - AuthContext: Provides the authentication context to child components.
- * - useLocalStorage: Custom hook that syncs state with localStorage, ensuring
- *   user and token persist across page reloads.
- *
- * Provided Context Values:
- * - user: The authenticated user's data (or null).
- * - token: The authentication token (or null).
- * - isAuthenticated: Boolean indicating whether a user is logged in.
- * - redirectMessage: Temporary message used when redirecting unauthenticated users.
- * - setRedirectMessage: Setter for updating redirect messages.
- * - login(email, password): Attempts to authenticate the user.
- * - register(username, email, password): Creates a new user account.
- * - logout(): Logs the user out and clears stored credentials.
- *
- * Behavior Overview:
- * - Login & Register:
- *   - Send credentials to the backend.
- *   - Store returned token and user data in localStorage.
- *   - Return success/failure objects for UI handling.
- *
- * - Logout:
- *   - Sends a logout request (best-effort).
- *   - Clears token and user from localStorage.
- *
- * - Token Handling:
- *   - Automatically attaches the token to axios Authorization headers.
- *   - Removes the header when no token is present.
- *
- * - Session Restoration:
- *   - On mount or token change, attempts to restore the user's session by
- *     calling `/auth/me`.
- *   - If the token is invalid or expired, clears user and token.
- *
- * Notes:
- * - API_BASE_URL is read from Vite environment variables.
- * - All API endpoints assume a backend structure like:
- *     POST auth/login
- *     POST auth/register
- *     POST auth/logout
- *     GET  auth/me
- * - This provider must wrap the entire application for authentication to work.
+ * - useLocalStorage: Persists user, token, and library data.
+ * - authService: Handles login, registration, logout, account deletion, and session restore.
+ * - authClient: Axios instance used for authenticated requests.
  */
-import axios from "axios";
-import { useState, useEffect, useCallback } from "react";
-import { AuthContext } from "./AuthContext";
-import { useLocalStorage } from "../../hooks/useLocalStorage";
 
+import { useEffect, useCallback } from "react";
+import { AuthContext } from "./AuthContext.jsx";
+import { useLocalStorage } from "../../hooks/useLocalStorage.js";
+
+import {
+    login as loginRequest,
+    register as registerRequest,
+    logout as logoutRequest,
+    deleteAccount as deleteAccountRequest,
+    me as meRequest
+} from "../../api/auth/authService.js";
+
+import authClient from "../../api/auth/authClient";
+
+/**
+ * AuthProvider
+ *
+ * Wraps children with AuthContext and exposes authentication state and actions.
+ *
+ * @param {object} props
+ * @param {React.ReactNode} props.children - Components that consume auth context.
+ * @returns {JSX.Element}
+ */
 export default function AuthProvider({ children }) {
-    // Persisted user object (null when logged out)
     const [user, setUser] = useLocalStorage("user", null);
-
-    // Persisted auth token (null when logged out)
     const [token, setToken] = useLocalStorage("token", null);
+    const [, setLibrary] = useLocalStorage("library", null);
 
-    // Message shown when user is redirected from a protected route
-    const [redirectMessage, setRedirectMessage] = useState(null);
-
-    const API_BASE_URL = import.meta.env.VITE_API_URL;
-
-    // Boolean indicating whether the user is authenticated
     const isAuthenticated = !!token;
 
-    /**
-     * login(email, password)
-     *
-     * Attempts to authenticate the user.
-     *
-     * @param {string} email - User's email address
-     * @param {string} password - User's password
-     *
-     * @returns {Promise<{success: boolean, message?: string}>}
-     *   - success: true if login succeeded
-     *   - message: optional error message if login failed
-     */
-    const login = useCallback(async (email, password) => {
-        try {
-            const res = await axios.post(API_BASE_URL + "auth/login", { email, password });
-
-            // Store token + user in localStorage
-            setToken(res.data.token);
-            setUser(res.data.data);
-
-            return { success: true };
-        }
-        catch (err) {
-            const message = err.response?.data?.message || "Login failed. Please try again.";
-            return { success: false, message };
-        }
-    }, [setToken, setUser, API_BASE_URL]);
-
-    /**
-     * register(username, email, password)
-     *
-     * Creates a new user account.
-     *
-     * @param {string} username - User's username
-     * @param {string} email - User's email
-     * @param {string} password - User's password
-     *
-     * @returns {Promise<{success: boolean, message?: string}>}
-     *   - success: true if registration succeeded
-     *   - message: optional error message if registration failed
-     */
-    const register = useCallback(async (username, email, password) => {
-        try {
-            const res = await axios.post(API_BASE_URL + "auth/register", { username, email, password });
-
-            // Store token and user in localStorage
-            setToken(res.data.token);
-            setUser(res.data.data);
-
-            return { success: true };
-        }
-        catch (err) {
-            const message = err.response?.data?.message || "Registration failed. Please try again.";
-            return { success: false, message };
-        }
-    }, [setToken, setUser, API_BASE_URL]);
-
-    /**
-     * logout()
-     *
-     * Logs the user out.
-     *
-     * @returns {Promise<void>}
-     *
-     * Notes:
-     * - Attempts to notify the backend.
-     * - Clears token and user from localStorage.
-     */
-    const logout = useCallback(async () => {
-        try {
-            await axios.post(API_BASE_URL + "auth/logout", { token });
-        } catch (err) {
-            console.log(err);
-        }
-
-        setToken(null);
-        setUser(null);
-    }, [token, setToken, setUser, API_BASE_URL]);
-
-    /**
-     * Sync axios Authorization header with current token.
-     *
-     * Runs whenever the token changes.
-     */
+    // Sync Authorization header
     useEffect(() => {
         if (token) {
-            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            authClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         } else {
-            delete axios.defaults.headers.common["Authorization"];
+            delete authClient.defaults.headers.common["Authorization"];
         }
     }, [token]);
 
     /**
-     * restoreSession()
+     * login()
      *
-     * Attempts to restore the user's session using the stored token.
-     * Called on mount and whenever the token changes.
+     * Authenticates the user and stores token + user data.
      *
-     * Behavior:
-     * - If no token exists: clear user and exit.
-     * - If token exists: call /auth/me to validate it.
-     * - If token is invalid: clear token and user.
+     * @async
+     * @param {string} email
+     * @param {string} password
+     * @returns {Promise<{success: boolean, message: string}>}
      */
+    const login = useCallback(async (email, password) => {
+        try {
+            const res = await loginRequest(email, password);
+            setToken(res.data.token);
+            setUser(res.data.data);
+            return { success: true, message: res.data?.message };
+        } catch (err) {
+            return {
+                success: false,
+                message: err.response?.data?.detail || "Login failed."
+            };
+        }
+    }, [setToken, setUser]);
+
+    /**
+     * register()
+     *
+     * Registers a new user and stores token + user data.
+     *
+     * @async
+     * @param {string} username
+     * @param {string} email
+     * @param {string} password
+     * @returns {Promise<{success: boolean, message: string}>}
+     */
+    const register = useCallback(async (username, email, password) => {
+        try {
+            const res = await registerRequest(username, email, password);
+            setToken(res.data.token);
+            setUser(res.data.data);
+            return { success: true, message: res.data?.message };
+        } catch (err) {
+            return {
+                success: false,
+                message: err.response?.data?.detail || "Registration failed."
+            };
+        }
+    }, [setToken, setUser]);
+
+    /**
+     * logout()
+     *
+     * Logs out the user and clears all stored authentication data.
+     *
+     * @async
+     * @returns {Promise<{success: boolean, message: string}>}
+     */
+    const logout = useCallback(async () => {
+        try {
+            const res = await logoutRequest(token);
+            setToken(null);
+            setUser(null);
+            setLibrary(null);
+            return { success: true, message: res.data?.message };
+        } catch (err) {
+            return { success: false, message: err.response?.data?.detail };
+        }
+    }, [token, setToken, setUser, setLibrary]);
+
+    /**
+     * deleteAccount()
+     *
+     * Deletes the user's account and clears all stored authentication data.
+     *
+     * @async
+     * @returns {Promise<{success: boolean, message: string}>}
+     */
+    const deleteAccount = useCallback(async () => {
+        try {
+            const res = await deleteAccountRequest();
+
+            setToken(null);
+            setUser(null);
+            setLibrary(null);
+
+            return { success: true, message: res.data?.message };
+        } catch (err) {
+            return { success: false, message: err.response?.data?.detail };
+        }
+    }, [setToken, setUser, setLibrary]);
+
+    // Restore session
     useEffect(() => {
         async function restoreSession() {
             if (!token) {
@@ -183,19 +153,18 @@ export default function AuthProvider({ children }) {
             }
 
             try {
-                const res = await axios.get(API_BASE_URL + "auth/me");
+                const res = await meRequest();
                 setUser(res.data.data);
             } catch (err) {
                 console.log(err);
-
-                // Token invalid or expired: clear session
                 setToken(null);
                 setUser(null);
+                setLibrary(null);
             }
         }
 
         restoreSession();
-    }, [token, setToken, setUser, API_BASE_URL]);
+    }, [token, setToken, setUser, setLibrary]);
 
     return (
         <AuthContext.Provider
@@ -203,11 +172,11 @@ export default function AuthProvider({ children }) {
                 user,
                 token,
                 isAuthenticated,
-                redirectMessage,
-                setRedirectMessage,
                 login,
+                register,
                 logout,
-                register
+                deleteAccount,
+                setUser
             }}
         >
             {children}

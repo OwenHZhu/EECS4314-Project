@@ -86,10 +86,10 @@ class TestUserUpdateSchema:
 class TestUserUpdatePasswordSchema:
     def test_valid_password_change_passes(self):
         payload = UserUpdatePassword(
-            current_password="OldPass123!",
-            new_password="NewPass456!",
+            current_password="OldPass123!456!789!",
+            new_password="NewPass456!789!",
         )
-        assert payload.new_password == "NewPass456!"
+        assert payload.new_password == "NewPass456!789!"
 
     def test_identical_passwords_raise(self):
         with pytest.raises(ValidationError, match="must differ"):

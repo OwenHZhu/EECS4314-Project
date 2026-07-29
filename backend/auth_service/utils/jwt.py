@@ -147,3 +147,30 @@ def get_current_user_id(
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
     return user_id
+
+def get_current_token(
+    credentials: HTTPAuthorizationCredentials = Security(bearer)
+) -> str:
+    """
+    FastAPI dependency that extracts the raw JWT token from the
+    Authorization header.
+
+    Used alongside get_current_user_id() on routes that need both the
+    user_id and the raw token itself (e.g. delete_account, which needs
+    to blacklist the token):
+
+        @router.delete("/me")
+        def delete_me(
+            user_id: str = Depends(get_current_user_id),
+            token: str = Depends(get_current_token),
+        ):
+            ...
+
+    Args:
+        credentials: Injected by FastAPI from the Authorization: Bearer <token> header
+
+    Returns:
+        The raw JWT token string
+    """
+
+    return credentials.credentials

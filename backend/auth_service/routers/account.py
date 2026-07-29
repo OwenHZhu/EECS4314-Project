@@ -31,7 +31,7 @@ from auth_service.services.auth import (
     update_password,
     delete_account,
 )
-from auth_service.utils.jwt import get_current_user_id
+from auth_service.utils.jwt import get_current_user_id, get_current_token
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 bearer = HTTPBearer()
@@ -66,7 +66,7 @@ def me(user_id: str = Depends(get_current_user_id)):
     return result
 
 @router.put("/me", response_model=AuthResponse)
-def update_me(payload: UserUpdate, user_id: str = Depends(get_current_user_id)):
+async def update_me(payload: UserUpdate, user_id: str = Depends(get_current_user_id)):
     """
     Update the authenticated user's profile.
 
@@ -114,7 +114,7 @@ def update_me_password(
     return result
 
 @router.delete("/me", response_model=AuthResponse)
-def delete_me(user_id: str = Depends(get_current_user_id)):
+def delete_me(user_id: str = Depends(get_current_user_id), token: str = Depends(get_current_token)):
     """
     Permanently delete the authenticated user's account.
 
@@ -127,7 +127,8 @@ def delete_me(user_id: str = Depends(get_current_user_id)):
     - Returns 404 if the user no longer exists in the database
     """
 
-    result = delete_account(user_id)
+    
+    result = delete_account(user_id=user_id, token=token)
     if not result["success"]:
         raise HTTPException(status_code=404, detail=result["message"])
     return result

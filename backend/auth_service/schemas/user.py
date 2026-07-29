@@ -155,7 +155,6 @@ class UserUpdate(BaseModel):
 
     username: Optional[str] = Field(default=None, min_length=5, max_length=12)
     bio: Optional[str] = Field(default=None, max_length=150)
-    profile_picture: Optional[str] = Field(default=None)
 
 
 class UserUpdatePassword(BaseModel):
@@ -183,3 +182,16 @@ class UserUpdatePassword(BaseModel):
         if self.current_password == self.new_password:
             raise ValueError("New password must differ from the current password")
         return self
+    
+class PublicUser(BaseModel):
+    """
+    Public-facing user profile used by other services (e.g. discussion_service).
+
+    Does not expose email or any sensitive fields.
+    """
+
+    id: str = Field(description="User ID Supabase")
+    username: str = Field(description="Unique display name for the user")
+    bio: Optional[str] = Field(default="", description="User biography shown on profile", max_length=150)
+    profile_picture: Optional[str] = Field(default=None, description="Profile image URL")
+    created_at: datetime = Field(description="Account creation timestamp")

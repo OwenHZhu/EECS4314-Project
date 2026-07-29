@@ -18,26 +18,35 @@ Errors are returned as { "success": False, ... } rather than raising exceptions 
 the router is responsible for converting these into HTTP error responses.
 
 Functions:
-    register_user  - Create a new user account
-    login_user     - Authenticate a user and return a JWT token
-    logout_user    - Blacklist the current JWT token
-    get_me         - Fetch the currently authenticated user's profile
+    register_user           - Create a new user account
+    login_user               - Authenticate a user and return a JWT token
+    logout_user              - Blacklist the current JWT token
+    get_me                   - Fetch the currently authenticated user's profile
+    update_profile           - Update the authenticated user's text profile fields (username, bio)
+    update_profile_picture   - Validate + swap the authenticated user's profile picture
+    update_password          - Change the authenticated user's password
+    delete_account           - Permanently delete the authenticated user's account
 
 Dependencies:
     utils/security.py  - hash_password, verify_password (bcrypt)
     utils/jwt.py       - create_token, blacklist_token (JWT + Supabase blacklist)
+    utils/profile_pics.py - replace_profile_picture, delete_profile_picture
     schemas/user.py    - UserRegister, UserLogin, UserAccount (Pydantic validation)
     database/record.py - UserRecord (TypedDict for Supabase row type safety)
 """
 
 from typing import cast
 from datetime import datetime
+from fastapi import UploadFile
 
 from shared.db import supabase
 from auth_service.utils.security import hash_password, verify_password
 from auth_service.utils.jwt import create_token, blacklist_token
-from auth_service.schemas.user import UserRegister, UserLogin, UserAccount, UserUpdate, UserUpdatePassword
+from auth_service.utils.profile_pics import delete_profile_picture, replace_profile_picture
+from auth_service.schemas.user import UserRegister, UserLogin, UserAccount, UserUpdate, UserUpdatePassword, PublicUser
+from auth_service.utils.profile_pics import validate_image, delete_profile_picture
 from auth_service.utils.record import UserRecord
+
 
 def register_user(user: UserRegister) -> dict:
     """
@@ -195,54 +204,193 @@ def get_me(user_id: str) -> dict:
         )
     }
     
-def update_profile(user_id: str, updates: UserUpdate) -> dict:
+def get_user_by_id(user_id: str) -> dict:
     """
-    Update the authenticated user's profile fields.
- 
-    Only fields explicitly provided in the request body are updated —
-    omitted fields are left unchanged. If a new username is submitted,
-    uniqueness is checked before applying the update.
- 
+    Fetch a public user profile by ID.
+
+    """
+
+    res = supabase.table("users").select("*").eq("id", user_id).limit(1).execute()
+
+    if not res.data:
+        return {"success": False, "message": "User not found", "data": None}
+
+    user = cast(list[UserRecord], res.data)[0]
+
+    public_user = PublicUser(
+        id=user["id"],
+        username=user["username"],
+        bio=user.get("bio") or "",
+        profile_picture=user.get("profile_picture"),
+        created_at=datetime.fromisoformat(user["created_at"])
+    )
+
+    return {
+        "success": True,
+        "message": "User fetched successfully",
+        "data": public_user
+    }
+
+
+async def update_profile_picture(user_id: str, profile_picture: UploadFile) -> dict:
+    """
+    Replace the authenticated user's profile picture.
+
+    Split out of update_profile so the profile-picture-specific workflow
+    (validate, upload, retire the old file, persist the new filename) lives
+    on its own instead of being interleaved with the rest of the profile
+    update flow.
+
+    Delegates the actual storage work to
+    utils/profile_pics.replace_profile_picture(), which validates and
+    uploads the new image first and only deletes the previous one once that
+    upload succeeds — so a rejected/failed upload never destroys the user's
+    existing picture. The returned filename is then written to the user's
+    row in Supabase.
+
+    If the Supabase write fails after the new image has already been
+    uploaded, the newly uploaded file is deleted so it doesn't sit in
+    storage unreferenced by any user.
+
     Args:
-        user_id: UUID of the authenticated user extracted from the JWT payload
-        updates: Validated UserUpdate schema (username, bio, profile_picture —
-                 all optional)
- 
+        user_id: UUID of the authenticated user (from the JWT)
+        profile_picture: The newly uploaded image file
+
     Returns:
         Success: { success: True, message: str, data: UserAccount }
         Failure: { success: False, message: str, data: None }
- 
-    Note:
-        UserUpdate should be defined with model_config = ConfigDict(extra="forbid")
-        and all fields Optional so callers can send partial payloads.
+    """
+    current = supabase.table("users").select("*").eq("id", user_id).limit(1).execute()
+    if not current.data:
+        return {"success": False, "message": "User not found", "data": None}
+
+    current_user = cast(list[UserRecord], current.data)[0]
+
+    try:
+        new_filename = await replace_profile_picture(current_user.get("profile_picture"), profile_picture)
+    except ValueError as e:
+        return {"success": False, "message": str(e), "data": None}
+
+    res = supabase.table("users").update({"profile_picture": new_filename}).eq("id", user_id).execute()
+
+    if not res.data or len(res.data) == 0:
+        # DB write failed after the new image was already uploaded — clean it
+        # up so it doesn't sit in storage unreferenced by any user.
+        await delete_profile_picture(new_filename)
+        return {"success": False, "message": "Failed to update profile picture", "data": None}
+
+    updated_user = cast(list[UserRecord], res.data)[0]
+
+    return {
+        "success": True,
+        "message": "Profile picture updated successfully",
+        "data": UserAccount(
+            id=updated_user["id"],
+            username=updated_user["username"],
+            email=updated_user["email"],
+            bio=updated_user.get("bio"),
+            profile_picture=updated_user.get("profile_picture"),
+            created_at=datetime.fromisoformat(updated_user["created_at"])
+        )
+    }
+
+
+def update_profile(user_id: str, updates: UserUpdate) -> dict:
+    """
+    Update the authenticated user's profile fields (username, bio).
+
+    Profile picture changes are handled separately by
+    update_profile_picture() — this function only deals with the plain
+    text fields.
+
+    A field only counts as "changed" if it differs from the user's current
+    stored value — if the frontend resends the same username, or bio stays
+    at its default (None), that field is treated as untouched, not an
+    update. This matters because the frontend may submit all fields on
+    every save even if the user only edited one.
+
+    Nothing is written to the database until every field that DID change
+    passes its checks — a failure on any changed field aborts the whole
+    update and returns immediately, so partial updates never happen.
+
+    Format constraints (length, etc.) are enforced by UserUpdate itself at
+    the request-parsing layer, before this function runs. This function
+    only handles checks that require hitting the database (e.g. username
+    uniqueness).
+
+    Args:
+        user_id: UUID of the authenticated user (from the JWT)
+        updates: Validated UserUpdate schema (username, bio — both optional)
+
+    Returns:
+        Success: { success: True, message: str, data: UserAccount }
+        Failure: { success: False, message: str, data: None }
     """
  
     # Build a dict of only the fields the caller actually provided.
-    payload = updates.model_dump(exclude_unset=True)
- 
-    if not payload:
-        return {"success": False, "message": "No fields provided to update", "data": None}
- 
-    if "username" in payload:
-        existing = (supabase.table("users").select("id").eq("username", payload["username"]).neq("id", user_id))
+    submitted = updates.model_dump(exclude_unset=True, exclude_none=True)
+    
+    for key in ("bio",):
+        if submitted.get(key) == "":
+            submitted[key] = None
+
+    submitted = {k: v for k, v in submitted.items() if v is not None}
+
+    if not submitted:
+        return {"success": True, "message": "No fields provided to update", "data": None}
+
+     # Fetch the current row so we can tell what actually changed.
+    current = supabase.table("users").select("*").eq("id", user_id).limit(1).execute()
+    if not current.data:
+        return {"success": False, "message": "User not found", "data": None}
+    
+    current_user = cast(list[UserRecord], current.data)[0]
+    
+    changed = {
+        key: value
+        for key, value in submitted.items()
+        if value != current_user.get(key)
+    }
+    
+    if not changed:
+        return {"success": True, "message": "No changes detected", "data": None}
+    
+    # 1. username check
+    if "username" in changed:
+        existing_username = (supabase.table("users").select("id").eq("username", changed["username"]).neq("id", user_id).execute())
         
-        if existing.data:
+        if existing_username.data:
             return {"success": False, "message": "Username is already taken", "data": None}
     
-    if "bio" in payload and len(payload["bio"].split()) > 150:
-        return {"success": False, "message": "Bio description must not exceed 150 words", "data": None}
+    # 2. bio
+    if "bio" in changed:
+        stripped_bio = changed["bio"].strip()
+
+        if not stripped_bio:
+            return {"success": False, "message": "Bio cannot be empty or whitespace", "data": None}
+
+        # Normalize so we don't store leading/trailing whitespace the user
+        # didn't intend as part of their bio.
+        changed["bio"] = stripped_bio
     
-    res = (supabase.table("users").update(payload).eq("id", user_id).execute())
- 
+    res = supabase.table("users").update(changed).eq("id", user_id).execute()
+    
     if not res.data or len(res.data) == 0:
         return {"success": False, "message": "Failed to update profile", "data": None}
- 
+
     updated_user = cast(list[UserRecord], res.data)[0]
  
     return {
         "success": True,
         "message": "Profile updated successfully",
-        "data": UserUpdate(username=updated_user["username"], bio=updated_user.get("bio"), profile_picture=updated_user.get("profile_picture"))
+        "data": UserAccount(
+            id=updated_user["id"],
+            username=updated_user["username"],
+            email=updated_user["email"],
+            bio=updated_user.get("bio"),
+            profile_picture=updated_user.get("profile_picture"),
+            created_at=datetime.fromisoformat(updated_user["created_at"])
+        )
     }
     
 def update_password(user_id: str, passwords: UserUpdatePassword) -> dict:
@@ -300,7 +448,7 @@ def delete_account(user_id: str, token: str) -> dict:
         Success: { success: True, message: str, data: None }
         Failure: { success: False, message: str, data: None }
     """
-
+    
     # Invalidate the session before touching the account
     blacklist_token(token)
 
