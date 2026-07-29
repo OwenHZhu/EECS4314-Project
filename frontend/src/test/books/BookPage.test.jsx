@@ -42,16 +42,25 @@ import { useLibrary } from "../../hooks/library/useLibrary.js";
 const mockNavigate = vi.fn();
 
 /**
- * Mocks React Router so the page always receives the same representative
- * route ID and exposes navigation calls for assertions.
+ * Partially mocks React Router so the page always receives the same
+ * representative route ID and exposes navigation calls for assertions.
+ *
+ * The real exports are retained because nested components may use Link or
+ * other React Router components.
  */
-vi.mock("react-router-dom", () => ({
-  useParams: () => ({
-    bookId: "book-1",
-  }),
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
 
-  useNavigate: () => mockNavigate,
-}));
+  return {
+    ...actual,
+
+    useParams: () => ({
+      bookId: "book-1",
+    }),
+
+    useNavigate: () => mockNavigate,
+  };
+});
 
 /**
  * Mocks the frontend Book Service helper.
@@ -104,6 +113,23 @@ vi.mock("../../components/generic/GenericButton.jsx", () => ({
     </button>
   ),
 }));
+
+/**
+ * Replaces BookForumSection with a simple test component.
+ *
+ * Discussion loading and routing are separate concerns from BookPage's book
+ * details and library-action behaviour, so they are isolated in this suite.
+ */
+vi.mock(
+  "../../pages/books/components/BookForumSection.jsx",
+  () => ({
+    default: ({ bookId }) => (
+      <section data-testid="book-forum-section">
+        Discussions for {bookId}
+      </section>
+    ),
+  })
+);
 
 /**
  * Replaces BookStatusDropdown with a small interactive test component.

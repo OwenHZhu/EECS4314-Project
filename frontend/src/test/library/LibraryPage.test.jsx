@@ -76,6 +76,24 @@ vi.mock(
 );
 
 /**
+ * Replaces CollectionSection so LibraryPage can be tested without requiring
+ * CollectionProvider or collection API data.
+ *
+ * CollectionSection has its own responsibilities and should be tested
+ * separately from LibraryPage's category-selection behavior.
+ */
+vi.mock(
+  "../../pages/library/components/collections/CollectionSection.jsx",
+  () => ({
+    default: () => (
+      <section data-testid="collection-section">
+        Collections
+      </section>
+    ),
+  })
+);
+
+/**
  * Replaces FilterButton with an accessible HTML button.
  *
  * The real component currently renders a span. Using a button here isolates

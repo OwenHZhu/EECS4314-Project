@@ -569,10 +569,10 @@ describe("DiscoverPage", () => {
   });
 
   /**
-   * Rating a new book should create a wishlist entry because the Library
+   * Rating a new book should create a finished entry because the Library
    * Service requires a status when creating an entry.
    */
-  it("creates a wishlist entry when a new book is rated", async () => {
+  it("creates a read entry when a new book is rated", async () => {
     const user = userEvent.setup();
     const addLibraryEntry = vi.fn().mockResolvedValue(undefined);
 
@@ -599,7 +599,7 @@ describe("DiscoverPage", () => {
     await waitFor(() => {
       expect(addLibraryEntry).toHaveBeenCalledWith(
         "book-1",
-        "wishlist",
+        "read",
         false,
         4,
       );
