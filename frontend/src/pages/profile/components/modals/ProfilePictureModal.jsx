@@ -20,8 +20,8 @@
  */
 
 import { useState, useRef } from "react";
-import { useUser } from "../../../hooks/user/useUser.js";
-import Icon from "../../../components/generic/Icon.jsx"
+import { useUser } from "../../../../hooks/user/useUser.js";
+import Icon from "../../../../components/generic/Icon.jsx";
 
 export default function ProfilePictureModal({ setMessages, setEditPicture }) {
     const { updateProfilePicture } = useUser();
