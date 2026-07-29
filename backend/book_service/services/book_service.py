@@ -12,31 +12,8 @@ import json
 from datetime import datetime, timezone
 from typing import Optional
 from shared.db import supabase
+from shared.publish_event import publish_analytics_event
 
-
-# Analytics Helper
-
-def publish_analytics_event(event_type: str, payload: dict):
-    """Publishes a fire-and-forget message to RabbitMQ for analytics tracking."""
-    try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-        channel = connection.channel()
-        channel.exchange_declare(exchange="analytics_events", exchange_type="fanout")
-        
-        event = {
-            "event_type": event_type,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "payload": payload
-        }
-        
-        channel.basic_publish(
-            exchange="analytics_events",
-            routing_key="",
-            body=json.dumps(event)
-        )
-        connection.close()
-    except Exception as e:
-        print(f"Failed to publish analytics event: {e}")
 
 # Core Service Logic
 
