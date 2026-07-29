@@ -250,6 +250,7 @@ export function DiscoverPage() {
         }}
         onRatingChange={async (nextRating, book) => {
           await saveLibraryChange(book, {
+            nextStatus: "read",
             nextRating,
           });
         }}
