@@ -22,6 +22,8 @@ import { cn } from "../../../../utils/utils";
 import Icon from "../../../../components/generic/Icon";
 import SortingDropdown from "../ui/SortingDropdown";
 import LibraryItem from "./LibraryItem";
+import LibraryGridItem from "./LibraryGridItem";
+import { useLocalStorage } from "../../../../hooks/useLocalStorage";
 
 /** Variant-specific background + border styles */
 const variants = {
@@ -77,6 +79,9 @@ export default function LibraryTab({
     /** Currently selected sorting option (derived sorting) */
     const [selected, setSelected] = useState(filterOptions[0]);
 
+    /** Persist the user's preferred library layout across page visits. */
+    const [viewMode, setViewMode] = useLocalStorage("library-view-mode", "list");
+
     /**
      * Update selected sorting option.
      * Sorting itself is computed later from this value.
@@ -97,46 +102,105 @@ export default function LibraryTab({
             {...props}
             className={cn("rounded-xl p-4", variants[variant], className)}
         >
-            {/* Header: icon, title, sorting dropdown */}
-            <header className="flex flex-row space-x-2 items-center mb-3">
-                <Icon style={{ color: iconColour }}>
-                    {icon}
-                </Icon>
+            {/* Header: icon, title, sorting dropdown, and view controls */}
+            <header className="mb-3 flex flex-wrap items-center gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                    <Icon style={{ color: iconColour }}>
+                        {icon}
+                    </Icon>
 
-                <h1
-                    style={{ color: iconColour }}
-                    className="font-bold text-base md:text-lg"
+                    <h1
+                        style={{ color: iconColour }}
+                        className="font-bold text-base md:text-lg"
+                    >
+                        {title}
+                    </h1>
+
+                    <SortingDropdown
+                        options={filterOptions}
+                        selected={selected}
+                        handleSelection={handleSelection}
+                        dropdown={dropdown}
+                        setDropdown={setDropdown}
+                    />
+                </div>
+
+                <div
+                    className="ml-auto flex items-center rounded-full border border-white/10 bg-black/20 p-1"
+                    role="group"
+                    aria-label="Library view"
                 >
-                    {title}
-                </h1>
+                    <button
+                        type="button"
+                        onClick={() => setViewMode("list")}
+                        aria-label="Show books as a list"
+                        aria-pressed={viewMode === "list"}
+                        title="List view"
+                        className={cn(
+                            "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+                            viewMode === "list"
+                                ? "bg-white/15 text-[#F9EDCC]"
+                                : "text-[#7E7272] hover:text-[#D9D3C7]"
+                        )}
+                    >
+                        <Icon className="text-lg">view_list</Icon>
+                    </button>
 
-                <SortingDropdown
-                    options={filterOptions}
-                    selected={selected}
-                    handleSelection={handleSelection}
-                    dropdown={dropdown}
-                    setDropdown={setDropdown}
-                />
+                    <button
+                        type="button"
+                        onClick={() => setViewMode("grid")}
+                        aria-label="Show books as a grid"
+                        aria-pressed={viewMode === "grid"}
+                        title="Grid view"
+                        className={cn(
+                            "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+                            viewMode === "grid"
+                                ? "bg-white/15 text-[#F9EDCC]"
+                                : "text-[#7E7272] hover:text-[#D9D3C7]"
+                        )}
+                    >
+                        <Icon className="text-lg">grid_view</Icon>
+                    </button>
+                </div>
             </header>
 
-            {/* Content: sorted entries or empty-state message */}
-            <div className="flex flex-col space-y-3 mb-3 pl-2 max-h-80 overflow-auto custom-scrollbar">
-                {(!libraryList.length || !selectedEntries.length) && (
-                    <p className="text-[#BFB8AD] text-xs">
-                        {emptyText[variant]}
-                    </p>
-                )}
+            {/* Empty state shared by both layouts. */}
+            {(!libraryList.length || !selectedEntries.length) && (
+                <p className="mb-3 pl-2 text-xs text-[#BFB8AD]">
+                    {emptyText[variant]}
+                </p>
+            )}
 
-                {sortedEntries &&
-                    sortedEntries.map(entry => (
-                        <LibraryItem
-                            key={entry.id}
-                            libraryEntry={entry}
-                            variant={variant}
-                        />
-                    ))
-                }
-            </div>
+            {/* Existing detailed list view. */}
+            {viewMode === "list" && (
+                <div className="flex flex-col space-y-3 mb-3 pl-2 max-h-80 overflow-auto custom-scrollbar">
+                    {sortedEntries &&
+                        sortedEntries.map(entry => (
+                            <LibraryItem
+                                key={entry.id}
+                                libraryEntry={entry}
+                                variant={variant}
+                            />
+                        ))
+                    }
+                </div>
+            )}
+
+            {/* Responsive cover-focused grid view. */}
+            {viewMode === "grid" && (
+                <div className="custom-scrollbar grid max-h-[38rem] grid-cols-2 gap-3 overflow-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    {sortedEntries &&
+                        sortedEntries.map(entry => (
+                            <LibraryGridItem
+                                key={entry.id}
+                                libraryEntry={entry}
+                                variant={variant}
+                            />
+                        ))
+                    }
+                </div>
+            )}
+
         </div>
     );
 }

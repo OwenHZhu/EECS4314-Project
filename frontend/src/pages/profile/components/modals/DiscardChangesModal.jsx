@@ -13,7 +13,7 @@
  */
 
 import { useNavigate } from "react-router-dom";
-import GenericModal from "../../../components/generic/GenericModal";
+import GenericModal from "../../../../components/generic/GenericModal";
 
 export default function DeleteAccountModal({ setDiscardChanges }) {
     const navigate = useNavigate();

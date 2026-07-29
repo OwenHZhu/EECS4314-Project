@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getBookById } from "../../api/books/bookService";
 import BookStatusDropdown from "../../components/books/BookStatusDropdown";
+import BookForumSection from "./components/BookForumSection";
 import RatingStars from "../../components/generic/RatingStars";
 import Icon from "../../components/generic/Icon";
 import GenericButton from "../../components/generic/GenericButton";
@@ -456,88 +457,9 @@ export default function BookPage() {
 
       {/* Discussion preview section */}
       <section className="mt-8">
-        <h2 className="text-sm font-semibold">Discussions</h2>
 
-        <div className="mt-4 flex flex-wrap gap-3">
-          <GenericButton className="px-4 py-1.5 text-[11px]">
-            Spoilers
-          </GenericButton>
-
-          <GenericButton
-            variant="secondary"
-            className="px-4 py-1.5 text-[11px]"
-          >
-            Questions
-          </GenericButton>
-
-          <GenericButton
-            variant="ghost"
-            className="px-4 py-1.5 text-[11px]"
-          >
-            Theories
-          </GenericButton>
-        </div>
-
-        <div className="mt-5 space-y-4">
-          <article className="rounded-xl border border-secondary/70 bg-background px-4 py-3">
-            <div className="flex items-center justify-between">
-              <span className="rounded-full border border-secondary px-3 py-1 text-[10px] text-tertiary">
-                Questions
-              </span>
-
-              <span className="text-[10px] text-caption">
-                Month X, Year
-              </span>
-            </div>
-
-            <h3 className="mt-3 text-sm font-semibold">
-              What did this book make you think about?
-            </h3>
-
-            <p className="mt-1 text-xs text-tertiary">
-              by User123
-            </p>
-
-            <div className="mt-3 flex gap-6 text-[11px] text-caption">
-              <span>0 Replies</span>
-              <span>0 Likes</span>
-            </div>
-          </article>
-
-          <article className="rounded-xl border border-secondary/70 bg-background px-4 py-3">
-            <div className="flex items-center justify-between">
-              <span className="rounded-full border border-secondary px-3 py-1 text-[10px] text-tertiary">
-                Spoilers
-              </span>
-
-              <span className="text-[10px] text-caption">
-                Month X, Year
-              </span>
-            </div>
-
-            <h3 className="mt-3 text-sm font-semibold">
-              Did the ending change how you saw the story?
-            </h3>
-
-            <p className="mt-1 text-xs text-tertiary">
-              by User123
-            </p>
-
-            <div className="mt-3 flex gap-6 text-[11px] text-caption">
-              <span>0 Replies</span>
-              <span>0 Likes</span>
-            </div>
-          </article>
-        </div>
-
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            className="text-xs text-tertiary hover:text-primary"
-          >
-            View More Discussions
-          </button>
-        </div>
+        <BookForumSection bookId={bookId} />
+        
       </section>
     </div>
   );

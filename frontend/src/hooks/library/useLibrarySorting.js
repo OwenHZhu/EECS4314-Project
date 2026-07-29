@@ -90,7 +90,7 @@ export function sortSelectedEntries(selectedEntries, label) {
  * @returns {Array<object>}
  */
 function sortNewest(entries) {
-    return entries.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+    return entries.sort((a, b) => new Date(b.added_at) - new Date(a.added_at));
 }
 
 /**

@@ -1,53 +1,27 @@
 /**
- * ./pages/DiscoverPage.jsx
+ * DiscoverPage.jsx
  *
- * The main book discovery screen. Allows users to:
+ * The main catalog browsing screen for BookAtlas. Users can search the catalog,
+ * filter by genre, and explore results in a responsive grid. Search queries are
+ * handled through `useBookSearch`, which provides debounced backend results,
+ * while genre filtering is applied client‑side.
  *
- * 1. **Search the catalog**
- *    - Text search across title, author, and genre.
- *    - Debounced search handled by `useBookSearch`.
+ * Selecting a book opens the details modal, where authenticated users can
+ * favourite, rate, or update their reading status. Library interactions are
+ * powered by `useLibrary`, which creates or updates entries as needed.
  *
- * 2. **Filter by genre**
- *    - Uses GENRES and GENRE_LABELS to render filter buttons.
- *    - Selecting a genre updates the search results instantly.
- *
- * 3. **Browse results**
- *    - Displays a responsive grid of BookCard components.
- *    - Shows a loading indicator while search is processing.
- *    - Shows a “no results” message when nothing matches.
- *
- * Dependencies:
- * - `useBookSearch`: Custom hook providing debounced search and filtering.
- * - `BookCard`: Component for rendering individual book tiles.
- * - `BookDetailsModal`: Modal for previewing a selected book.
- * - `useLibrary`: Custom hook for saving user library status, favourites, and ratings.
- * - `GENRES`, `GENRE_LABELS`: Mock data for genre filtering UI.
- *
- * State:
- * - `query`: The current search text.
- * - `genre`: The selected genre filter.
- * - `selectedBook`: The book currently opened in the details modal.
- *
- * Behaviour:
- * - Typing in the search bar updates `query`.
- * - Clicking a genre button updates `genre`.
- * - Search results update automatically based on both values.
- * - Loading state is shown while the debounced search runs.
- * - Clicking a book opens the details modal.
- * - Modal favourite/status/rating actions are saved through the Library Service.
- *
- * Notes:
- * - Book data is requested through the Book Service using `useBookSearch`.
- * - Text search is handled by the backend.
- * - Genre filtering is currently handled on the frontend using the returned results.
- * - Library actions are user-specific and require authentication.
+ * State overview:
+ * - `query`: current search text
+ * - `genre`: active genre filter
+ * - `selectedBook`: book opened in the details modal
+ * 
  */
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBookSearch } from "../hooks/books/useBookSearch";
 import { BookCard } from "../components/books/BookCard";
-import { GENRES, GENRE_LABELS } from "../data/mockBook";
+import { GENRES, GENRE_LABELS } from "../data/genres";
 import BookDetailsModal from "../components/books/BookDetailsModal";
 import { useAuth } from "../hooks/auth/useAuth";
 import { useLibrary } from "../hooks/library/useLibrary";
