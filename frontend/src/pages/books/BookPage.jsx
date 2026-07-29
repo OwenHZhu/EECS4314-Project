@@ -32,7 +32,24 @@ function getRatings(book) {
 
 function getDistributionCount(distribution, star) {
   const entry = distribution?.[star];
-  return typeof entry?.count === "number" ? entry.count : 0;
+
+  if (typeof entry === "number") {
+    return entry;
+  }
+
+  if (typeof entry?.count === "number") {
+    return entry.count;
+  }
+
+  return 0;
+}
+
+function getDistributionPercentage(distribution, star) {
+  const entry = distribution?.[star];
+
+  return typeof entry?.percentage === "number"
+    ? entry.percentage
+    : null;
 }
 
 
@@ -226,14 +243,8 @@ export default function BookPage() {
   const wishlistCount = book.library_stats?.wishlist_count ?? 0;
   const readingCount = book.library_stats?.reading_count ?? 0;
 
-  // Safe helpers
-  function getDistributionCount(dist, star) {
-    return dist?.[star]?.count ?? 0;
-  }
+ 
 
-  function getDistributionPercentage(dist, star) {
-    return dist?.[star]?.percentage ?? null;
-  }
 
   // Fallback max count (only used if percentage is missing)
   const maxDistributionCount = Math.max(
