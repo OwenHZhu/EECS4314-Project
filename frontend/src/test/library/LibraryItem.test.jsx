@@ -13,6 +13,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import "@testing-library/jest-dom/vitest";
 
 import LibraryItem from "../../pages/library/components/entries/LibraryItem.jsx";
@@ -108,6 +109,25 @@ const libraryEntry = {
   },
 };
 
+/**
+ * Renders LibraryItem inside a router because the current component tree
+ * contains React Router Link components.
+ */
+function renderLibraryItem({
+  entry = libraryEntry,
+  variant = "finished",
+} = {}) {
+  return render(
+    <MemoryRouter>
+      <LibraryItem
+        libraryEntry={entry}
+        variant={variant}
+      />
+    </MemoryRouter>
+  );
+}
+
+
 describe("LibraryItem", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -119,12 +139,9 @@ describe("LibraryItem", () => {
    * Verifies that the main book information is displayed.
    */
   it("renders the book title, author, and cover image", () => {
-    render(
-      <LibraryItem
-        libraryEntry={libraryEntry}
-        variant="finished"
-      />
-    );
+    renderLibraryItem({
+        variant: "finished",
+      });
 
     expect(screen.getByText("Dune")).toBeInTheDocument();
     expect(screen.getByText("Frank Herbert")).toBeInTheDocument();
@@ -144,12 +161,9 @@ describe("LibraryItem", () => {
    * Verifies that LibraryItem requests and displays the correct date text.
    */
   it("displays the variant-specific date text", () => {
-    render(
-      <LibraryItem
-        libraryEntry={libraryEntry}
-        variant="finished"
-      />
-    );
+    renderLibraryItem({
+        variant: "finished",
+      });
 
     expect(mocks.getDateText).toHaveBeenCalledTimes(1);
     expect(mocks.getDateText).toHaveBeenCalledWith(
@@ -166,12 +180,9 @@ describe("LibraryItem", () => {
    * Non-favourite variants should display an Edit button.
    */
   it("shows the Edit button for a non-favourite entry", () => {
-    render(
-      <LibraryItem
-        libraryEntry={libraryEntry}
-        variant="finished"
-      />
-    );
+    renderLibraryItem({
+        variant: "finished",
+      });
 
     expect(
       screen.getByRole("button", { name: "Edit" })
@@ -189,12 +200,9 @@ describe("LibraryItem", () => {
   it("opens the edit modal when Edit is clicked", async () => {
     const user = userEvent.setup();
 
-    render(
-      <LibraryItem
-        libraryEntry={libraryEntry}
-        variant="finished"
-      />
-    );
+    renderLibraryItem({
+        variant: "finished",
+      });
 
     expect(
       screen.queryByRole("dialog", {
@@ -227,12 +235,9 @@ describe("LibraryItem", () => {
   it("opens the delete modal when the close icon is clicked", async () => {
     const user = userEvent.setup();
 
-    render(
-      <LibraryItem
-        libraryEntry={libraryEntry}
-        variant="reading"
-      />
-    );
+    renderLibraryItem({
+        variant: "reading",
+      });
 
     expect(
       screen.queryByRole("dialog", {
@@ -259,12 +264,9 @@ describe("LibraryItem", () => {
    * Favourite entries should show Unfavourite instead of Edit.
    */
   it("shows Unfavourite instead of Edit for the favourite variant", () => {
-    render(
-      <LibraryItem
-        libraryEntry={libraryEntry}
-        variant="favourite"
-      />
-    );
+    renderLibraryItem({
+        variant: "favourite",
+      });
 
     expect(
       screen.getByRole("button", { name: "Unfavourite" })
@@ -282,12 +284,9 @@ describe("LibraryItem", () => {
   it("removes the entry from favourites when Unfavourite is clicked", async () => {
     const user = userEvent.setup();
 
-    render(
-      <LibraryItem
-        libraryEntry={libraryEntry}
-        variant="favourite"
-      />
-    );
+   renderLibraryItem({
+        variant: "favourite",
+      });
 
     await user.click(
       screen.getByRole("button", { name: "Unfavourite" })
@@ -309,12 +308,9 @@ describe("LibraryItem", () => {
   it("toggles the delete modal closed when the icon is clicked again", async () => {
     const user = userEvent.setup();
 
-    render(
-      <LibraryItem
-        libraryEntry={libraryEntry}
-        variant="finished"
-      />
-    );
+    renderLibraryItem({
+        variant: "finished",
+      });
 
     const closeButton = screen.getByRole("button", {
       name: "close",

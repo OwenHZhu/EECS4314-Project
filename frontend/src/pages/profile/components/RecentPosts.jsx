@@ -64,7 +64,7 @@ export default function RecentPosts() {
 
         {hasPosts && (
           <Link
-            to="/profile/posts"
+            to={`/users/${user.id}/posts`}
             className="text-xs text-[#b07a7a] hover:text-primary transition-colors"
           >
             View more

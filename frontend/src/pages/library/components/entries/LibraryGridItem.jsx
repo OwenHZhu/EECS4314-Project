@@ -7,8 +7,10 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import { cn } from "../../../../utils/utils";
 import { useLibraryActions } from "../../../../hooks/library/useLibraryActions";
+import AddToCollectionModal from "../collections/AddToCollectionModal";
 import DeleteEntryModal from "../modals/DeleteEntryModal";
 import EditEntryModal from "../modals/EditEntryModal";
 import GenericButton from "../../../../components/generic/GenericButton";
@@ -23,6 +25,7 @@ export default function LibraryGridItem({
     const { getDateText, doAction } = useLibraryActions();
     const [deleteModal, setDeleteModal] = useState(false);
     const [editModal, setEditModal] = useState(false);
+    const [collectionModal, setCollectionModal] = useState(false);
 
     const rating = libraryEntry.rating || 0;
 
@@ -51,18 +54,22 @@ export default function LibraryGridItem({
                 document.body
             )}
 
+            {collectionModal && createPortal(<AddToCollectionModal libraryEntry={libraryEntry} setCollectionModal={setCollectionModal} />, document.body)}
+
             <div className="relative aspect-[3/4] overflow-hidden rounded-t-xl bg-[#0B0B0A]">
-                {libraryEntry.book.cover_image ? (
-                    <img
-                        src={libraryEntry.book.cover_image}
-                        alt={`Cover image for ${libraryEntry.book.title}`}
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    />
-                ) : (
-                    <div className="flex h-full items-center justify-center p-4 text-center text-xs font-semibold text-[#7E7272]">
-                        {libraryEntry.book.title}
-                    </div>
-                )}
+                <Link to={`/books/${libraryEntry.book_id}`} target="_blank" rel="noopener noreferrer" aria-label={`View details for ${libraryEntry.book.title}`} className="block h-full w-full">
+                    {libraryEntry.book.cover_image ? (
+                        <img
+                            src={libraryEntry.book.cover_image}
+                            alt={`Cover image for ${libraryEntry.book.title}`}
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        />
+                    ) : (
+                        <div className="flex h-full items-center justify-center p-4 text-center text-xs font-semibold text-[#7E7272]">
+                            {libraryEntry.book.title}
+                        </div>
+                    )}
+                </Link>
 
                 <button
                     type="button"
@@ -84,12 +91,11 @@ export default function LibraryGridItem({
             </div>
 
             <div className="flex flex-1 flex-col px-2.5 py-2">
-                <h3
-                    className="truncate text-xs font-semibold text-[#F9EDCC]"
-                    title={libraryEntry.book.title}
-                >
-                    {libraryEntry.book.title}
-                </h3>
+                <Link to={`/books/${libraryEntry.book_id}`} target="_blank" rel="noopener noreferrer" className="truncate" title={libraryEntry.book.title}>
+                    <h3 className="truncate text-xs font-semibold text-[#F9EDCC] transition hover:text-white hover:underline">
+                        {libraryEntry.book.title}
+                    </h3>
+                </Link>
 
                 <p
                     className="mt-1 truncate text-[11px] text-[#BFB8AD]"
@@ -141,6 +147,17 @@ export default function LibraryGridItem({
                             Edit
                         </GenericButton>
                     )}
+
+                    <GenericButton
+                        type="button"
+                        aria-label={`Manage collections for ${libraryEntry.book.title}`}
+                        title="Collections"
+                        onClick={() => setCollectionModal(true)}
+                        variant="ghost"
+                        className="flex items-center justify-center px-2 py-1"
+                    >
+                        <Icon className="text-sm">collections_bookmark</Icon>
+                    </GenericButton>
                 </div>
             </div>
         </article>

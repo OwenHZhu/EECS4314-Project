@@ -10,7 +10,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
 
@@ -92,6 +92,21 @@ vi.mock(
 );
 
 /**
+ * Replaces LibraryGridItem with a small component that exposes its props.
+ */
+vi.mock(
+  "../../pages/library/components/entries/LibraryGridItem.jsx",
+  () => ({
+    default: ({ libraryEntry, variant }) => (
+      <article data-testid="library-grid-item">
+        <p>Grid book: {libraryEntry.book.title}</p>
+        <p>Grid variant: {variant}</p>
+      </article>
+    ),
+  })
+);
+
+/**
  * Complete sample library passed into LibraryTab.
  */
 const libraryEntries = [
@@ -133,6 +148,7 @@ const libraryEntries = [
 describe("LibraryTab", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
 
     /**
      * Default mocked filtering result contains the two finished books.
@@ -480,5 +496,158 @@ describe("LibraryTab", () => {
     expect(items[1]).toHaveTextContent(
       "Book: The Hobbit"
     );
+  });
+
+  /**
+   * The library should continue to use the existing list view by default.
+   */
+  it("shows the list view by default", () => {
+    render(
+      <LibraryTab
+        libraryList={libraryEntries}
+        icon="bookmark_check"
+        iconColour="#ffffff"
+        title="Finished"
+        variant="finished"
+      />
+    );
+
+    expect(screen.getAllByTestId("library-item")).toHaveLength(2);
+    expect(screen.queryByTestId("library-grid-item")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show books as a list" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  /**
+   * Clicking the grid control replaces list entries with grid entries.
+   */
+  it("switches from list view to grid view", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LibraryTab
+        libraryList={libraryEntries}
+        icon="bookmark_check"
+        iconColour="#ffffff"
+        title="Finished"
+        variant="finished"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show books as a grid" }));
+
+    expect(screen.queryByTestId("library-item")).not.toBeInTheDocument();
+    expect(screen.getAllByTestId("library-grid-item")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Show books as a grid" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  /**
+   * Grid entries receive the current category variant.
+   */
+  it("passes the selected variant to every grid item", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LibraryTab
+        libraryList={libraryEntries}
+        icon="bookmark_check"
+        iconColour="#ffffff"
+        title="Finished"
+        variant="finished"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show books as a grid" }));
+
+    expect(screen.getAllByText("Grid variant: finished")).toHaveLength(2);
+  });
+
+  /**
+   * Grid rendering preserves the order returned by the sorting utility.
+   */
+  it("renders grid entries in the sorted order", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LibraryTab
+        libraryList={libraryEntries}
+        icon="bookmark_check"
+        iconColour="#ffffff"
+        title="Finished"
+        variant="finished"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show books as a grid" }));
+
+    const items = screen.getAllByTestId("library-grid-item");
+
+    expect(items[0]).toHaveTextContent("Grid book: 1984");
+    expect(items[1]).toHaveTextContent("Grid book: The Hobbit");
+  });
+
+  /**
+   * Users can return to the existing list layout after selecting grid.
+   */
+  it("switches back from grid view to list view", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LibraryTab
+        libraryList={libraryEntries}
+        icon="bookmark_check"
+        iconColour="#ffffff"
+        title="Finished"
+        variant="finished"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show books as a grid" }));
+    await user.click(screen.getByRole("button", { name: "Show books as a list" }));
+
+    expect(screen.getAllByTestId("library-item")).toHaveLength(2);
+    expect(screen.queryByTestId("library-grid-item")).not.toBeInTheDocument();
+  });
+
+  /**
+   * The selected layout is persisted by the existing local-storage hook.
+   */
+  it("saves the selected grid view to localStorage", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LibraryTab
+        libraryList={libraryEntries}
+        icon="bookmark_check"
+        iconColour="#ffffff"
+        title="Finished"
+        variant="finished"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show books as a grid" }));
+
+    await waitFor(() => {
+      expect(localStorage.getItem("library-view-mode")).toBe(JSON.stringify("grid"));
+    });
+  });
+
+  /**
+   * A saved grid preference is restored on the next render.
+   */
+  it("restores the saved grid view from localStorage", () => {
+    localStorage.setItem("library-view-mode", JSON.stringify("grid"));
+
+    render(
+      <LibraryTab
+        libraryList={libraryEntries}
+        icon="bookmark_check"
+        iconColour="#ffffff"
+        title="Finished"
+        variant="finished"
+      />
+    );
+
+    expect(screen.getAllByTestId("library-grid-item")).toHaveLength(2);
+    expect(screen.queryByTestId("library-item")).not.toBeInTheDocument();
   });
 });

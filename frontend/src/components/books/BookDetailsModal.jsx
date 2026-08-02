@@ -171,6 +171,7 @@ export default function BookDetailsModal({
     }
 
     setUserRating(nextRating);
+    setStatus("read");
     onRatingChange?.(nextRating, book);
   }
 

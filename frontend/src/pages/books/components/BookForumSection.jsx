@@ -11,7 +11,11 @@ export default function BookForumSection({ bookId }) {
         async function loadThreads() {
             try {
                 const res = await getThreads(bookId);
-                setThreads(res.data);
+                const threadList = Array.isArray(res?.data)
+                ? res.data : Array.isArray(res?.data?.threads)
+                ? res.data.threads : [];
+
+            setThreads(threadList);
             } catch (err) {
                 console.error("Failed to load threads:", err);
             } finally {

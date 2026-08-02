@@ -74,7 +74,7 @@ export default function BookStatusDropdown({
   const trigger = (
     <GenericButton
       type="button"
-      variant="bookAction"
+      variant=""
       className="
       flex min-w-[105px] items-center justify-center gap-2
       bg-book-action px-4 py-2 text-[11px]
