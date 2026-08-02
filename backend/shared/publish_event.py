@@ -25,7 +25,7 @@ def publish_analytics_event(event_type: str, payload: dict):
         }
 
         channel.basic_publish(
-            exchange="analytics_events",
+            exchange="analytics_events", 
             routing_key="",
             body=json.dumps(event)
         )
