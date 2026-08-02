@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 from shared.db import supabase
+from shared.publish_event import publish_analytics_event
 from library_service.schemas.library import LibraryEntryCreate, ReadingStatus
 
 
@@ -43,6 +44,36 @@ def add_or_update_library_entry(entry: LibraryEntryCreate, user_id: str) -> dict
         res = (supabase.table("library").update(update_data).eq("user_id", user_id).eq("book_id", entry.book_id).execute())
         if not res.data:
             return {"success" : False, "message" : "Failed to update library", "data" : None}
+        
+        # --- ANALYTICS TRIGGERS (only fire on actual transitions) ---
+        if entry.is_favourite and not previous.get("is_favourite"):
+            publish_analytics_event("BookFavourited", {
+                "book_id": entry.book_id
+            })
+
+        if entry.status.value == "dropped" and previous.get("status") != "dropped":
+            publish_analytics_event("BookDropped", {
+                "book_id": entry.book_id,
+                "reason": "status_updated"
+            })
+            
+        if entry.status.value == "reading" and previous.get("status") != "reading":
+            publish_analytics_event("ReadingStarted", {
+                "book_id": entry.book_id
+            })
+
+        if entry.status.value == "finished" and previous.get("status") != "finished":
+            publish_analytics_event("ReadingFinished", {
+                "book_id": entry.book_id
+            })
+
+        if entry.rating is not None and entry.rating != previous.get("rating"):
+            publish_analytics_event("BookRated", {
+                "book_id": entry.book_id,
+                "rating": entry.rating
+            })
+        
+        
         return {"success" : True, "message" : "Library updated successfully", "data" : res.data[0]}
     
     insert_data = {
@@ -56,9 +87,45 @@ def add_or_update_library_entry(entry: LibraryEntryCreate, user_id: str) -> dict
         "start_date" : (entry.start_date.isoformat() if entry.start_date is not None else None),
         "end_date" : (entry.end_date.isoformat() if entry.end_date is not None else None)
     }
+    
     res = (supabase.table("library").insert(insert_data).execute())
     if not res.data:
         return {"success" : False, "message" : "Failed to add book to library", "data" : None}
+    
+    # --- ANALYTICS TRIGGERS ---
+    publish_analytics_event("BookAdded", {
+        "book_id": entry.book_id,
+        "source": "library"
+    })
+
+    if entry.is_favourite:
+        publish_analytics_event("BookFavourited", {
+            "book_id": entry.book_id
+        })
+
+    if entry.status.value == "dropped":
+        publish_analytics_event("BookDropped", {
+            "book_id": entry.book_id,
+            "reason": "status_updated"
+        })
+
+    if entry.status.value == "reading":
+        publish_analytics_event("ReadingStarted", {
+            "book_id": entry.book_id
+        })
+
+    if entry.status.value == "finished":
+        publish_analytics_event("ReadingFinished", {
+            "book_id": entry.book_id
+        })
+
+    if entry.rating is not None:
+        publish_analytics_event("BookRated", {
+            "book_id": entry.book_id,
+            "rating": entry.rating
+        })
+    
+    
     return {"success" : True, "message" : "Book added to library successfully", "data" : res.data[0]}
 
 def get_user_library(user_id: str) -> dict:
@@ -109,6 +176,12 @@ def update_library(user_id: str, book_id: str, status: Optional[ReadingStatus] =
         Success: { "success": True, "message": str, "data": updated_library_entry } 
         Failure: { "success": False, "message": str, "data": None } 
     """
+    # Fetch current state first so we can detect actual transitions below
+    existing = (supabase.table("library").select("*").eq("user_id", user_id).eq("book_id", book_id).limit(1).execute())
+    if not existing.data:
+        return {"success" : False, "message" : "Library entry not found", "data" : None}
+    previous = existing.data[0]
+
     update_data = {"updated_at" : datetime.now(timezone.utc).isoformat()}
     
     if status is not None:
@@ -130,6 +203,35 @@ def update_library(user_id: str, book_id: str, status: Optional[ReadingStatus] =
     res = (supabase.table("library").update(update_data).eq("user_id", user_id).eq("book_id", book_id).execute())
     if not res.data:
         return {"success" : False, "message" : "Library entry not found", "data" : None}
+    
+    # --- ANALYTICS TRIGGERS (only fire on actual transitions) ---
+    if is_favourite and not previous.get("is_favourite"):
+        publish_analytics_event("BookFavourited", {
+            "book_id": book_id
+        })
+
+    if status is not None and status.value == "dropped" and previous.get("status") != "dropped":
+        publish_analytics_event("BookDropped", {
+            "book_id": book_id,
+            "reason": "status_updated"
+        })
+
+    if status is not None and status.value == "reading" and previous.get("status") != "reading":
+        publish_analytics_event("ReadingStarted", {
+            "book_id": book_id
+        })
+
+    if status is not None and status.value == "finished" and previous.get("status") != "finished":
+        publish_analytics_event("ReadingFinished", {
+            "book_id": book_id
+        })
+
+    if rating is not None and rating != previous.get("rating"):
+        publish_analytics_event("BookRated", {
+            "book_id": book_id,
+            "rating": rating
+        })
+    
     return {"success" : True, "message" : "Library entry updated successfully", "data" : res.data[0]}
 
 
@@ -151,4 +253,10 @@ def remove_library_entry(user_id: str, book_id: str) -> dict:
     res = (supabase.table("library").delete().eq("user_id", user_id).eq("book_id", book_id).execute())
     if not res.data:
         return {"success" : False, "message" : "Library entry not found", "data" : None}
+    
+    # --- ANALYTICS TRIGGER ---
+    publish_analytics_event("BookRemoved", {
+        "book_id": book_id
+    })
+    
     return {"success" : True, "message" : "Book removed from library successfully", "data" : res.data[0]}

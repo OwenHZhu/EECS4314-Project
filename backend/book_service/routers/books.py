@@ -126,11 +126,16 @@ def delete_book_route(book_id: UUID4):
     return {"message": result["message"]}
 
 @router.get("/", response_model=BookListWrap)
-def get_books_route(q: Optional[str] = Query(None, description="Search by title or author"), limit: int = 50):
+def get_books_route(
+    q: Optional[str] = Query(None, description="Search by title"), 
+    author: Optional[str] = Query(None, description="Filter by author name"),
+    genre: Optional[str] = Query(None, description="Filter by a specific genre"),
+    limit: int = 50
+):
     """
-    Fetches a list of books, with an optional search query.
+    Fetches a list of books. Supports filtering by title, author, and genre.
     """
-    result = get_all_books(q, limit)
+    result = get_all_books(q=q, author=author, genre=genre, limit=limit)
     if not result["success"]:
         raise HTTPException(status_code=500, detail=result["message"])
     return {"data": result.get("data")}

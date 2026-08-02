@@ -34,6 +34,8 @@ from datetime import datetime, timezone
 from typing import Any, cast
 
 from shared.db import supabase
+from shared.publish_event import publish_analytics_event
+
 from discussion_service.utils.helpers import parse_datetime, get_thread_tags
 from discussion_service.utils.record import ThreadRecord, ReplyRecord, TagRecord
 from discussion_service.utils.constants import (
@@ -210,6 +212,12 @@ def create_thread(user_id: str, thread: ThreadCreate) -> dict:
 		link_rows = [{"thread_id": thread_id, "tag_id": record["id"]} for record in tag_records]
 		supabase.table(DISCUSSION_THREAD_TAGS_TABLE).insert(link_rows).execute()
 		tag_objects = [build_tag(record) for record in tag_records]
+  
+	# --- ANALYTICS TRIGGER ---
+	publish_analytics_event("ForumCreated", {
+		"forum_id": thread_id,
+		"book_id": thread.book_id
+	})
 
 	return {"success": True, "message": "Thread created successfully", "data": build_thread(thread_record, tags=tag_objects)}
 
@@ -328,6 +336,12 @@ def update_thread(thread_id: str, user_id: str, updates: ThreadUpdate) -> dict:
 
 	updated_record = cast(ThreadRecord, res.data[0])
 	tag_records = get_thread_tags([thread_id]).get(thread_id, [])
+ 
+ # --- ANALYTICS TRIGGER ---
+	publish_analytics_event("ForumUpdated", {
+		"forum_id": thread_id,
+		"fields_changed": list(changes.keys())
+	})
 
 	return {
 		"success": True,
@@ -374,6 +388,11 @@ def delete_thread(thread_id: str, user_id: str) -> dict:
 	if not res.data:
 		return {"success": False, "message": "Failed to delete thread", "data": None}
 
+	# --- ANALYTICS TRIGGER ---
+	publish_analytics_event("ForumDeleted", {
+		"forum_id": thread_id
+	})
+
 	return {"success": True, "message": "Thread deleted successfully", "data": None}
 
 
@@ -407,6 +426,22 @@ def create_reply(thread_id: str, user_id: str, reply: ReplyCreate) -> dict:
 
 	if not res.data:
 		return {"success": False, "message": "Failed to create reply", "data": None}
+
+	reply_record = cast(ReplyRecord, res.data[0])
+	reply_id = str(reply_record["id"])
+
+	# --- ANALYTICS TRIGGER ---
+	if reply.parent_reply_id is not None:
+		publish_analytics_event("ForumNestedReply", {
+			"forum_id": thread_id,
+			"parent_reply_id": reply.parent_reply_id,
+			"reply_id": reply_id
+		})
+	else:
+		publish_analytics_event("ForumParentReply", {
+			"forum_id": thread_id,
+			"reply_id": reply_id
+		})
 
 	return {"success": True, "message": "Reply created successfully", "data": build_reply(cast(ReplyRecord, res.data[0]))}
 
@@ -757,6 +792,12 @@ def toggle_reply_like(user_id: str, reply_id: str) -> dict:
 	else:
 		_like_reply(user_id, reply_id)
 		liked = True
+  
+	# --- ANALYTICS TRIGGER (only fire on the like, not the unlike) ---
+	if liked:
+		publish_analytics_event("ForumReplyLiked", {
+			"reply_id": reply_id
+		})
 
 	return {
 		"success": True,

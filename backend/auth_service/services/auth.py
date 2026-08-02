@@ -40,6 +40,7 @@ from datetime import datetime
 from fastapi import UploadFile
 
 from shared.db import supabase
+from shared.publish_event import publish_analytics_event
 from auth_service.utils.security import hash_password, verify_password
 from auth_service.utils.jwt import create_token, blacklist_token
 from auth_service.utils.profile_pics import delete_profile_picture, replace_profile_picture
@@ -87,6 +88,11 @@ def register_user(user: UserRegister) -> dict:
 
     new_user = cast(list[UserRecord], res.data)[0]
     token = create_token(new_user["id"])
+    
+    # --- ANALYTICS TRIGGER ---
+    publish_analytics_event("UserCreated", {
+        "user_id": new_user["id"]
+    })
 
     return {
         "success": True,
@@ -124,14 +130,21 @@ def login_user(user: UserLogin) -> dict:
     res = supabase.table("users").select("*").eq("email", user.email).limit(1).execute()
 
     if not res.data:
+        publish_analytics_event("LoginFailed", {"reason": "user_not_found"})
         return {"success": False, "message": "Invalid credentials", "data": None, "token": None}
 
     db_user = cast(list[UserRecord], res.data)[0]
 
     if not verify_password(user.password, db_user["hashed_password"]):
+        publish_analytics_event("LoginFailed", {"reason": "wrong_password"})
         return {"success": False, "message": "Invalid credentials", "data": None, "token": None}
 
     token = create_token(db_user["id"])
+    
+    # --- ANALYTICS TRIGGER ---
+    publish_analytics_event("UserLoggedIn", {
+        "method": "email"
+    })
 
     return {
         "success": True,
@@ -164,6 +177,12 @@ def logout_user(token: str) -> dict:
     """
     
     blacklist_token(token)
+    
+    # --- ANALYTICS TRIGGER ---
+    publish_analytics_event("UserLoggedOut", {
+        "reason": "manual"
+    })
+    
     return {"success": True, "message": "Logged out successfully", "data": None}
 
 
@@ -224,6 +243,11 @@ def get_user_by_id(user_id: str) -> dict:
         profile_picture=user.get("profile_picture"),
         created_at=datetime.fromisoformat(user["created_at"])
     )
+    
+    # --- ANALYTICS TRIGGER ---
+    publish_analytics_event("ProfileViewed", {
+        "viewed_user_id": user_id
+    })
 
     return {
         "success": True,
@@ -280,6 +304,11 @@ async def update_profile_picture(user_id: str, profile_picture: UploadFile) -> d
         return {"success": False, "message": "Failed to update profile picture", "data": None}
 
     updated_user = cast(list[UserRecord], res.data)[0]
+    
+    # --- ANALYTICS TRIGGER ---
+    publish_analytics_event("ProfilePictureUpdated", {
+        "user_id": user_id
+    })
 
     return {
         "success": True,
@@ -379,6 +408,12 @@ def update_profile(user_id: str, updates: UserUpdate) -> dict:
         return {"success": False, "message": "Failed to update profile", "data": None}
 
     updated_user = cast(list[UserRecord], res.data)[0]
+    
+    # --- ANALYTICS TRIGGER ---
+    publish_analytics_event("ProfileUpdated", {
+        "user_id": user_id,
+        "fields_changed": list(changed.keys())
+    })
  
     return {
         "success": True,
@@ -428,6 +463,11 @@ def update_password(user_id: str, passwords: UserUpdatePassword) -> dict:
 
     if not update_res.data or len(update_res.data) == 0:
         return {"success": False, "message": "Failed to update password", "data": None}
+    
+    # --- ANALYTICS TRIGGER ---
+    publish_analytics_event("PasswordUpdated", {
+        "user_id": user_id
+    })
 
     return {"success": True, "message": "Password updated successfully", "data": None}
 
@@ -456,5 +496,10 @@ def delete_account(user_id: str, token: str) -> dict:
 
     if not res.data or len(res.data) == 0:
         return {"success": False, "message": "User not found", "data": None}
+    
+    # --- ANALYTICS TRIGGER ---
+    publish_analytics_event("UserDeleted", {
+        "user_id": user_id
+    })
 
     return {"success": True, "message": "Account deleted successfully", "data": None}
