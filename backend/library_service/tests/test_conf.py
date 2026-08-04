@@ -21,6 +21,14 @@ def mock_supabase(monkeypatch):
 
 
 @pytest.fixture
+def mock_collection_supabase(monkeypatch):
+    """Mocks the Supabase client used in the collection service."""
+    mock = MagicMock()
+    monkeypatch.setattr("library_service.services.collection_service.supabase", mock)
+    return mock
+
+
+@pytest.fixture
 def client():
     """Creates a test client with an authenticated user dependency."""
     app.dependency_overrides[get_current_user_id] = lambda: "user-123"
