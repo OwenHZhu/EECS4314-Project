@@ -9,4 +9,7 @@ export default defineConfig({
     globals: true,
     include: ["src/test/**/*.{test,spec}.{js,jsx}"]
   },
+  preview: {
+    allowedHosts: ['book-atlas-frontend-209112693939.us-west2.run.app']
+  }
 });

@@ -15,4 +15,5 @@ MIN_PASSWORD_LENGTH = 12
 ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",  # React + Vite dev server
+    "https://book-atlas-frontend-209112693939.us-west2.run.app" # Deployed URL
 ]
